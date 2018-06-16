@@ -2,7 +2,7 @@
 #include <string.h>
 
 
-#include "hal/gpio.hpp"
+#include "gpio.hpp"
 #include "drv/sd/sd_spi.hpp"
 #include "drv/di/di.hpp"
 #include "third_party/FreeRTOS/include/FreeRTOS.h"
