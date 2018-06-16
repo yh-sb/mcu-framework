@@ -23,8 +23,6 @@ using namespace hal;
 #define OCR_CCS_BIT  30 /* Card Capacity Status */
 #define OCR_BUSY_BIT 31 /* Card power up status bit */
 
-#define SD_BLOCK_SIZE 512
-
 /* Response 1 description */
 typedef enum
 {
@@ -260,19 +258,71 @@ Exit:
 
 int8_t sd::erase(uint64_t start_addr, uint64_t end_addr)
 {
+	ASSERT(start_addr > end_addr);
 	
+	xSemaphoreTake(api_lock, portMAX_DELAY);
+	
+	int8_t res = SD_ERR_NONE;
+	if(_cd && _cd->get())
+	{
+		res = SD_ERR_NO_CARD;
+		goto Exit;
+	}
+	
+	select(true);
+	
+	sd_csd_t csd;
+	res = read_reg(SD_CSD_REG, &csd);
+	if(res)
+		goto Exit;
+	
+	// Check if card supports erase command
+	if(csd.v1.cmd_classes & (1 << 5))
+	{
+		res = SD_ERR_PARAM;
+		goto Exit;
+	}
+	
+	if(_info.type == SD_CARD_SD_V2_HI_CAPACITY)
+	{
+		start_addr /= SD_BLOCK_SIZE;
+		end_addr /= SD_BLOCK_SIZE;
+	}
+	
+	uint8_t r1;
+	res = send_cmd(CMD32_ERASE_GROUP_START, start_addr, R1, &r1);
+	if(res)
+		goto Exit;
+	
+	res = check_r1(r1);
+	if(res)
+		goto Exit;
+	
+	res = send_cmd(CMD33_ERASE_GROUP_END, end_addr, R1, &r1);
+	if(res)
+		goto Exit;
+	
+	res = check_r1(r1);
+	if(res)
+		goto Exit;
+	
+	res = send_cmd(CMD38_ERASE, 0, R1, &r1);
+	if(res)
+		goto Exit;
+	
+	res = check_r1(r1);
+	if(res)
+		goto Exit;
+	
+	// !!!
+	// TODO: need to implement waiting while block range is erasing
+	
+Exit:
+	select(false);
+	xSemaphoreGive(api_lock);
+	return res;
 }
 
-int8_t sd::read_cid(sd_cid_t *cid)
-{
-	uint8_t r2[17];
-	int8_t res = send_cmd(CMD10_SEND_CID, 0, R2, r2);
-	if(res)
-		return res;
-	
-	res = check_r1(r2[0]);
-	if(res)
-		return res;
 int8_t sd::read_cid(sd_cid_t *cid)
 {
 	ASSERT(cid);

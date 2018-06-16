@@ -11,6 +11,8 @@
 
 namespace drv
 {
+#define SD_BLOCK_SIZE 512
+
 typedef enum
 {
 	SD_CARD_UNKNOWN,
@@ -56,103 +58,29 @@ class sd
 	protected:
 		typedef enum
 		{
-			/* Software reset
-			Arg: no
-			Data: no
-			Response: R1 */
-			CMD0_GO_IDLE_STATE = 0,
-			
-			/* Initiate init process
-			Arg: no
-			Data: no
-			Response: R1 */
-			CMD1_SEND_OP_COND = 1,
-			
-			/* Only for SDC. Initiate init process
-			Arg: Rsv(0)[31], HCS[30], Rsv(0)[29:0]
-			Data: no
-			Response: R1 */
-			ACMD41_APP_SEND_OP_COND = 41,
-			
-			/* Only for SDS v2. Check voltage range
-			Arg: Rsv(0)[31:32], Vdd(1)[11:8], Check pattern(0xAA)[7:0]
-			Data: no
-			Response: R7 */
-			CMD8_SEND_IF_COND = 8,
-			
-			/* Read CSD register
-			Arg: no
-			Data: CSD register
-			Response: R2 */
-			CMD9_SEND_CSD = 9,
-			
-			/* Read CID register
-			Arg: no
-			Data: CID register
-			Response: R2 */
-			CMD10_SEND_CID = 10,
-			
-			/* Stop to read data
-			Arg: no
-			Data: no
-			Response: R1b */
-			CMD12_STOP_TRANSMISSION = 12,
-			
-			/* Change R/W block size
-			Arg: Block length[31:0]
-			Data: no
-			Response: R1 */
-			CMD16_SET_BLOCKLEN = 16,
-			
-			/* Read a block
-			Arg: Address[31:0]
-			Data: Block
-			Response: R1 */
-			CMD17_READ_SINGLE_BLOCK = 17,
-			
-			/* Read multiple blocks
-			Arg: Address[31:0]
-			Data: Multiple blocks
-			Response: R1 */
-			CMD18_READ_MULTIPLE_BLOCK = 18,
-			
-			/* Only for MMC. Define number of blocks to transfer with next multi-block
-			read/write command
-			Arg: Number of blocks[15:0]
-			Data: no
-			Response: R1 */
-			CMD23_SET_BLOCK_COUNT = 23,
-			
-			/* Only for SDS. Define number of blocks to pre-erase with next multi-block
-			write command
-			Arg: Number of blocks[22:0]
-			Data: no
-			Response: R1 */
-			ACMD23_SET_WR_BLOCK_ERASE_COUNT = 23,
-			
-			/* Write a block
-			Arg: Address[31:0]
-			Data: Block
-			Response: R1 */
-			CMD24_WRITE_SINGLE_BLOCK = 24,
-			
-			/* Write multiple blocks
-			Arg: Address[31:0]
-			Data: Multiple blocks
-			Response: R1 */
-			CMD25_WRITE_MULTIPLE_BLOCK = 25,
-			
-			/* Leading command of ACMD<n> command
-			Arg: no
-			Data: no
-			Response: R1 */
-			CMD55_APP_CMD = 55,
-			
-			/* Read OCR
-			Arg: no
-			Data: no
-			Response: R3 */
-			CMD58_READ_OCR = 58
+			CMD0_GO_IDLE_STATE              = 0,  // Software reset
+			CMD1_SEND_OP_COND               = 1,  // Initiate init process
+			ACMD41_APP_SEND_OP_COND         = 41, // Initiate init process
+			CMD8_SEND_IF_COND               = 8,  // Check voltage range
+			CMD9_SEND_CSD                   = 9,  // Read CSD register
+			CMD10_SEND_CID                  = 10, // Read CID register
+			CMD12_STOP_TRANSMISSION         = 12, // Stop to read data
+			CMD16_SET_BLOCKLEN              = 16, // Change R/W block size
+			CMD17_READ_SINGLE_BLOCK         = 17, // Read a block
+			CMD18_READ_MULTIPLE_BLOCK       = 18, // Read multiple blocks
+			ACMD23_SET_WR_BLOCK_ERASE_COUNT = 23, // Define number of blocks to
+			                                      // pre-erase with next
+			                                      // multi-block write command
+			CMD24_WRITE_SINGLE_BLOCK        = 24, // Write a block
+			CMD25_WRITE_MULTIPLE_BLOCK      = 25, // Write multiple blocks
+			CMD32_ERASE_GROUP_START         = 32, // Set the addr of the first
+			                                      // block to be erased
+			CMD33_ERASE_GROUP_END           = 33, // Set the addr of the last
+			                                      // block to be erased
+			CMD38_ERASE                     = 38, // Erases all previously
+			                                      // selected blocks
+			CMD55_APP_CMD                   = 55, // Leading cmd of ACMD<n> cmd
+			CMD58_READ_OCR                  = 58  // Read OCR
 		} cmd_t;
 		
 		typedef enum

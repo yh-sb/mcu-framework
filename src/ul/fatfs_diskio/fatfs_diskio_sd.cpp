@@ -120,11 +120,21 @@ static DRESULT ioctl(void *ctx, BYTE cmd, void *buff)
 			*(WORD *)buff = (WORD)512;
 			break;
 		
-		case CTRL_TRIM:;
-			start = *(DWORD *)buff;
-			end = *(((DWORD *)buff) + 1);
-			// TODO (also set FF_USE_TRIM = 1)
-			//res = _sd->erase(start, end);
+		case CTRL_TRIM:
+			// TRIM capability is enabled only when FF_USE_TRIM = 1
+			
+			start = ((DWORD *)buff)[0];
+			//start = *(DWORD *)buff;
+			end = ((DWORD *)buff)[1];
+			//end = *(((DWORD *)buff) + 1);
+			
+			if(_sd->type() == SD_CARD_SD_V2_HI_CAPACITY)
+			{
+				start *= SD_BLOCK_SIZE;
+				end *= SD_BLOCK_SIZE;
+			}
+			
+			res = _sd->erase(start, end);
 			break;
 		
 		default: ASSERT(0);
