@@ -58,13 +58,14 @@ static DRESULT read(void *ctx, BYTE *buff, DWORD sector, UINT count)
 {
 	sd *_sd = (sd *)ctx;
 	int8_t res = SD_ERR_NONE;
+	sd_card_t card_type = _sd->type();
 	
 	for(uint32_t i = 0; i < count && res == SD_ERR_NONE; i++)
 	{
-		if(_sd->type() == SD_CARD_SD_V2_HI_CAPACITY)
+		if(card_type == SD_CARD_SD_V2_HI_CAPACITY)
 			res = _sd->read(buff, sector + i);
 		else
-			res = _sd->read(buff, (sector + i) * 512);
+			res = _sd->read(buff, (sector + i) * SD_BLOCK_SIZE);
 	}
 	
 	switch(res)
@@ -81,13 +82,14 @@ static DRESULT write(void *ctx, const BYTE *buff, DWORD sector, UINT count)
 {
 	sd *_sd = (sd *)ctx;
 	int8_t res = SD_ERR_NONE;
+	sd_card_t card_type = _sd->type();
 	
 	for(uint32_t i = 0; i < count && res == SD_ERR_NONE; i++)
 	{
-		if(_sd->type() == SD_CARD_SD_V2_HI_CAPACITY)
+		if(card_type == SD_CARD_SD_V2_HI_CAPACITY)
 			res = _sd->write((BYTE *)buff, sector + i);
 		else
-			res = _sd->write((BYTE *)buff, (sector + i) * 512);
+			res = _sd->write((BYTE *)buff, (sector + i) * SD_BLOCK_SIZE);
 	}
 	
 	switch(res)
@@ -112,12 +114,15 @@ static DRESULT ioctl(void *ctx, BYTE cmd, void *buff)
 			break;
 		
 		case GET_SECTOR_COUNT:
-			*(DWORD *)buff = (DWORD)(_sd->capacity() / 512);
+			*(DWORD *)buff = (DWORD)(_sd->capacity() / SD_BLOCK_SIZE);
+			break;
+		
+		case GET_SECTOR_SIZE:
+			*(WORD *)buff = (WORD)SD_BLOCK_SIZE;
 			break;
 		
 		case GET_BLOCK_SIZE:
-		case GET_SECTOR_SIZE:
-			*(WORD *)buff = (WORD)512;
+			*(DWORD *)buff = (DWORD)SD_BLOCK_SIZE;
 			break;
 		
 		case CTRL_TRIM:
@@ -137,7 +142,9 @@ static DRESULT ioctl(void *ctx, BYTE cmd, void *buff)
 			res = _sd->erase(start, end);
 			break;
 		
-		default: ASSERT(0);
+		default:
+			ASSERT(0);
+			res = SD_ERR_PARAM;
 	}
 	
 	switch(res)
