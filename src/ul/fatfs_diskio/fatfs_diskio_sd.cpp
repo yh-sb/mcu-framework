@@ -27,7 +27,17 @@ fatfs_diskio_hndlrs_t &ul::fatfs_diskio_get()
 
 static DSTATUS status(void *ctx)
 {
-	return RES_OK;
+	sd *_sd = (sd *)ctx;
+	sd_csd_t csd;
+	
+	switch(_sd->read_csd(&csd))
+	{
+		case SD_ERR_NONE: return RES_OK;
+		case SD_ERR_LOCKED: return RES_WRPRT;
+		case SD_ERR_PARAM: return RES_PARERR;
+		case SD_ERR_NO_RESPONSE: return RES_NOTRDY;
+		default: return RES_ERROR;
+	}
 }
 
 static DSTATUS initialize(void *ctx)

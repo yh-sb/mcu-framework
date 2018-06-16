@@ -179,7 +179,7 @@ Exit:
 	if(!res)
 	{
 		sd_csd_t csd;
-		res = read_csd(&csd);
+		res = read_reg(SD_CSD_REG, &csd);
 		if(!res)
 			_info.capacity = (uint64_t)get_block_count(&csd) * SD_BLOCK_SIZE;
 	}
@@ -273,26 +273,89 @@ int8_t sd::read_cid(sd_cid_t *cid)
 	res = check_r1(r2[0]);
 	if(res)
 		return res;
+int8_t sd::read_cid(sd_cid_t *cid)
+{
+	ASSERT(cid);
 	
-	decode_cid(&r2[1], cid);
+	xSemaphoreTake(api_lock, portMAX_DELAY);
 	
+	int8_t res = SD_ERR_NONE;
+	if(_cd && _cd->get())
+	{
+		res = SD_ERR_NO_CARD;
+		goto Exit;
+	}
+	
+	select(true);
+	
+	res = read_reg(SD_CID_REG, cid);
+	
+Exit:
+	select(false);
+	xSemaphoreGive(api_lock);
 	return res;
 }
 
 int8_t sd::read_csd(sd_csd_t *csd)
 {
+	ASSERT(csd);
+	
+	xSemaphoreTake(api_lock, portMAX_DELAY);
+	
+	int8_t res = SD_ERR_NONE;
+	if(_cd && _cd->get())
+	{
+		res = SD_ERR_NO_CARD;
+		goto Exit;
+	}
+	
+	select(true);
+	
+	res = read_reg(SD_CSD_REG, csd);
+	
+Exit:
+	select(false);
+	xSemaphoreGive(api_lock);
+	return res;
+}
+
+int8_t sd::read_reg(sd_reg_t reg, void *buff)
+{
+	int8_t res;
 	uint8_t r2[17];
-	int8_t res = send_cmd(CMD9_SEND_CSD, 0, R2, r2);
-	if(res)
-		return res;
 	
-	res = check_r1(r2[0]);
-	if(res)
-		return res;
-	
-	res = decode_csd(&r2[1], csd, _info.type);
-	if(res)
-		memset(csd, 0, sizeof(*csd));
+	switch(reg)
+	{
+		case SD_CID_REG:
+			res = send_cmd(CMD10_SEND_CID, 0, R2, r2);
+			if(res)
+				return res;
+			
+			res = check_r1(r2[0]);
+			if(res)
+				return res;
+			
+			decode_cid(&r2[1], (sd_cid_t *)buff);
+			break;
+		
+		case SD_CSD_REG:
+			res = send_cmd(CMD9_SEND_CSD, 0, R2, r2);
+			if(res)
+				return res;
+			
+			res = check_r1(r2[0]);
+			if(res)
+				return res;
+			
+			res = decode_csd(&r2[1], (sd_csd_t *)buff, _info.type);
+			if(res)
+				memset(buff, 0, sizeof(sd_csd_t));
+			break;
+		
+		default:
+			ASSERT(0);
+			return SD_ERR_PARAM;
+	}
 	
 	return res;
 }

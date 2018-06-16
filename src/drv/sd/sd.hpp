@@ -49,6 +49,9 @@ class sd
 		
 		sd_card_t type() const { return _info.type; }
 		uint64_t capacity() const { return _info.capacity; }
+		
+		int8_t read_cid(sd_cid_t *cid);
+		int8_t read_csd(sd_csd_t *csd);
 	
 	protected:
 		typedef enum
@@ -162,8 +165,19 @@ class sd
 		} resp_t;
 	
 	private:
-		int8_t read_cid(sd_cid_t *cid);
-		int8_t read_csd(sd_csd_t *csd);
+		typedef enum
+		{
+			SD_CID_REG,
+			//SD_RCA_REG,
+			//SD_DSR_REG,
+			SD_CSD_REG,
+			//SD_SCR_REG,
+			//SD_OCR_REG,
+			//SD_SSR_REG,
+			//SD_CSR_REG,
+		} sd_reg_t;
+		
+		int8_t read_reg(sd_reg_t reg, void *buff);
 		int8_t set_block_size(uint32_t block_size);
 		int8_t process_acmd41(bool is_hi_capacity);
 		int8_t process_cmd1();
