@@ -1,0 +1,15 @@
+# Map and listing files
+*.map
+*.lss
+*.lst
+
+# Compiled Object files
+*.o
+
+# Executables
+*.elf
+*.hex
+*.bin
+
+# JLink script
+*.jlink

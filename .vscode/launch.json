@@ -1,0 +1,36 @@
+{
+	"version": "0.2.0",
+	"configurations":
+	[
+		{
+			"name": "omf",
+			"type": "cppdbg",
+			"request": "launch",
+			"program": "${workspaceFolder}/out/bin/${workspaceRootFolderName}.elf",
+			"miDebuggerPath": "arm-none-eabi-gdb.exe",
+			"args": ["--interpreter=mi *.elf"],
+			"stopAtEntry": true,
+			"cwd": "${workspaceFolder}",
+			"externalConsole": false,
+			"MIMode": "gdb",
+			"setupCommands":
+			[
+				{
+					"description": "Connect GDB to GDB server",
+					"text": "target remote localhost:2331",
+					"ignoreFailures": false
+				},
+				{
+					"description": "Reset target to get to a known state",
+					"text": "monitor reset",
+					"ignoreFailures": false
+				},
+				{
+					"description": "Halt target to get to a known state",
+					"text": "monitor halt",
+					"ignoreFailures": false
+				}
+			]
+		}
+	]
+}

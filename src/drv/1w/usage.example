@@ -1,0 +1,67 @@
+
+#include "gpio.hpp"
+#include "uart.hpp"
+
+#include "drv/di/di.hpp"
+#include "drv/1w/1w.hpp"
+
+#include "third_party/FreeRTOS/include/FreeRTOS.h"
+#include "third_party/FreeRTOS/include/task.h"
+
+using namespace hal;
+using namespace drv;
+
+static void b1_cb(di *di, bool state, void *ctx);
+
+static void di_task(void *pvParameters)
+{
+	di *b1 = (di *)pvParameters;
+	while(1)
+	{
+		b1->poll();
+		vTaskDelay(1);
+	}
+}
+
+int main(void)
+{
+	static gpio b1(0, 0, GPIO_MODE_DI, 0);
+	static gpio uart3_tx_gpio(3, 8, GPIO_MODE_AF, 0);
+	static gpio uart3_rx_gpio(1, 11, GPIO_MODE_AF, 0);
+	
+	static dma uart3_tx_dma(DMA_1, DMA_STREAM_3, DMA_CH_4,
+		DMA_DIR_MEM_TO_PERIPH, DMA_INC_SIZE_8);
+	static dma uart3_rx_dma(DMA_1, DMA_STREAM_1, DMA_CH_4,
+		DMA_DIR_PERIPH_TO_MEM, DMA_INC_SIZE_8);
+	
+	static uart uart3(UART_3, 115200, UART_STOPBIT_1, UART_PARITY_NONE,
+		uart3_tx_dma, uart3_rx_dma, uart3_tx_gpio, uart3_rx_gpio);
+	
+	static _1w _1w_obj(uart3);
+	
+	static di b1_di(b1, 100, 1);
+	b1_di.cb(b1_cb, &_1w_obj);
+	
+	xTaskCreate(di_task, "di", configMINIMAL_STACK_SIZE * 60, &b1_di,
+		tskIDLE_PRIORITY + 1, NULL);
+	
+	vTaskStartScheduler();
+}
+
+static void b1_cb(di *di, bool state, void *ctx)
+{
+	if(state)
+		return;
+	
+	_1w *_1w_obj = (_1w *)ctx;
+	
+	uint64_t rom = 0;
+	int8_t res = _1w_obj->read_rom(&rom);
+	if(res)
+		return;
+	
+	uint8_t tx_buff[3] = {0x01, 0x02, 0x03};
+	res = _1w_obj->tx(rom, tx_buff, sizeof(tx_buff));
+	if(res)
+		return;
+}
