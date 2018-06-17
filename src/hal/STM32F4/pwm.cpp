@@ -288,8 +288,10 @@ void pwm::freq(uint32_t freq)
 	
 	uint16_t presc = 0;
 	uint16_t reload = 0;
+	
 	_freq = freq;
 	calc_freq(_tim, _freq, &presc, &reload);
+	
 	tim_list[_tim]->PSC = presc;
 	tim_list[_tim]->ARR = reload;
 }
