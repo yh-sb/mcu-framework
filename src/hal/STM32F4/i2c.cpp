@@ -23,8 +23,7 @@ using namespace hal;
 
 static I2C_TypeDef *const i2c_list[I2C_END] =
 {
-	I2C1,
-	I2C2,
+	I2C1, I2C2,
 #if defined(STM32F401xC) || defined(STM32F401xE) || defined(STM32F405xx) || \
 	defined(STM32F407xx) || defined(STM32F411xE) || defined(STM32F412Cx) || \
 	defined(STM32F412Rx) || defined(STM32F412Vx) || defined(STM32F412Zx) || \
@@ -40,8 +39,7 @@ static I2C_TypeDef *const i2c_list[I2C_END] =
 
 static IRQn_Type const event_irq_list[I2C_END] =
 {
-	I2C1_EV_IRQn,
-	I2C2_EV_IRQn,
+	I2C1_EV_IRQn, I2C2_EV_IRQn,
 #if defined(STM32F401xC) || defined(STM32F401xE) || defined(STM32F405xx) || \
 	defined(STM32F407xx) || defined(STM32F411xE) || defined(STM32F412Cx) || \
 	defined(STM32F412Rx) || defined(STM32F412Vx) || defined(STM32F412Zx) || \
@@ -57,8 +55,7 @@ static IRQn_Type const event_irq_list[I2C_END] =
 
 static IRQn_Type const err_irq_list[I2C_END] =
 {
-	I2C1_ER_IRQn,
-	I2C2_ER_IRQn,
+	I2C1_ER_IRQn, I2C2_ER_IRQn,
 #if defined(STM32F401xC) || defined(STM32F401xE) || defined(STM32F405xx) || \
 	defined(STM32F407xx) || defined(STM32F411xE) || defined(STM32F412Cx) || \
 	defined(STM32F412Rx) || defined(STM32F412Vx) || defined(STM32F412Zx) || \
@@ -74,8 +71,7 @@ static IRQn_Type const err_irq_list[I2C_END] =
 
 static uint32_t const rcc_list[I2C_END] =
 {
-	RCC_APB1ENR_I2C1EN,
-	RCC_APB1ENR_I2C2EN,
+	RCC_APB1ENR_I2C1EN, RCC_APB1ENR_I2C2EN,
 #if defined(STM32F401xC) || defined(STM32F401xE) || defined(STM32F405xx) || \
 	defined(STM32F407xx) || defined(STM32F411xE) || defined(STM32F412Cx) || \
 	defined(STM32F412Rx) || defined(STM32F412Vx) || defined(STM32F412Zx) || \
@@ -91,8 +87,7 @@ static uint32_t const rcc_list[I2C_END] =
 
 static uint32_t const reset_list[I2C_END] =
 {
-	RCC_APB1RSTR_I2C1RST,
-	RCC_APB1RSTR_I2C2RST,
+	RCC_APB1RSTR_I2C1RST, RCC_APB1RSTR_I2C2RST,
 #if defined(STM32F401xC) || defined(STM32F401xE) || defined(STM32F405xx) || \
 	defined(STM32F407xx) || defined(STM32F411xE) || defined(STM32F412Cx) || \
 	defined(STM32F412Rx) || defined(STM32F412Vx) || defined(STM32F412Zx) || \
@@ -110,11 +105,9 @@ static uint8_t const gpio_af_list[I2C_END] =
 {
 	0x04,
 #if defined(STM32F401xC) || defined(STM32F401xE) || defined(STM32F411xE)
-	0x09,
-	0x09
+	0x09, 0x09
 #else
-	0x04,
-	0x04
+	0x04, 0x04
 #endif
 };
 
