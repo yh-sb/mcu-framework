@@ -10,7 +10,7 @@
 
 using namespace hal;
 
-#define EXTI_IRQ_PRIORITY 3
+#define IRQ_PRIORITY 3
 #define GPIO_AF_15_EVENTOUT 0x0F
 
 static IRQn_Type const irq_list[PIN_QTY] =
@@ -110,7 +110,7 @@ static uint8_t const src_offset_list[PIN_QTY] =
 	0, 4, 8,
 	0, 4, 8,
 	0, 4, 8,
-	0, 4, 8,
+	0, 4, 8
 };
 
 static exti *obj_list[PIN_QTY];
@@ -157,7 +157,7 @@ exti::exti(gpio &gpio, exti_trigger_t trigger):
 	obj_list[pin] = this;
 	
 	NVIC_ClearPendingIRQ(irq_list[pin]);
-	NVIC_SetPriority(irq_list[pin], EXTI_IRQ_PRIORITY);
+	NVIC_SetPriority(irq_list[pin], IRQ_PRIORITY);
 	NVIC_EnableIRQ(irq_list[pin]);
 }
 
@@ -260,39 +260,14 @@ extern "C" void EXTI4_IRQHandler(void)
 extern "C" void EXTI9_5_IRQHandler(void)
 {
 	uint32_t pending_bit = EXTI->PR;
-	uint32_t line_bit = (1 << 5);
-	if(pending_bit & line_bit)
-	{
-		exti_irq_hndlr(obj_list[5]);
-		return;
-	}
 	
-	line_bit = (1 << 6);
-	if(pending_bit & line_bit)
+	for(uint8_t i = 5; i <= 9; i++)
 	{
-		exti_irq_hndlr(obj_list[6]);
-		return;
-	}
-	
-	line_bit = (1 << 7);
-	if(pending_bit & line_bit)
-	{
-		exti_irq_hndlr(obj_list[7]);
-		return;
-	}
-	
-	line_bit = (1 << 8);
-	if(pending_bit & line_bit)
-	{
-		exti_irq_hndlr(obj_list[8]);
-		return;
-	}
-	
-	line_bit = (1 << 9);
-	if(pending_bit & line_bit)
-	{
-		exti_irq_hndlr(obj_list[9]);
-		return;
+		if(pending_bit & (1 << i))
+		{
+			exti_irq_hndlr(obj_list[i]);
+			break;
+		}
 	}
 }
 
@@ -300,45 +275,12 @@ extern "C" void EXTI15_10_IRQHandler(void)
 {
 	uint32_t pending_bit = EXTI->PR;
 	
-	uint32_t line_bit = (1 << 10);
-	if(pending_bit & line_bit)
+	for(uint8_t i = 10; i <= 15; i++)
 	{
-		exti_irq_hndlr(obj_list[10]);
-		return;
-	}
-	
-	line_bit = (1 << 11);
-	if(pending_bit & line_bit)
-	{
-		exti_irq_hndlr(obj_list[11]);
-		return;
-	}
-	
-	line_bit = (1 << 12);
-	if(pending_bit & line_bit)
-	{
-		exti_irq_hndlr(obj_list[12]);
-		return;
-	}
-	
-	line_bit = (1 << 13);
-	if(pending_bit & line_bit)
-	{
-		exti_irq_hndlr(obj_list[14]);
-		return;
-	}
-	
-	line_bit = (1 << 14);
-	if(pending_bit & line_bit)
-	{
-		exti_irq_hndlr(obj_list[14]);
-		return;
-	}
-	
-	line_bit = (1 << 15);
-	if(pending_bit & line_bit)
-	{
-		exti_irq_hndlr(obj_list[15]);
-		return;
+		if(pending_bit & (1 << i))
+		{
+			exti_irq_hndlr(obj_list[i]);
+			break;
+		}
 	}
 }
