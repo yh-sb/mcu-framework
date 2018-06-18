@@ -12,20 +12,6 @@ using namespace hal;
 #define IRQ_PRIORITY 2
 #define CHSEL_OFFSET 25
 
-static IRQn_Type const irq_list[DMA_END][DMA_STREAM_END] =
-{
-	{
-		DMA1_Stream0_IRQn, DMA1_Stream1_IRQn, DMA1_Stream2_IRQn,
-		DMA1_Stream3_IRQn, DMA1_Stream4_IRQn, DMA1_Stream5_IRQn,
-		DMA1_Stream6_IRQn, DMA1_Stream7_IRQn
-	},
-	{
-		DMA2_Stream0_IRQn, DMA2_Stream1_IRQn, DMA2_Stream2_IRQn,
-		DMA2_Stream3_IRQn, DMA2_Stream4_IRQn, DMA2_Stream5_IRQn,
-		DMA2_Stream6_IRQn, DMA2_Stream7_IRQn
-	}
-};
-
 static DMA_Stream_TypeDef *const stream_list[DMA_END][DMA_STREAM_END] =
 {
 	{
@@ -37,6 +23,20 @@ static DMA_Stream_TypeDef *const stream_list[DMA_END][DMA_STREAM_END] =
 		DMA2_Stream0, DMA2_Stream1, DMA2_Stream2,
 		DMA2_Stream3, DMA2_Stream4, DMA2_Stream5,
 		DMA2_Stream6, DMA2_Stream7
+	}
+};
+
+static IRQn_Type const irq_list[DMA_END][DMA_STREAM_END] =
+{
+	{
+		DMA1_Stream0_IRQn, DMA1_Stream1_IRQn, DMA1_Stream2_IRQn,
+		DMA1_Stream3_IRQn, DMA1_Stream4_IRQn, DMA1_Stream5_IRQn,
+		DMA1_Stream6_IRQn, DMA1_Stream7_IRQn
+	},
+	{
+		DMA2_Stream0_IRQn, DMA2_Stream1_IRQn, DMA2_Stream2_IRQn,
+		DMA2_Stream3_IRQn, DMA2_Stream4_IRQn, DMA2_Stream5_IRQn,
+		DMA2_Stream6_IRQn, DMA2_Stream7_IRQn
 	}
 };
 
