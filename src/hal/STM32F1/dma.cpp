@@ -10,6 +10,33 @@ using namespace hal;
 
 #define IRQ_PRIORITY 2
 
+static DMA_Channel_TypeDef *const ch_list[DMA_END][DMA_CH_END] =
+{
+	{
+		DMA1_Channel1, DMA1_Channel2, DMA1_Channel3,
+		DMA1_Channel4, DMA1_Channel5, DMA1_Channel6,
+		DMA1_Channel7
+	},
+	{
+#if defined(STM32F100xE) || defined(STM32F101xE) || defined(STM32F101xG) || \
+	defined(STM32F103xE) || defined(STM32F103xG) || defined(STM32F105xC) || \
+	defined(STM32F107xC)
+		DMA2_Channel1, DMA2_Channel2, DMA2_Channel3,
+#else
+		NULL, NULL, NULL,
+#endif
+#if defined(STM32F100xE) || defined(STM32F101xE) || defined(STM32F101xG) || \
+	defined(STM32F103xE) || defined(STM32F103xG) || defined(STM32F105xC) || \
+	defined(STM32F107xC) || defined(STM32F105xC) || defined(STM32F107xC)
+		DMA2_Channel4, DMA2_Channel5,
+#else
+		NULL, NULL,
+#endif
+		/* DMA2 doesn't have 6th and 7th channels */
+		NULL, NULL
+	}
+};
+
 static IRQn_Type const irq_list[DMA_END][DMA_CH_END] =
 {
 	{
@@ -36,33 +63,6 @@ static IRQn_Type const irq_list[DMA_END][DMA_CH_END] =
 #endif
 		/* DMA2 doesn't have 6th and 7th channels */
 		static_cast<IRQn_Type>(0), static_cast<IRQn_Type>(0)
-	}
-};
-
-static DMA_Channel_TypeDef *const ch_list[DMA_END][DMA_CH_END] =
-{
-	{
-		DMA1_Channel1, DMA1_Channel2, DMA1_Channel3,
-		DMA1_Channel4, DMA1_Channel5, DMA1_Channel6,
-		DMA1_Channel7
-	},
-	{
-#if defined(STM32F100xE) || defined(STM32F101xE) || defined(STM32F101xG) || \
-	defined(STM32F103xE) || defined(STM32F103xG) || defined(STM32F105xC) || \
-	defined(STM32F107xC)
-		DMA2_Channel1, DMA2_Channel2, DMA2_Channel3,
-#else
-		NULL, NULL, NULL,
-#endif
-#if defined(STM32F100xE) || defined(STM32F101xE) || defined(STM32F101xG) || \
-	defined(STM32F103xE) || defined(STM32F103xG) || defined(STM32F105xC) || \
-	defined(STM32F107xC) || defined(STM32F105xC) || defined(STM32F107xC)
-		DMA2_Channel4, DMA2_Channel5,
-#else
-		NULL, NULL,
-#endif
-		/* DMA2 doesn't have 6th and 7th channels */
-		NULL, NULL
 	}
 };
 
