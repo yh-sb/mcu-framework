@@ -41,7 +41,7 @@ class tim
 		void start_cyclic(tim_cb_t cb, void *ctx);
 		void stop();
 		
-		bool running() const;
+		bool is_running() const;
 	
 	private:
 		tim_t _tim;

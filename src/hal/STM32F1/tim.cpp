@@ -274,7 +274,7 @@ void tim::stop()
 	tim_list[_tim]->SR &= ~TIM_SR_UIF;
 }
 
-bool tim::running() const
+bool tim::is_running() const
 {
 	return static_cast<bool>(tim_list[_tim]->CR1 & TIM_CR1_CEN);
 }
