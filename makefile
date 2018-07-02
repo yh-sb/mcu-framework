@@ -89,7 +89,7 @@ SRC := main.cpp
 INC := $(addprefix -I,$(strip $(INC)))
 DEF := $(addprefix -D,$(strip $(DEF)))
 LIB := $(addprefix -l,$(strip $(LIB)))
-LIBDIR := $(addprefix -L$(strip $(LIBDIR)))
+LIBDIR := $(addprefix -L,$(strip $(LIBDIR)))
 LINKED_OBJ := $(strip $(LINKED_OBJ))
 
 ifdef LIBDIR
