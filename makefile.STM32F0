@@ -81,11 +81,11 @@ SRC := main.cpp
 INC := $(addprefix -I,$(strip $(INC)))
 DEF := $(addprefix -D,$(strip $(DEF)))
 LIB := $(addprefix -l,$(strip $(LIB)))
-LIBDIR := $(strip $(LIBDIR))
+LIBDIR := $(addprefix -L,$(strip $(LIBDIR)))
 LINKED_OBJ := $(strip $(LINKED_OBJ))
 
 ifdef LIBDIR
-LDFLAGS += -L$(LIBDIR)
+LDFLAGS += $(LIBDIR)
 endif
 ifdef LIB
 LDFLAGS += -Wl,--start-group $(LIB) -Wl,--end-group
