@@ -17,21 +17,22 @@ LINKED_OBJ :=
 
 MODULES := common
 MODULES += drv
-MODULES += hal/STM32F0
+MODULES += hal/STM32F4
+MODULES += third_party/FatFs
 MODULES += third_party/FreeRTOS
-#MODULES += third_party/TraceRecorder
-#MODULES += ul
+MODULES += third_party/TraceRecorder
+MODULES += ul
 
 #*******************************************************************************
 FLASHER := JLink
 #FLASHER = openocd
 #FLASHER = ST-LINK_CLI
 
-JLINK_PARAM := -device STM32F072RB -if SWD -speed auto
+JLINK_PARAM := -device STM32F407VG -if SWD -speed auto
 
 OPENOCD_PARAM := -f interface/stlink-v2.cfg
-OPENOCD_PARAM += -f transport select hla_swd
-OPENOCD_PARAM += -f target/stm32f0x.cfg
+OPENOCD_PARAM += transport select hla_swd
+OPENOCD_PARAM += -f target/stm32f4x.cfg
 
 OPENOCD_PARAM_DEBUG := $(OPENOCD_PARAM)
 OPENOCD_PARAM_DEBUG += -c "gdb_port 2331"
@@ -43,29 +44,36 @@ OS := Windows
 
 CC := arm-none-eabi-gcc
 CPP := arm-none-eabi-g++
-AS := arm-none-eabi-gcc -x assembler-with-cpp
+AS := arm-none-eabi-gcc
 LD := arm-none-eabi-gcc
 GDB := arm-none-eabi-gdb
 OBJCOPY := arm-none-eabi-objcopy
 OBJDUMP := arm-none-eabi-objdump
 SIZE := arm-none-eabi-size
 
-CFLAGS := -mcpu=cortex-m0
+CFLAGS := -mcpu=cortex-m4
 CFLAGS += -mthumb
 CFLAGS += -O0 -g3
+#CFLAGS += -std=gnu99
 CFLAGS += -ffunction-sections -fdata-sections
+#CFLAGS += -Wno-packed-bitfield-compat
 CFLAGS += -Wundef -Wcast-align
+CFLAGS += -mfloat-abi=softfp
+CFLAGS += -mfpu=fpv4-sp-d16
+#CFLAGS += -mfloat-abi=hard
 
 CPPFLAGS := $(CFLAGS)
 CPPFLAGS += -fno-exceptions
 CPPFLAGS += -fno-rtti
 CPPFLAGS += -funsigned-bitfields
 CPPFLAGS += -fshort-enums
+CPPFLAGS += -fno-threadsafe-statics
+CPPFLAGS += -fno-use-cxa-atexit
 
-AFLAGS :=
+AFLAGS := -x assembler-with-cpp
 
-LDFLAGS := -Tsrc/hal/STM32F0/STM32F072RBTx_FLASH.ld
-LDFLAGS += -mcpu=cortex-m0
+LDFLAGS := -Tsrc/hal/STM32F4/STM32F40_41xxx.ld
+LDFLAGS += -mcpu=cortex-m4
 LDFLAGS += -mthumb
 LDFLAGS += -nostartfiles
 LDFLAGS += --specs=nano.specs
@@ -97,7 +105,7 @@ OBJ := $(patsubst %.c, $(OBJDIR)/%.o, $(filter %.c,$(SRC)))
 OBJ += $(patsubst %.cpp, $(OBJDIR)/%.o, $(filter %.cpp,$(SRC)))
 OBJ += $(patsubst %.s, $(OBJDIR)/%.o, $(filter %.s,$(SRC)))
 
-.PHONY: all clean erase flash reset debug
+.PHONY: all clean erase flash reset debug check_style
 
 all:
 	$(MAKE) --no-print-directory $(ELF)
@@ -122,7 +130,7 @@ ifeq ($(FLASHER),JLink)
 	$(FLASHER) $(JLINK_PARAM) -CommanderScript script.jlink
 endif
 ifeq ($(FLASHER),openocd)
-	$(FLASHER) $(OPENOCD_PARAM) -c "init; halt; stm32f0x mass_erase 0; exit"
+	$(FLASHER) $(OPENOCD_PARAM) -c "init; halt; stm32f4x mass_erase 0; exit"
 endif
 ifeq ($(FLASHER),ST-LINK_CLI)
 	$(FLASHER) -c swd -me
@@ -162,10 +170,14 @@ debug:
 	$(MAKE) flash
 ifeq ($(FLASHER),JLink)
 	jlinkGDBserverCL $(JLINK_PARAM) -vd -singlerun
+#	jlinkGDBserverCL $(JLINK_PARAM) -vd -singlerun -rtos GDBServer/RTOSPlugin_FreeRTOS
 endif
 ifeq ($(FLASHER),openocd)
 	$(FLASHER) $(OPENOCD_PARAM_DEBUG)
 endif
+
+check_style:
+	clang-format -style=file $(addprefix src/,$(SRC))
 
 $(OBJDIR)/%.o: src/%.c
 ifeq ($(OS),Windows)
