@@ -31,8 +31,8 @@ GLOBAL_INC := $(ROOT)/src \
 GLOBAL_DEF := STM32F407xx
 
 GLOBAL_C_CPP_FLAGS := -O0 -g3 \
-	-mcpu=cortex-m4 -mthumb -mfloat-abi=softfp -mfpu=fpv4-sp-d16 \
-	-ffunction-sections -fdata-sections -Wall
+	-ffunction-sections -fdata-sections -Wall \
+	-mcpu=cortex-m4 -mthumb -mfloat-abi=softfp -mfpu=fpv4-sp-d16
 	#-mfloat-abi=hard
 
 GLOBAL_CFLAGS := -std=c99
