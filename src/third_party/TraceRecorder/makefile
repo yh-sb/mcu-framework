@@ -1,15 +1,21 @@
-SRC += third_party/TraceRecorder/trcKernelPort.c
-SRC += third_party/TraceRecorder/trcSnapshotRecorder.c
-SRC += third_party/TraceRecorder/trcStreamingRecorder.c
-SRC += third_party/TraceRecorder/streamports/Jlink_RTT/SEGGER_RTT.c
-SRC += third_party/TraceRecorder/streamports/Jlink_RTT/trcStreamingPort.c
+-include ../../../header.mk
 
-INC += src/third_party/TraceRecorder/config
-INC += src/third_party/TraceRecorder/include
-INC += src/third_party/TraceRecorder/streamports/Jlink_RTT/include
+SRC := trcKernelPort.c \
+	trcSnapshotRecorder.c \
+	trcStreamingRecorder.c \
+	streamports/Jlink_RTT/SEGGER_RTT.c \
+	streamports/Jlink_RTT/trcStreamingPort.c
 
-DEF +=
+INC :=
 
-LIBDIR +=
-LIB +=
-LINKED_OBJ +=
+DEF :=
+C_CPP_FLAGS :=
+CFLAGS :=
+CPPFLAGS :=
+AFLAGS :=
+
+LIBDIR :=
+LIB :=
+LINKED_OBJ :=
+
+-include ../../../footer.mk

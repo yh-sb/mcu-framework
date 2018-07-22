@@ -1,10 +1,17 @@
-SRC += ul/fatfs_diskio/fatfs_diskio.cpp
-SRC += ul/fatfs_diskio/fatfs_diskio_sd.cpp
+-include ../../header.mk
 
-INC +=
+SRC := fatfs_diskio/fatfs_diskio.cpp \
+	fatfs_diskio/fatfs_diskio_sd.cpp
 
-DEF +=
+INC :=
+DEF :=
+C_CPP_FLAGS :=
+CFLAGS :=
+CPPFLAGS :=
+AFLAGS :=
 
-LIBDIR +=
-LIB +=
-LINKED_OBJ +=
+LIBDIR :=
+LIB :=
+LINKED_OBJ :=
+
+-include ../../footer.mk

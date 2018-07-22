@@ -1,8 +1,6 @@
--include ../../../header.mk
+-include ../header.mk
 
-SRC := ff.c \
-	ffsystem.c \
-	ffunicode.c
+SRC := main.cpp
 
 INC :=
 
@@ -16,4 +14,4 @@ LIBDIR :=
 LIB :=
 LINKED_OBJ :=
 
--include ../../../footer.mk
+-include ../footer.mk

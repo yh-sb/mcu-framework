@@ -1,14 +1,21 @@
-SRC += drv/di/di.cpp
-SRC += drv//enc/enc.cpp
-SRC += drv/1w/1w.cpp
-SRC += drv/ds18b20/ds18b20.cpp
-SRC += drv/sd/sd.cpp
-SRC += drv/sd/sd_spi.cpp
+-include ../../header.mk
 
-INC +=
+SRC := di/di.cpp \
+	enc/enc.cpp \
+	1w/1w.cpp \
+	ds18b20/ds18b20.cpp \
+	sd/sd.cpp \
+	sd/sd_spi.cpp
 
-DEF +=
+INC :=
+DEF :=
+C_CPP_FLAGS :=
+CFLAGS :=
+CPPFLAGS :=
+AFLAGS :=
 
-LIBDIR +=
-LIB +=
-LINKED_OBJ +=
+LIBDIR :=
+LIB :=
+LINKED_OBJ :=
+
+-include ../../footer.mk

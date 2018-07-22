@@ -1,18 +1,26 @@
-SRC += third_party/FreeRTOS/croutine.c
-SRC += third_party/FreeRTOS/event_groups.c
-SRC += third_party/FreeRTOS/list.c
-SRC += third_party/FreeRTOS/port.c
-SRC += third_party/FreeRTOS/queue.c
-SRC += third_party/FreeRTOS/stream_buffer.c
-SRC += third_party/FreeRTOS/tasks.c
-SRC += third_party/FreeRTOS/timers.c
-SRC += third_party/FreeRTOS/heap_4.c
-SRC += third_party/FreeRTOS/my_hooks.c
+-include ../../../header.mk
 
-INC += src/third_party/FreeRTOS/include
+SRC := croutine.c \
+	event_groups.c \
+	list.c \
+	port.c \
+	queue.c \
+	stream_buffer.c \
+	tasks.c \
+	timers.c \
+	heap_4.c \
+	my_hooks.c
 
-DEF +=
+INC :=
 
-LIBDIR +=
-LIB +=
-LINKED_OBJ +=
+DEF :=
+C_CPP_FLAGS :=
+CFLAGS :=
+CPPFLAGS :=
+AFLAGS :=
+
+LIBDIR :=
+LIB :=
+LINKED_OBJ :=
+
+-include ../../../footer.mk
