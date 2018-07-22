@@ -1,26 +1,26 @@
-SRC += hal/STM32F1/CMSIS/device-support/startup_stm32f100xb.s
-SRC += hal/STM32F1/CMSIS/device-support/system_stm32f1xx.c
-SRC += hal/STM32F1/CMSIS/syscalls.c
-SRC += hal/STM32F1/CMSIS/sys.c
-SRC += hal/STM32F1/dac.cpp
-SRC += hal/STM32F1/dma.cpp
-SRC += hal/STM32F1/exti.cpp
-SRC += hal/STM32F1/gpio.cpp
-SRC += hal/STM32F1/pwm.cpp
-SRC += hal/STM32F1/rcc.cpp
-SRC += hal/STM32F1/systick.cpp
-SRC += hal/STM32F1/tim.cpp
-SRC += hal/STM32F1/uart.cpp
-SRC += hal/STM32F1/wdt.cpp
+-include ../../../header.mk
 
-INC += src/hal/STM32F1
-INC += src/hal/STM32F1/CMSIS/core-support
-INC += src/hal/STM32F1/CMSIS/device-support/include
+SRC := dac.cpp \
+	dma.cpp \
+	exti.cpp \
+	gpio.cpp \
+	pwm.cpp \
+	rcc.cpp \
+	systick.cpp \
+	tim.cpp \
+	uart.cpp \
+	wdt.cpp
 
-DEF += STM32F100xB
-DEF += HSE_VALUE=8000000
-DEF += ARM_MATH_CM3
+INC :=
 
-LIBDIR += src/hal/STM32F1/CMSIS/lib
-LIB += arm_cortexM3l_math
-LINKED_OBJ +=
+DEF :=
+C_CPP_FLAGS := -Wno-unused-variable
+CFLAGS :=
+CPPFLAGS :=
+AFLAGS :=
+
+LIBDIR :=
+LIB :=
+LINKED_OBJ :=
+
+-include ../../../footer.mk
