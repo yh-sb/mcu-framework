@@ -111,8 +111,6 @@ static GPIO_TypeDef *const gpio_list[PORT_QTY] =
 
 static uart *obj_list[UART_END];
 
-static void gpio_af_init(uart_t uart, gpio &gpio);
-
 #if configUSE_TRACE_FACILITY
 static traceHandle isr_dma_tx, isr_dma_rx, isr_uart;
 #endif
