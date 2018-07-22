@@ -3,13 +3,13 @@
 SRC := croutine.c \
 	event_groups.c \
 	list.c \
-	port.c \
 	queue.c \
 	stream_buffer.c \
 	tasks.c \
 	timers.c \
 	heap_4.c \
-	my_hooks.c
+	my_hooks.c \
+	portable/ARM_CM4/port.c
 
 INC :=
 

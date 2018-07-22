@@ -1,5 +1,5 @@
-#include "third_party/FreeRTOS/include/FreeRTOS.h"
-#include "third_party/FreeRTOS/include/task.h"
+#include "include/FreeRTOS.h"
+#include "include/task.h"
 
 void vApplicationIdleHook(void)
 {

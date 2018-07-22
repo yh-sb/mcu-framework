@@ -23,6 +23,7 @@ GLOBAL_INC := $(ROOT)/src \
 	$(ROOT)/src/hal/STM32F4 \
 	$(ROOT)/src/hal/STM32F4/CMSIS/core-support \
 	$(ROOT)/src/third_party/FreeRTOS/include \
+	$(ROOT)/src/third_party/FreeRTOS/portable/ARM_CM4 \
 	$(ROOT)/src/third_party/TraceRecorder/include \
 	$(ROOT)/src/third_party/TraceRecorder/streamports/Jlink_RTT/include \
 	$(ROOT)/src/third_party/TraceRecorder/config
