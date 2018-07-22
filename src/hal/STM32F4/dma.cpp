@@ -76,8 +76,6 @@ static uint32_t const isr_shift_list[DMA_STREAM_END] =
 
 static dma *obj_list[DMA_END][DMA_STREAM_END];
 
-static void irq_hndlr(dma_t dma, dma_stream_t stream);
-
 dma::dma(dma_t dma, dma_stream_t stream, dma_ch_t ch, dma_dir_t dir,
 	dma_inc_size_t inc_size):
 	_dma(dma),

@@ -269,6 +269,8 @@ pwm::pwm(tim_t tim, pwm_ch_t ch, pwm_mode_t mode, gpio &gpio):
 			tim_list[_tim]->CCMR2 &= ~TIM_CCMR2_OC4M;
 			tim_list[_tim]->CCMR2 |= ccmr_reg_list[_ch][_mode];
 			break;
+		
+		default: ASSERT(0);
 	}
 	
 	/* Enable output for advanced timers */
@@ -308,6 +310,7 @@ void pwm::duty(uint8_t duty)
 		case PWM_CH_2: tim_list[_tim]->CCR2 = ccr; break;
 		case PWM_CH_3: tim_list[_tim]->CCR3 = ccr; break;
 		case PWM_CH_4: tim_list[_tim]->CCR4 = ccr; break;
+		default: ASSERT(0);
 	}
 }
 

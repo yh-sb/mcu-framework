@@ -107,7 +107,6 @@ int8_t sd::init()
 	if(res)
 		goto Exit;
 	
-	uint16_t retry_cnt;
 	if(r7[0] & R1_ILLEGAL_CMD)
 	{
 		/* If the CMD8 is rejected with illigal command error, the card is
@@ -499,24 +498,6 @@ static int8_t check_r1(uint32_t r1)
 		res = SD_ERR_UNSUPPORTED_CARD;
 	
 	return res;
-}
-
-static uint32_t calc_block_size(uint8_t *raw_csd, sd_card_t type)
-{
-	if(type == SD_CARD_SD_V2_STD_CAPACITY || type == SD_CARD_SD_V2_HI_CAPACITY)
-	{
-		return (16UL << (raw_csd[10] >> 4));
-	}
-	else if(type == SD_CARD_SD_V1_X)
-	{
-		return ((((raw_csd[10] & 63) << 1) + ((uint16_t)(raw_csd[11] & 128) >> 7) + 1) << ((raw_csd[13] >> 6) - 1));
-	}
-	else if(type == SD_CARD_MMC_V3)
-	{
-		return (((uint16_t)((raw_csd[10] & 124) >> 2) + 1) * (((raw_csd[11] & 3) << 3) + ((raw_csd[11] & 224) >> 5) + 1));
-	}
-	else
-		return 0;
 }
 
 static uint32_t get_block_count(sd_csd_t *csd)

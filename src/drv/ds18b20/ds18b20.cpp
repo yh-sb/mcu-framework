@@ -361,4 +361,6 @@ static float calc_temp(uint8_t temp_lsb, uint8_t temp_msb, uint8_t conf)
 		return (float)(temp >> 3) * 0.5;
 	else
 		ASSERT(0);
+
+	return 0;
 }
