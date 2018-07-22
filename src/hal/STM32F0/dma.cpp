@@ -75,8 +75,6 @@ static IRQn_Type const irq_list[DMA_END][DMA_CH_END] =
 
 static dma *obj_list[DMA_END][DMA_CH_END];
 
-static void irq_hndlr(dma_t dma, dma_ch_t ch);
-
 dma::dma(dma_t dma, dma_ch_t ch, dma_dir_t dir, dma_inc_size_t inc_size):
 	_dma(dma),
 	_ch(ch),
