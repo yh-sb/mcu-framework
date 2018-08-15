@@ -55,6 +55,10 @@ endif
 ifeq ($(FLASHER),ST-LINK_CLI)
 	$(FLASHER) -c swd -me
 endif
+ifeq ($(FLASHER),esptool)
+	$(FLASHER) $(ESPTOOL_PARAM) erase_flash
+#	$(FLASHER) $(ESPTOOL_PARAM) write_flash -fs 4m -ff 40m -fm qio 0x7C000 src/hal/ESP8266/ESP8266_RTOS_SDK/bin/esp_init_data_default.bin
+endif
 
 flash:
 ifeq ($(FLASHER),JLink)
@@ -70,6 +74,9 @@ ifeq ($(FLASHER),openocd)
 endif
 ifeq ($(FLASHER),ST-LINK_CLI)
 	$(FLASHER) -c swd -p $(BIN) 0x08000000 -v -rst
+endif
+ifeq ($(FLASHER),esptool)
+	$(FLASHER) $(ESPTOOL_PARAM) write_flash -fs 4m -ff 40m -fm qio 0x00000 $(BINDIR)/$(notdir $(CURDIR))-0x00000.bin 0x20000 $(BINDIR)/$(notdir $(CURDIR))-0x20000.bin
 endif
 
 reset:
