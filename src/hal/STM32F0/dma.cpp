@@ -356,7 +356,11 @@ extern "C" void dma_irq_hndlr(hal::dma *obj)
 	if((dma_ch->CCR & DMA_CCR_TCIE) && (isr & (DMA_ISR_TCIF1 << shift)))
 	{
 		*isr_clr_reg = DMA_IFCR_CTCIF1 << shift;
-		dma_ch->CCR &= ~DMA_CCR_EN;
+		
+		// Do not stop DMA because of it was started in circular mode
+		if(!(dma_ch->CCR & DMA_CCR_CIRC))
+			dma_ch->CCR &= ~DMA_CCR_EN;
+		
 		if(obj->_cb)
 			obj->_cb(obj, DMA_EVENT_CMPLT, obj->_ctx);
 	}
@@ -369,7 +373,11 @@ extern "C" void dma_irq_hndlr(hal::dma *obj)
 	else if((dma_ch->CCR & DMA_CCR_TEIE) && (isr & (DMA_ISR_TEIF1 << shift)))
 	{
 		*isr_clr_reg = DMA_IFCR_CTEIF1 << shift;
-		dma_ch->CCR &= ~DMA_CCR_EN;
+		
+		// Do not stop DMA because of it was started in circular mode
+		if(!(dma_ch->CCR & DMA_CCR_CIRC))
+			dma_ch->CCR &= ~DMA_CCR_EN;
+		
 		if(obj->_cb)
 			obj->_cb(obj, DMA_EVENT_ERROR, obj->_ctx);
 	}
