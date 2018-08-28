@@ -70,6 +70,8 @@ class spi
 		int8_t tx(uint8_t byte, gpio *cs = NULL);
 		int8_t rx(void *buff, uint16_t size, gpio *cs = NULL);
 		int8_t exch(void *buff_tx, void *buff_rx, uint16_t size, gpio *cs = NULL);
+		
+		spi &operator = (const spi &);
 	
 	private:
 		spi_t _spi;

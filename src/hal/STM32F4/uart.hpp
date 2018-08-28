@@ -3,8 +3,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "hal/STM32F4/gpio.hpp"
-#include "hal/STM32F4/dma.hpp"
+#include "gpio.hpp"
+#include "dma.hpp"
 
 #include "third_party/FreeRTOS/include/FreeRTOS.h"
 #include "third_party/FreeRTOS/include/semphr.h"

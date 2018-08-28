@@ -2,8 +2,8 @@
 
 #include <stdint.h>
 
-#include "hal/STM32F1/tim.hpp"
-#include "hal/STM32F1/gpio.hpp"
+#include "tim.hpp"
+#include "gpio.hpp"
 
 namespace hal
 {

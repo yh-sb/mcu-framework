@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 
-#include "hal/STM32F0/gpio.hpp"
+#include "gpio.hpp"
 
 namespace hal { class exti; }
 // For internal use only! (called from ISR)
@@ -29,6 +29,8 @@ class exti
 		void off();
 		void trigger(exti_trigger_t trigger);
 		exti_trigger_t trigger() const { return _trigger; }
+		
+		exti &operator = (const exti &);
 	
 	private:
 		gpio &_gpio;

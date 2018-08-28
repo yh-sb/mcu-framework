@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 
-#include "hal/STM32F4/gpio.hpp"
+#include "gpio.hpp"
 
 namespace hal
 {
