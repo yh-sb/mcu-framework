@@ -1,0 +1,75 @@
+MODULES := src/hal/ESP8266/ESP8266_RTOS_SDK
+
+ROOT := $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
+
+OUTDIR := $(ROOT)/out
+OBJDIR := $(OUTDIR)/obj$(patsubst $(abspath $(ROOT))%,%,$(CURDIR))
+BINDIR := $(OUTDIR)/bin
+
+ELF := $(BINDIR)/$(notdir $(CURDIR)).elf
+BIN := $(BINDIR)/$(notdir $(CURDIR)).bin
+MAP := $(OUTDIR)/$(notdir $(CURDIR)).map
+LSS := $(OUTDIR)/$(notdir $(CURDIR)).lss
+
+GLOBAL_INC := $(ROOT)/src
+
+GLOBAL_DEF :=
+
+GLOBAL_C_CPP_FLAGS := -O0 -g3 \
+	-Wall \
+	-ffunction-sections -fdata-sections \
+	-mlongcalls -mtext-section-literals
+	#-Wpointer-arith -fno-builtin-printf -fno-jump-tables
+
+GLOBAL_CFLAGS := -std=c99
+
+GLOBAL_CPPFLAGS := -std=c++11 \
+	-fno-exceptions -fno-rtti \
+	-fno-threadsafe-statics -fno-use-cxa-atexit -felide-constructors \
+	-fno-use-cxa-atexit
+
+GLOBAL_AFLAGS :=
+
+#LDFLAGS := LDFLAGS := -Tsrc/hal/ESP8266/esp8266.ld \
+#	-Tsrc/hal/ESP8266/esp8266.rom.ld \
+#	-Tsrc/hal/ESP8266/esp8266.common.ld \
+
+LDFLAGS := \
+	-Tsrc/hal/ESP8266/esp8266.ld \
+	-Tsrc/hal/ESP8266/esp8266.common.ld \
+	-Tsrc/hal/ESP8266/esp8266.rom.ld \
+	-Tsrc/hal/ESP8266/esp8266.peripherals.ld \
+	-u call_user_start \
+	-nostdlib \
+	-Wl,--gc-sections \
+	-Wl,-Map="$(MAP)",--cref
+	#-nostartfiles
+	#-Wl,-static
+
+CC := xtensa-lx106-elf-gcc
+CPP := xtensa-lx106-elf-g++
+AS := xtensa-lx106-elf-gcc -x assembler-with-cpp
+LD := xtensa-lx106-elf-gcc
+#OBJCOPY := xtensa-lx106-elf-objcopy
+OBJDUMP := xtensa-lx106-elf-objdump
+SIZE := xtensa-lx106-elf-size
+
+FLASHER := esptool
+
+ESPTOOL_PARAM := --port COM6 --baud 500000
+
+ifeq ($(OS),Windows_NT)
+define MKDIR
+	if not exist "$(1)" mkdir "$(1)"
+endef
+define RMDIR
+	if exist "$(1)" rmdir /s /q "$(1)"
+endef
+else
+define MKDIR
+	mkdir -p $(1)
+endef
+define RMDIR
+	rm -rf $(1)
+endef
+endif
