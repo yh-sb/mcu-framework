@@ -31,7 +31,8 @@ GLOBAL_INC := $(ROOT)/src \
 GLOBAL_DEF := STM32F100xB
 
 GLOBAL_C_CPP_FLAGS := -O0 -g3 \
-	-ffunction-sections -fdata-sections -Wall \
+	-Wall \
+	-ffunction-sections -fdata-sections \
 	-mcpu=cortex-m3 -mthumb
 
 GLOBAL_CFLAGS := -std=c99
