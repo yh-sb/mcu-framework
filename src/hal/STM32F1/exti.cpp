@@ -2,10 +2,10 @@
 
 #include "common/macros.h"
 
-#include "hal/STM32F1/exti.hpp"
-#include "hal/STM32F1/gpio.hpp"
+#include "exti.hpp"
+#include "gpio.hpp"
 
-#include "hal/STM32F1/CMSIS/device-support/include/stm32f1xx.h"
+#include "CMSIS/device-support/include/stm32f1xx.h"
 
 using namespace hal;
 

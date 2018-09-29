@@ -4,13 +4,13 @@
 
 #include "common/macros.h"
 
-#include "hal/STM32F1/uart.hpp"
-#include "hal/STM32F1/rcc.hpp"
-#include "hal/STM32F1/dma.hpp"
-#include "hal/STM32F1/gpio.hpp"
+#include "uart.hpp"
+#include "rcc.hpp"
+#include "dma.hpp"
+#include "gpio.hpp"
 
-#include "hal/STM32F1/CMSIS/device-support/include/stm32f1xx.h"
-#include "hal/STM32F1/CMSIS/core-support/cmsis_gcc.h"
+#include "CMSIS/device-support/include/stm32f1xx.h"
+#include "CMSIS/core-support/cmsis_gcc.h"
 
 #include "third_party/FreeRTOS/include/FreeRTOS.h"
 #include "third_party/FreeRTOS/include/semphr.h"

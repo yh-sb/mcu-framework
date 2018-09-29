@@ -2,10 +2,10 @@
 
 #include "common/macros.h"
 
-#include "hal/STM32F1/rcc.hpp"
+#include "rcc.hpp"
 
-#include "hal/STM32F1/CMSIS/device-support/include/stm32f1xx.h"
-#include "hal/STM32F1/CMSIS/device-support/include/system_stm32f1xx.h"
+#include "CMSIS/device-support/include/stm32f1xx.h"
+#include "CMSIS/device-support/include/system_stm32f1xx.h"
 
 extern uint32_t SystemCoreClock;
 

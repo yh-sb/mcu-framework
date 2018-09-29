@@ -2,12 +2,12 @@
 
 #include "common/macros.h"
 
-#include "hal/STM32F1/pwm.hpp"
-#include "hal/STM32F1/tim.hpp"
-#include "hal/STM32F1/rcc.hpp"
-#include "hal/STM32F1/gpio.hpp"
+#include "pwm.hpp"
+#include "tim.hpp"
+#include "rcc.hpp"
+#include "gpio.hpp"
 
-#include "hal/STM32F1/CMSIS/device-support/include/stm32f1xx.h"
+#include "CMSIS/device-support/include/stm32f1xx.h"
 
 using namespace hal;
 

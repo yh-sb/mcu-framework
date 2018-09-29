@@ -1,6 +1,7 @@
 -include ../../../header.mk
 
-SRC := dac.cpp \
+SRC := adc.cpp \
+	dac.cpp \
 	dma.cpp \
 	exti.cpp \
 	gpio.cpp \

@@ -2,10 +2,10 @@
 
 #include "common/macros.h"
 
-#include "hal/STM32F1/tim.hpp"
-#include "hal/STM32F1/rcc.hpp"
+#include "tim.hpp"
+#include "rcc.hpp"
 
-#include "hal/STM32F1/CMSIS/device-support/include/stm32f1xx.h"
+#include "CMSIS/device-support/include/stm32f1xx.h"
 
 using namespace hal;
 

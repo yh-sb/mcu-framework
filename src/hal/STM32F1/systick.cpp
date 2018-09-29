@@ -1,9 +1,9 @@
 #include "common/macros.h"
 
-#include "hal/STM32F1/systick.hpp"
-#include "hal/STM32F1/rcc.hpp"
+#include "systick.hpp"
+#include "rcc.hpp"
 
-#include "hal/STM32F1/CMSIS/device-support/include/stm32f1xx.h"
+#include "CMSIS/device-support/include/stm32f1xx.h"
 
 #include "third_party/FreeRTOS/include/FreeRTOS.h"
 #include "third_party/FreeRTOS/include/task.h"

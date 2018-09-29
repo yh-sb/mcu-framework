@@ -2,10 +2,10 @@
 
 #include "common/macros.h"
 
-#include "hal/STM32F1/dac.hpp"
-#include "hal/STM32F1/gpio.hpp"
+#include "dac.hpp"
+#include "gpio.hpp"
 
-#include "hal/STM32F1/CMSIS/device-support/include/stm32f1xx.h"
+#include "CMSIS/device-support/include/stm32f1xx.h"
 
 /* Only MCU listed below have the DAC periphery*/
 #if !defined(STM32F100xB) && !defined(STM32F100xE) && !defined(STM32F101xE) && \
