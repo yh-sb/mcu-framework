@@ -68,7 +68,7 @@ typedef enum
 class gpio
 {
 	public:
-		gpio(uint8_t port, uint8_t pin, gpio_mode_t mode, bool state);
+		gpio(uint8_t port, uint8_t pin, gpio_mode_t mode, bool state = false);
 		~gpio();
 		
 		void set(bool state) const;
