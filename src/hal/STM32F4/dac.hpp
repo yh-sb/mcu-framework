@@ -6,24 +6,23 @@
 
 namespace hal
 {
-typedef enum
-{
-	DAC_1,
-	DAC_2,
-	DAC_END
-} dac_t;
-
-typedef enum
-{
-	DAC_ALIGN_8_R,
-	DAC_ALIGN_12_R,
-	DAC_ALIGN_12_L
-} dac_align_t;
-
 class dac
 {
 	public:
-		dac(dac_t dac, dac_align_t align, gpio &gpio);
+		enum class dac_t
+		{
+			DAC_1,
+			DAC_2
+		};
+		
+		enum class align_t
+		{
+			ALIGN_8_R,
+			ALIGN_12_R,
+			ALIGN_12_L
+		};
+		
+		dac(dac_t dac, align_t align, gpio &gpio);
 		~dac();
 		
 		void set(uint16_t val) const;
@@ -32,7 +31,7 @@ class dac
 	
 	private:
 		dac_t _dac;
-		dac_align_t _align;
+		align_t _align;
 		gpio &_gpio;
 };
 }
