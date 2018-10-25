@@ -70,8 +70,8 @@ class i2c
 		void *rx_buff;
 		uint16_t rx_size;
 		
-		static void on_dma_tx(dma *dma, dma_event_t event, void *ctx);
-		static void on_dma_rx(dma *dma, dma_event_t event, void *ctx);
+		static void on_dma_tx(dma *dma, dma::event_t event, void *ctx);
+		static void on_dma_rx(dma *dma, dma::event_t event, void *ctx);
 		
 		friend void ::tx_hndlr(i2c *obj, BaseType_t *hi_task_woken);
 		friend void ::rx_hndlr(i2c *obj, BaseType_t *hi_task_woken);

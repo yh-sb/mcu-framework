@@ -185,10 +185,10 @@ i2c::i2c(i2c_t i2c, uint32_t baud, dma &dma_tx, dma &dma_rx, gpio &sda,
 {
 	ASSERT(_i2c < I2C_END && i2c_list[_i2c]);
 	ASSERT(_baud > 0 && _baud <= FAST_I2C_MAX_SPEED);
-	ASSERT(tx_dma.dir() == DMA_DIR_MEM_TO_PERIPH);
-	ASSERT(tx_dma.inc_size() == DMA_INC_SIZE_8);
-	ASSERT(rx_dma.dir() == DMA_DIR_PERIPH_TO_MEM);
-	ASSERT(rx_dma.inc_size() == DMA_INC_SIZE_8);
+	ASSERT(tx_dma.dir() == dma::dir_t::DIR_MEM_TO_PERIPH);
+	ASSERT(tx_dma.inc_size() == dma::inc_size_t::INC_SIZE_8);
+	ASSERT(rx_dma.dir() == dma::dir_t::DIR_PERIPH_TO_MEM);
+	ASSERT(rx_dma.inc_size() == dma::inc_size_t::INC_SIZE_8);
 	ASSERT(_sda.mode() == GPIO_MODE_AF);
 	ASSERT(_scl.mode() == GPIO_MODE_AF);
 	
@@ -437,9 +437,9 @@ static void calc_clk(i2c_t i2c, uint32_t baud, uint8_t *freq,
 	}
 }
 
-void i2c::on_dma_tx(dma *dma, dma_event_t event, void *ctx)
+void i2c::on_dma_tx(dma *dma, dma::event_t event, void *ctx)
 {
-	if(event == DMA_EVENT_HALF)
+	if(event == dma::event_t::EVENT_HALF)
 		return;
 #if configUSE_TRACE_FACILITY
 	vTraceStoreISRBegin(isr_dma_tx);
@@ -447,14 +447,14 @@ void i2c::on_dma_tx(dma *dma, dma_event_t event, void *ctx)
 	i2c *obj = static_cast<i2c *>(ctx);
 	BaseType_t hi_task_woken = 0;
 	
-	if(event == DMA_EVENT_CMPLT)
+	if(event == dma::event_t::EVENT_CMPLT)
 	{
 		// TODO: for debug
 		vTracePrint(ch1, "tx_hndlr");
 		
 		tx_hndlr(obj, &hi_task_woken);
 	}
-	else if(event == DMA_EVENT_ERROR)
+	else if(event == dma::event_t::EVENT_ERROR)
 	{
 		// TODO: for debug
 		vTracePrint(ch1, "err_hndlr");
@@ -466,9 +466,9 @@ void i2c::on_dma_tx(dma *dma, dma_event_t event, void *ctx)
 #endif
 }
 
-void i2c::on_dma_rx(dma *dma, dma_event_t event, void *ctx)
+void i2c::on_dma_rx(dma *dma, dma::event_t event, void *ctx)
 {
-	if(event == DMA_EVENT_HALF)
+	if(event == dma::event_t::EVENT_HALF)
 		return;
 #if configUSE_TRACE_FACILITY
 	vTraceStoreISRBegin(isr_dma_rx);
@@ -476,14 +476,14 @@ void i2c::on_dma_rx(dma *dma, dma_event_t event, void *ctx)
 	i2c *obj = static_cast<i2c *>(ctx);
 	BaseType_t hi_task_woken = 0;
 	
-	if(event == DMA_EVENT_CMPLT)
+	if(event == dma::event_t::EVENT_CMPLT)
 	{
 		// TODO: for debug
 		vTracePrint(ch1, "rx_hndlr");
 		
 		rx_hndlr(obj, &hi_task_woken);
 	}
-	else if(event == DMA_EVENT_ERROR)
+	else if(event == dma::event_t::EVENT_ERROR)
 	{
 		// TODO: for debug
 		vTracePrint(ch1, "err_hndlr");

@@ -286,10 +286,10 @@ uart::uart(uart_t uart, uint32_t baud, uart_stopbit_t stopbit,
 {
 	ASSERT(_uart < UART_END && uart_list[_uart]);
 	ASSERT(_baud > 0);
-	ASSERT(tx_dma.dir() == DMA_DIR_MEM_TO_PERIPH);
-	ASSERT(tx_dma.inc_size() == DMA_INC_SIZE_8);
-	ASSERT(rx_dma.dir() == DMA_DIR_PERIPH_TO_MEM);
-	ASSERT(rx_dma.inc_size() == DMA_INC_SIZE_8);
+	ASSERT(tx_dma.dir() == dma::dir_t::DIR_MEM_TO_PERIPH);
+	ASSERT(tx_dma.inc_size() == dma::inc_size_t::INC_SIZE_8);
+	ASSERT(rx_dma.dir() == dma::dir_t::DIR_PERIPH_TO_MEM);
+	ASSERT(rx_dma.inc_size() == dma::inc_size_t::INC_SIZE_8);
 	ASSERT(tx_gpio.mode() == GPIO_MODE_AF);
 	ASSERT(rx_gpio.mode() == GPIO_MODE_AF);
 	
@@ -528,18 +528,18 @@ static void gpio_af_init(uart_t uart, gpio &gpio)
 	}
 }
 
-void uart::on_dma_tx(dma *dma, dma_event_t event, void *ctx)
+void uart::on_dma_tx(dma *dma, dma::event_t event, void *ctx)
 {
-	if(event == DMA_EVENT_HALF)
+	if(event == dma::event_t::EVENT_HALF)
 		return;
 #if configUSE_TRACE_FACILITY
 	vTraceStoreISRBegin(isr_dma_tx);
 #endif
 	uart *obj = static_cast<uart *>(ctx);
 	
-	if(event == DMA_EVENT_CMPLT)
+	if(event == dma::event_t::EVENT_CMPLT)
 		obj->tx_irq_res = UART_ERR_NONE;
-	else if(event == DMA_EVENT_ERROR)
+	else if(event == dma::event_t::EVENT_ERROR)
 		obj->tx_irq_res = UART_ERR_TX_FAIL;
 	
 	BaseType_t hi_task_woken = 0;
@@ -550,9 +550,9 @@ void uart::on_dma_tx(dma *dma, dma_event_t event, void *ctx)
 	portYIELD_FROM_ISR(hi_task_woken);
 }
 
-void uart::on_dma_rx(dma *dma, dma_event_t event, void *ctx)
+void uart::on_dma_rx(dma *dma, dma::event_t event, void *ctx)
 {
-	if(event == DMA_EVENT_HALF)
+	if(event == dma::event_t::EVENT_HALF)
 		return;
 #if configUSE_TRACE_FACILITY
 	vTraceStoreISRBegin(isr_dma_rx);
@@ -566,9 +566,9 @@ void uart::on_dma_rx(dma *dma, dma_event_t event, void *ctx)
 	uint32_t dr = uart->DR;
 	NVIC_ClearPendingIRQ(irq_list[obj->_uart]);
 	
-	if(event == DMA_EVENT_CMPLT)
+	if(event == dma::event_t::EVENT_CMPLT)
 		obj->rx_irq_res = UART_ERR_NONE;
-	else if(event == DMA_EVENT_ERROR)
+	else if(event == dma::event_t::EVENT_ERROR)
 		obj->rx_irq_res = UART_ERR_RX_FAIL;
 	/* Rx buffer has partly filled (package has received) or Rx buffer has
 	totally filled */
