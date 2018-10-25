@@ -99,9 +99,6 @@ dma::dma(dma_t dma, stream_t stream, ch_t ch, dir_t dir, inc_size_t inc_size):
 	_ctx(NULL),
 	_cb(NULL)
 {
-	ASSERT(_dma < dma_t::DMA_END);
-	ASSERT(_stream < stream_t::STREAM_END);
-	ASSERT(_ch < ch_t::CH_END);
 	/* Only DMA2 is able to perform memory-to-memory transfers */
 	ASSERT(_dir != dir_t::DIR_MEM_TO_MEM || _dma != dma_t::DMA_1);
 	
