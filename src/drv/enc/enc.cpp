@@ -1,6 +1,6 @@
 #include <stddef.h>
 
-#include "common/macros.h"
+#include "common/assert.h"
 #include "enc.hpp"
 
 using namespace drv;

@@ -1,4 +1,4 @@
-#include "common/macros.h"
+#include "common/assert.h"
 
 #include "wdt.hpp"
 #include "rcc.hpp"

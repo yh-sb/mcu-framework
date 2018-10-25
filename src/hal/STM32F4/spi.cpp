@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "common/macros.h"
+#include "common/assert.h"
 
 #include "hal/STM32F4/spi.hpp"
 #include "hal/STM32F4/rcc.hpp"

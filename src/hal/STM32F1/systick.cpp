@@ -1,5 +1,3 @@
-#include "common/macros.h"
-
 #include "systick.hpp"
 #include "rcc.hpp"
 

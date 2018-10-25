@@ -1,6 +1,6 @@
 #include <stdint.h>
 
-#include "common/macros.h"
+#include "common/assert.h"
 
 #include "hal/STM32F4/rcc.hpp"
 

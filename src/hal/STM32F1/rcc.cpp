@@ -1,7 +1,5 @@
 #include <stdint.h>
 
-#include "common/macros.h"
-
 #include "rcc.hpp"
 
 #include "CMSIS/device-support/include/stm32f1xx.h"

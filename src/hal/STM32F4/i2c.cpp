@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "common/macros.h"
+#include "common/assert.h"
 
 #include "hal/STM32F4/i2c.hpp"
 #include "hal/STM32F4/rcc.hpp"
@@ -16,6 +16,10 @@
 #include "third_party/FreeRTOS/include/semphr.h"
 
 using namespace hal;
+
+#ifndef MAX
+#define MAX(a,b) ((a) > (b) ? (a):(b))
+#endif
 
 #define IRQ_PRIORITY 3
 #define STANDARD_I2C_MAX_SPEED 100000 /* bps */

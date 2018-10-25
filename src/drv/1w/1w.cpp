@@ -1,7 +1,7 @@
 #include <stddef.h>
 #include <cstring>
 
-#include "common/macros.h"
+#include "common/assert.h"
 #include "1w.hpp"
 
 using namespace drv;

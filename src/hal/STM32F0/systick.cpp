@@ -1,5 +1,3 @@
-#include "common/macros.h"
-
 #include "hal/STM32F0/systick.hpp"
 #include "hal/STM32F0/rcc.hpp"
 

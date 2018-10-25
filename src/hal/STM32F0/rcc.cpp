@@ -1,7 +1,5 @@
 #include <stdint.h>
 
-#include "common/macros.h"
-
 #include "hal/STM32F0/rcc.hpp"
 
 //#include "hal/STM32F4/CMSIS/core-support/core_cm4.h"

@@ -1,4 +1,4 @@
-#include "common/macros.h"
+#include "common/assert.h"
 
 #include "hal/STM32F4/wdt.hpp"
 #include "hal/STM32F4/rcc.hpp"

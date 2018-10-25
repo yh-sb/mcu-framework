@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "common/macros.h"
+#include "common/assert.h"
 
 #include "uart.hpp"
 #include "rcc.hpp"

@@ -1,6 +1,6 @@
 -include ../../header.mk
 
-SRC := macros.c
+SRC := assert.c
 INC :=
 DEF :=
 C_CPP_FLAGS :=

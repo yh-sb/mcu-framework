@@ -1,7 +1,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "common/macros.h"
+#include "common/assert.h"
 
 #include "adc.hpp"
 #include "rcc.hpp"

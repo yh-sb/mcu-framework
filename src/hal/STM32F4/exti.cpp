@@ -1,6 +1,6 @@
 #include <stddef.h>
 
-#include "common/macros.h"
+#include "common/assert.h"
 
 #include "hal/STM32F4/exti.hpp"
 #include "hal/STM32F4/gpio.hpp"
