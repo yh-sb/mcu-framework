@@ -50,7 +50,7 @@ static int8_t decode_csd(uint8_t *raw_csd, sd_csd_t *csd, sd_card_t type);
 sd::sd(gpio *cd):
 	_cd(cd)
 {
-	ASSERT(!_cd || _cd->mode() == GPIO_MODE_DI);
+	ASSERT(!_cd || _cd->mode() == gpio::mode::DI);
 	
 	memset(&_info, 0, sizeof(_info));
 	

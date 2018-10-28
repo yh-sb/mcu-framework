@@ -123,7 +123,7 @@ exti::exti(gpio &gpio, trigger_t trigger):
 	_ctx(NULL),
 	_cb(NULL)
 {
-	ASSERT(_gpio.mode() == GPIO_MODE_DI);
+	ASSERT(_gpio.mode() == gpio::mode::DI);
 	
 	gpio_af_init(_gpio);
 	
