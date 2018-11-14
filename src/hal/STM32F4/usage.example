@@ -1,0 +1,94 @@
+// There are examples from old version of embedded framework
+// Need to rewrite these examples to existing C++ implementation
+
+--------------------------------------------------------------------------------
+
+/* UART usage */
+
+static hal_gpio_t uart3_tx_gpio, uart3_rx_gpio;
+static hal_dma_t uart3_tx_dma, uart3_rx_dma;
+static hal_uart_t uart3;
+
+hal_gpio_init(&uart3_tx_gpio, 3, 8, HAL_GPIO_MODE_AF, 0);
+hal_gpio_init(&uart3_rx_gpio, 1, 11, HAL_GPIO_MODE_AF, 0);
+hal_dma_init(&uart3_tx_dma, HAL_DMA_1, HAL_DMA_STREAM_3, HAL_DMA_CH_4,
+	HAL_DMA_DIR_MEM_TO_PERIPH, HAL_DMA_INC_SIZE_8);
+hal_dma_init(&uart3_rx_dma, HAL_DMA_1, HAL_DMA_STREAM_1, HAL_DMA_CH_4,
+	HAL_DMA_DIR_PERIPH_TO_MEM, HAL_DMA_INC_SIZE_8);
+hal_uart_init(&uart3, HAL_UART_3, 115200, HAL_UART_STOPBIT_1,
+	HAL_UART_PRTY_NONE, &uart3_tx_dma, &uart3_rx_dma,
+	&uart3_tx_gpio, &uart3_rx_gpio);
+...
+	uint8_t buff[20];
+	uint16_t size = 20;
+	if(hal_uart_rx(&uart3, buff, &size, 1000))
+		hal_uart_tx(&uart3, "rx 1s fail", strlen("rx 1s fail"));
+
+--------------------------------------------------------------------------------
+
+/* SPI usage */
+
+static hal_gpio_t spi1_mosi, spi1_miso, spi1_clk, lis302_cs;
+static hal_dma_t spi1_rx_dma, spi1_tx_dma;
+static hal_spi_t spi1;
+
+hal_gpio_init(&spi1_mosi, 0, 7, HAL_GPIO_MODE_AF, 0);
+hal_gpio_init(&spi1_miso, 0, 6, HAL_GPIO_MODE_AF, 0);
+hal_gpio_init(&spi1_clk, 0, 5, HAL_GPIO_MODE_AF, 0);
+hal_gpio_init(&lis302_cs, 4, 3, HAL_GPIO_MODE_DO, 1);
+hal_dma_init(&spi1_tx_dma, HAL_DMA_2, HAL_DMA_STREAM_3, HAL_DMA_CH_3,
+	HAL_DMA_DIR_MEM_TO_PERIPH, HAL_DMA_INC_SIZE_8);
+hal_dma_init(&spi1_rx_dma, HAL_DMA_2, HAL_DMA_STREAM_0, HAL_DMA_CH_3,
+	HAL_DMA_DIR_PERIPH_TO_MEM, HAL_DMA_INC_SIZE_8);
+hal_spi_init(&spi1, HAL_SPI_1, 10000000, HAL_SPI_CPOL_0, HAL_SPI_CPHA_0,
+	HAL_SPI_BIT_ORDER_MSB, &spi1_tx_dma, &spi1_rx_dma, &spi1_mosi, &spi1_miso,
+	&spi1_clk);
+...
+	uint8_t tx_buff[5] = {0xF0, 0xF1, 0xF2, 0xF3, 0xF4};
+	uint8_t rx_buff[5];
+	int8_t res = hal_spi_exch(&spi1, tx_buff, rx_buff, sizeof(tx_buff), &lis302_cs);
+
+--------------------------------------------------------------------------------
+
+/* I2C usage */
+
+static hal_gpio_t i2c1_sda, i2c1_scl;
+static hal_dma_t i2c1_tx_dma, i2c1_rx_dma;
+static hal_i2c_t i2c_lis302;
+
+hal_gpio_init(&i2c1_sda, 1, 9, HAL_GPIO_MODE_AF, 0);
+hal_gpio_init(&i2c1_scl, 1, 6, HAL_GPIO_MODE_AF, 0);
+hal_dma_init(&i2c1_tx_dma, HAL_DMA_1, HAL_DMA_STREAM_6, HAL_DMA_CH_1,
+	HAL_DMA_DIR_MEM_TO_PERIPH, HAL_DMA_INC_SIZE_8);
+hal_dma_init(&i2c1_rx_dma, HAL_DMA_1, HAL_DMA_STREAM_0, HAL_DMA_CH_3,
+	HAL_DMA_DIR_PERIPH_TO_MEM, HAL_DMA_INC_SIZE_8);
+hal_i2c_init(&i2c_lis302, HAL_I2C_1, 100000, &i2c1_tx_dma, &i2c1_rx_dma,
+	&i2c1_sda, &i2c1_scl);
+...
+	uint8_t tx_buff[5] = {0xF0, 0xF1, 0xF2, 0xF3, 0xF4};
+	uint8_t rx_buff[5];
+	int8_t res = hal_i2c_exch(&i2c_lis302, 11, tx_buff, sizeof(tx_buff),
+		rx_buff, sizeof(rx_buff));
+
+--------------------------------------------------------------------------------
+
+/* PWM usage */
+
+static hal_gpio_t pwm2_ch2_gpio;
+static hal_pwm_t pwm2_ch2;
+
+hal_gpio_init(&pwm2_ch2_gpio, 0, 1, HAL_GPIO_MODE_AF, 0);
+hal_pwm_init(&pwm2_ch2, HAL_TIM_2, HAL_PWM_CH_2, HAL_PWM_MODE_NONINVERTED,
+	&pwm2_ch2_gpio);
+
+--------------------------------------------------------------------------------
+
+/* DAC usage */
+
+static hal_gpio_t dac1_gpio;
+static hal_dac_t dac1;
+
+hal_gpio_init(&dac1_gpio, 0, 4, HAL_GPIO_MODE_AN, 0);
+hal_dac_init(&dac1, HAL_DAC_1, HAL_DAC_ALIGN_12_R, 0, &dac1_gpio);
+
+--------------------------------------------------------------------------------
