@@ -46,10 +46,10 @@ LDFLAGS := \
 	#-nostartfiles
 	#-Wl,-static
 
-CC := xtensa-lx106-elf-gcc
-CPP := xtensa-lx106-elf-g++
-AS := xtensa-lx106-elf-gcc -x assembler-with-cpp
-LD := xtensa-lx106-elf-gcc
+CC := xtensa-lx106-elf-gcc-5.2.0
+CPP := xtensa-lx106-elf-gcc-5.2.0
+AS := xtensa-lx106-elf-gcc-5.2.0 -x assembler-with-cpp
+LD := xtensa-lx106-elf-gcc-5.2.0
 #OBJCOPY := xtensa-lx106-elf-objcopy
 OBJDUMP := xtensa-lx106-elf-objdump
 SIZE := xtensa-lx106-elf-size
