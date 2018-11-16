@@ -75,13 +75,13 @@ static exti *obj_list[PIN_QTY];
 
 static void gpio_af_init(gpio &gpio);
 
-exti::exti(gpio &gpio, exti_trigger_t trigger):
+exti::exti(gpio &gpio, enum trigger trigger):
 	_gpio(gpio),
 	_trigger(trigger),
 	_ctx(NULL),
 	_cb(NULL)
 {
-	ASSERT(_gpio.mode() == GPIO_MODE_DI);
+	ASSERT(_gpio.mode() == gpio::mode::DI);
 	
 	gpio_af_init(_gpio);
 	
@@ -102,9 +102,9 @@ exti::exti(gpio &gpio, exti_trigger_t trigger):
 	/* Setup EXTI trigger */
 	EXTI->RTSR &= ~line_bit;
 	EXTI->FTSR &= ~line_bit;
-	if(_trigger == EXTI_TRIGGER_RISING)
+	if(_trigger == trigger::RISING)
 		EXTI->RTSR |= line_bit;
-	else if(_trigger == EXTI_TRIGGER_FALLING)
+	else if(_trigger == trigger::FALLING)
 		EXTI->FTSR |= line_bit;
 	else
 	{
@@ -149,13 +149,13 @@ void exti::off()
 	EXTI->IMR &= ~(1 << _gpio.pin());
 }
 
-void exti::trigger(exti_trigger_t trigger)
+void exti::trigger(enum trigger trigger)
 {
 	_trigger = trigger;
 	uint32_t line_bit = 1 << _gpio.pin();
-	if(_trigger == EXTI_TRIGGER_RISING)
+	if(_trigger == trigger::RISING)
 		EXTI->RTSR |= line_bit;
-	else if(_trigger == EXTI_TRIGGER_FALLING)
+	else if(_trigger == trigger::FALLING)
 		EXTI->FTSR |= line_bit;
 	else
 	{
