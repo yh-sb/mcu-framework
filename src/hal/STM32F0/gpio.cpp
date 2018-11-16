@@ -107,7 +107,7 @@ gpio::gpio(uint8_t port, uint8_t pin, enum mode mode, bool state):
 	}
 	
 	/* Setup default state */
-	if(_mode == GPIO_MODE_DO || _mode == GPIO_MODE_OD)
+	if(_mode == mode::DO || _mode == mode::OD)
 		gpio->BSRR =  1 << (state ? _pin : _pin + 16);
 }
 
