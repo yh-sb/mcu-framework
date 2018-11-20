@@ -261,7 +261,6 @@ void tim::us(uint32_t us)
 void tim::start_once(tim_cb_t cb, void *ctx)
 {
 	ASSERT(_us > 0);
-	ASSERT(cb);
 	/* This action allowed only when TIM is disabled */
 	ASSERT(!(tim_list[_tim]->CR1 & TIM_CR1_CEN));
 	
