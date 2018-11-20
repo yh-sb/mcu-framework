@@ -21,8 +21,8 @@ using namespace hal;
 
 #define V_REF (float)3.3
 
-dac::dac(dac_t dac, align_t align, gpio &gpio):
-	_dac(dac),
+dac::dac(periph periph, align align, gpio &gpio):
+	_periph(periph),
 	_align(align),
 	_gpio(gpio)
 {
@@ -34,7 +34,7 @@ dac::dac(dac_t dac, align_t align, gpio &gpio):
 	tmp_cr &= ~(DAC_CR_EN1 | DAC_CR_TSEL1 | DAC_CR_WAVE1 | DAC_CR_DMAEN1 |
 		DAC_CR_BOFF1);
 	
-	DAC->CR = tmp_cr << ((_dac == dac_t::DAC_1) ? 0 : 16);
+	DAC->CR = tmp_cr << ((_periph == periph::DAC_1) ? 0 : 16);
 }
 
 dac::~dac()
@@ -45,13 +45,13 @@ dac::~dac()
 void dac::set(uint16_t val) const
 {
 	ASSERT(val < 4096);
-	ASSERT(val < 256 || _align != align_t::ALIGN_8_R);
+	ASSERT(val < 256 || _align != align::R_8);
 	
-	if(_dac == dac_t::DAC_1)
+	if(_periph == periph::DAC_1)
 	{
-		if(_align == align_t::ALIGN_8_R)
+		if(_align == align::R_8)
 			DAC->DHR8R1 = val;
-		else if(_align == align_t::ALIGN_12_R)
+		else if(_align == align::R_12)
 			DAC->DHR12R1 = val;
 		else
 			DAC->DHR12L1 = val;
@@ -59,9 +59,9 @@ void dac::set(uint16_t val) const
 	}
 	else
 	{
-		if(_align == align_t::ALIGN_8_R)
+		if(_align == align::R_8)
 			DAC->DHR8R2 = val;
-		else if(_align == align_t::ALIGN_12_R)
+		else if(_align == align::R_12)
 			DAC->DHR12R2 = val;
 		else
 			DAC->DHR12L2 = val;
@@ -75,7 +75,7 @@ void dac::set(float voltage) const
 	
 	uint16_t code = 0;
 	
-	if(_align == align_t::ALIGN_8_R)
+	if(_align == align::R_8)
 		code = (uint16_t)((voltage / V_REF) * 255);
 	else
 		code = (uint16_t)((voltage / V_REF) * 4095);
@@ -85,5 +85,5 @@ void dac::set(float voltage) const
 
 uint16_t dac::get() const
 {
-	return (_dac == dac_t::DAC_1) ? (uint16_t)DAC->DOR1 : (uint16_t)DAC->DOR2;
+	return (_periph == periph::DAC_1) ? (uint16_t)DAC->DOR1 : (uint16_t)DAC->DOR2;
 }
