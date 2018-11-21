@@ -3,7 +3,7 @@
 	"configurations":
 	[
 		{
-			"name": "omf",
+			"name": "omef",
 			"type": "cppdbg",
 			"request": "launch",
 			"program": "${workspaceFolder}/out/bin/${workspaceRootFolderName}.elf",
@@ -11,24 +11,24 @@
 			"args": ["--interpreter=mi *.elf"],
 			"stopAtEntry": true,
 			"cwd": "${workspaceFolder}",
-			"externalConsole": false,
+			"externalConsole": true,
 			"MIMode": "gdb",
 			"setupCommands":
 			[
 				{
 					"description": "Connect GDB to GDB server",
 					"text": "target remote localhost:2331",
-					"ignoreFailures": false
+					"ignoreFailures": true
 				},
 				{
 					"description": "Reset target to get to a known state",
 					"text": "monitor reset",
-					"ignoreFailures": false
+					"ignoreFailures": true
 				},
 				{
 					"description": "Halt target to get to a known state",
 					"text": "monitor halt",
-					"ignoreFailures": false
+					"ignoreFailures": true
 				}
 			]
 		}
