@@ -5,7 +5,8 @@ SRC := di/di.cpp \
 	1w/1w.cpp \
 	ds18b20/ds18b20.cpp \
 	sd/sd.cpp \
-	sd/sd_spi.cpp
+	sd/sd_spi.cpp \
+	hd44780/hd44780.cpp
 
 INC :=
 DEF :=
