@@ -193,6 +193,9 @@ void tim::us(uint32_t us)
 	
 	tim_list[_tim]->PSC = presc;
 	tim_list[_tim]->ARR = reload;
+	
+	// Update ARR, PSC and clear CNT register
+	tim_list[_tim]->EGR = TIM_EGR_UG;
 }
 
 void tim::start_once(tim_cb_t cb, void *ctx)
@@ -204,7 +207,7 @@ void tim::start_once(tim_cb_t cb, void *ctx)
 	
 	_cb = cb;
 	_ctx = ctx;
-	tim_list[_tim]->CNT = 0;
+	
 	tim_list[_tim]->CR1 |= TIM_CR1_OPM | TIM_CR1_CEN;
 }
 
