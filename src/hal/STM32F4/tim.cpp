@@ -256,6 +256,9 @@ void tim::us(uint32_t us)
 	
 	tim_list[_tim]->PSC = presc;
 	tim_list[_tim]->ARR = reload;
+	
+	// Update ARR, PSC and clear CNT register
+	tim_list[_tim]->EGR = TIM_EGR_UG;
 }
 
 void tim::start_once(tim_cb_t cb, void *ctx)
