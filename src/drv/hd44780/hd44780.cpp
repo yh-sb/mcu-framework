@@ -24,12 +24,6 @@ enum cmd_t
 	FUNCTION_SET                   = 1 << 5,
 	SET_CGRAM_ADDRESS              = 1 << 6,
 	SET_DDRAM_ADDRESS              = 1 << 7
-	
-	/* Read only command or command which doesn't require data lines
-	READ_BUSY_FLAG_AND_ADDRESS (RW = 1)
-	WRITE_DATA_TO_ADDRESS      (RW = 0)
-	READ_DATA_FROM_RAM         (RW = 1, RS = 1)
-	*/
 };
 
 // Bits for ENTRY_MODE_SET command
@@ -80,7 +74,7 @@ hd44780::hd44780(gpio &rs, gpio &rw, gpio &e, gpio &db4, gpio &db5, gpio &db6,
 	ASSERT(_rw.mode() == gpio::mode::DO);
 	ASSERT(_rs.mode() == gpio::mode::DO);
 	
-	for(uint8_t i = 4; (i < sizeof(_db)/sizeof(_db[0])) && _db[i]; i++)
+	for(uint8_t i = 0; i < (sizeof(_db) / sizeof(_db[0])); i++)
 		ASSERT(_db[i]->mode() == gpio::mode::DO);
 	
 	_lock = xSemaphoreCreateBinary();
