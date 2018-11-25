@@ -74,8 +74,7 @@ hd44780::hd44780(gpio &rs, gpio &rw, gpio &e, gpio &db4, gpio &db5, gpio &db6,
 	_rw(rw),
 	_e(e),
 	_db{&db4, &db5, &db6, &db7},
-	_tim(tim),
-	_ddram_addr(0)
+	_tim(tim)
 {
 	ASSERT(_e.mode() == gpio::mode::DO);
 	ASSERT(_rw.mode() == gpio::mode::DO);
@@ -134,9 +133,12 @@ void hd44780::ddram_addr(uint8_t addr)
 	ASSERT((addr >= DDRAM1_MIN_ADDR && addr <= DDRAM1_MAX_ADDR) ||
 		(addr >= DDRAM2_MIN_ADDR && addr <= DDRAM2_MAX_ADDR));
 	
-	_ddram_addr = addr;
-	
-	write(CMD, SET_DDRAM_ADDRESS | _ddram_addr);
+	write(CMD, SET_DDRAM_ADDRESS | addr);
+}
+
+uint8_t hd44780::ddram_addr()
+{
+	return read_bf_and_ddram_addr() & 0b01111111;
 }
 
 void hd44780::clear()

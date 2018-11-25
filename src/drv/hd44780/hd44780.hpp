@@ -25,7 +25,7 @@ class hd44780
 		void print(char byte);
 		
 		void ddram_addr(uint8_t addr);
-		uint8_t ddram_addr() const { return _ddram_addr; }
+		uint8_t ddram_addr();
 		
 		void clear();
 		
@@ -36,7 +36,6 @@ class hd44780
 		hal::gpio *_db[4];
 		hal::tim &_tim;
 		
-		uint8_t _ddram_addr;
 		SemaphoreHandle_t _lock;
 		
 		enum write_t
