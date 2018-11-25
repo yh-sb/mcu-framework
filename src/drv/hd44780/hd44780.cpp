@@ -145,6 +145,23 @@ void hd44780::clear()
 	delay(6200); // OLED display requires 6,2 ms rather than 1,53 ms
 }
 
+uint8_t hd44780::read_bf_and_ddram_addr()
+{
+	_rw.set(1);
+	_rs.set(0);
+	
+	for(uint8_t i = 0; i < (sizeof(_db) / sizeof(_db[0])); i++)
+		_db[i]->mode(gpio::mode::DI);
+	
+	uint8_t byte = read_4bit() << 4;
+	byte |= read_4bit();
+	
+	for(uint8_t i = 0; i < (sizeof(_db) / sizeof(_db[0])); i++)
+		_db[i]->mode(gpio::mode::DO);
+	
+	return byte;
+}
+
 void hd44780::write_4bit(uint8_t half_byte)
 {
 	for(uint8_t i = 0; i < 4; i++)
@@ -163,6 +180,25 @@ void hd44780::write(write_t type, uint8_t byte)
 	
 	write_4bit(byte >> 4);
 	write_4bit(byte);
+}
+
+uint8_t hd44780::read_4bit()
+{
+	uint8_t half_byte = 0;
+	
+	_e.set(1);
+	delay(40);
+	
+	for(uint8_t i = 0; i < 4; i++)
+	{
+		if(_db[i]->get())
+			half_byte |= 1 << i;
+	}
+	
+	_e.set(0);
+	delay(40);
+	
+	return half_byte;
 }
 
 static void tim_cb(tim *tim, void *ctx)

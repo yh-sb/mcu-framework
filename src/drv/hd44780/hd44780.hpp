@@ -47,6 +47,10 @@ class hd44780
 		
 		void write_4bit(uint8_t half_byte);
 		void write(write_t type, uint8_t byte);
+		
+		uint8_t read_4bit();
+		uint8_t read_bf_and_ddram_addr();
+		
 		void delay(uint32_t us);
 };
 }
