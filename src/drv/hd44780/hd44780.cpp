@@ -3,9 +3,6 @@
 #include "common/assert.h"
 #include "hd44780.hpp"
 
-#include "third_party/FreeRTOS/include/FreeRTOS.h"
-#include "third_party/FreeRTOS/include/task.h"
-
 using namespace drv;
 using namespace hal;
 
