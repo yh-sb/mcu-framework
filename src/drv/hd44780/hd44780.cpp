@@ -134,6 +134,8 @@ void hd44780::ddram_addr(uint8_t addr)
 
 uint8_t hd44780::ddram_addr()
 {
+	// 7   bit  - busy flag
+	// 0:6 bits - ddram/cgram address
 	return read_bf_and_ddram_addr() & 0b01111111;
 }
 
@@ -180,8 +182,14 @@ void hd44780::read_cgram(uint8_t buff[64])
 	
 	write(CMD, SET_DDRAM_ADDRESS | old_addr);
 }
+
+uint8_t hd44780::read_bf_and_ddram_addr()
+{
 	for(uint8_t i = 0; i < (sizeof(_db) / sizeof(_db[0])); i++)
 		_db[i]->mode(gpio::mode::DI);
+	
+	_rw.set(1);
+	_rs.set(0);
 	
 	uint8_t byte = read_4bit() << 4;
 	byte |= read_4bit();
@@ -198,9 +206,9 @@ void hd44780::write_4bit(uint8_t half_byte)
 		_db[i]->set((half_byte >> i) & 1);
 	
 	_e.set(1);
-	delay(40);
+	delay(STROB_DELAY);
 	_e.set(0);
-	delay(40);
+	delay(STROB_DELAY);
 }
 
 void hd44780::write(write_t type, uint8_t byte)
@@ -217,7 +225,7 @@ uint8_t hd44780::read_4bit()
 	uint8_t half_byte = 0;
 	
 	_e.set(1);
-	delay(40);
+	delay(STROB_DELAY);
 	
 	for(uint8_t i = 0; i < 4; i++)
 	{
@@ -226,7 +234,7 @@ uint8_t hd44780::read_4bit()
 	}
 	
 	_e.set(0);
-	delay(40);
+	delay(STROB_DELAY);
 	
 	return half_byte;
 }
