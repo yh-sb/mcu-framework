@@ -14,6 +14,8 @@ using namespace hal;
 #define DDRAM2_MIN_ADDR 64
 #define DDRAM2_MAX_ADDR 103
 
+#define STROB_DELAY 37 // us
+
 enum cmd_t
 {
 	CLEAR_DISPLAY                  = 1 << 0,
@@ -141,11 +143,43 @@ void hd44780::clear()
 	delay(6200); // OLED display requires 6,2 ms rather than 1,53 ms
 }
 
-uint8_t hd44780::read_bf_and_ddram_addr()
+void hd44780::write_cgram(uint8_t buff[64])
 {
-	_rw.set(1);
-	_rs.set(0);
+	uint8_t old_addr = ddram_addr();
 	
+	write(CMD, SET_CGRAM_ADDRESS);
+	
+	for(uint8_t i = 0; i < 64; i++)
+	{
+		write(DATA, buff[i]);
+	}
+	
+	write(CMD, SET_DDRAM_ADDRESS | old_addr);
+}
+
+void hd44780::read_cgram(uint8_t buff[64])
+{
+	uint8_t old_addr = ddram_addr();
+	
+	write(CMD, SET_CGRAM_ADDRESS);
+	
+	for(uint8_t i = 0; i < (sizeof(_db) / sizeof(_db[0])); i++)
+		_db[i]->mode(gpio::mode::DI);
+	
+	_rw.set(1);
+	_rs.set(1);
+	
+	for(uint8_t i = 0; i < 64; i++)
+	{
+		buff[i] = read_4bit() << 4;
+		buff[i] |= read_4bit();
+	}
+	
+	for(uint8_t i = 0; i < (sizeof(_db) / sizeof(_db[0])); i++)
+		_db[i]->mode(gpio::mode::DO);
+	
+	write(CMD, SET_DDRAM_ADDRESS | old_addr);
+}
 	for(uint8_t i = 0; i < (sizeof(_db) / sizeof(_db[0])); i++)
 		_db[i]->mode(gpio::mode::DI);
 	

@@ -27,6 +27,9 @@ class hd44780
 		void ddram_addr(uint8_t addr);
 		uint8_t ddram_addr();
 		
+		void write_cgram(uint8_t buff[64]);
+		void read_cgram(uint8_t buff[64]);
+		
 		void clear();
 		
 	private:
