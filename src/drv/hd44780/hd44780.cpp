@@ -69,12 +69,19 @@ hd44780::hd44780(gpio &rs, gpio &rw, gpio &e, gpio &db4, gpio &db5, gpio &db6,
 	_db{&db4, &db5, &db6, &db7},
 	_tim(tim)
 {
-	ASSERT(_e.mode() == gpio::mode::DO);
-	ASSERT(_rw.mode() == gpio::mode::DO);
 	ASSERT(_rs.mode() == gpio::mode::DO);
+	ASSERT(_rw.mode() == gpio::mode::DO);
+	ASSERT(_e.mode() == gpio::mode::DO);
+	
+	_rs.set(1);
+	_rw.set(1);
+	_e.set(1);
 	
 	for(uint8_t i = 0; i < (sizeof(_db) / sizeof(_db[0])); i++)
+	{
 		ASSERT(_db[i]->mode() == gpio::mode::DO);
+		_db[i]->set(1);
+	}
 	
 	_lock = xSemaphoreCreateBinary();
 	ASSERT(_lock);
