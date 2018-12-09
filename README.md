@@ -21,7 +21,9 @@ Omef solution helps to avoid this. It provides transparent working principle and
 ## How to use
 To clone the repository you should have Git installed. Just run:
 ```
-$ git clone https://github.com/r44083/omef
+git clone https://github.com/r44083/omef
+cd omef
+make
 ```
 There is a simple project with some demo for each HW platform. Edit makefile if necessary.
 
