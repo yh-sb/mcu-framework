@@ -91,10 +91,10 @@ define RM
 endef
 else
 define MKDIR
-	mkdir -p $(1)
+	mkdir -p "$(1)"
 endef
 define RMDIR
-	rm -rf $(1)
+	rm -rf "$(1)"
 endef
 define RM
 	rf -f "$(1)"
