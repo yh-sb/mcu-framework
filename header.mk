@@ -86,11 +86,17 @@ endef
 define RMDIR
 	if exist "$(1)" rmdir /s /q "$(1)"
 endef
+define RM
+	del /q "$(1)" 2>nul
+endef
 else
 define MKDIR
 	mkdir -p $(1)
 endef
 define RMDIR
 	rm -rf $(1)
+endef
+define RM
+	rf -f "$(1)"
 endef
 endif

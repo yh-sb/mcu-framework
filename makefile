@@ -42,6 +42,7 @@ all:
 
 clean:
 	$(call RMDIR,$(OUTDIR))
+	$(call RM,script.jlink)
 
 erase:
 ifeq ($(FLASHER),JLink)
