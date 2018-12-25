@@ -25,6 +25,7 @@ class gpio
 		void set(bool state) const;
 		bool get() const;
 		void toggle() const;
+		void mode(enum mode mode, bool state = false);
 		
 		enum mode mode() const { return _mode; }
 		uint8_t port() const { return _port; }

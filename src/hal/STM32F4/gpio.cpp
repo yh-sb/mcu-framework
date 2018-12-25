@@ -182,3 +182,52 @@ void gpio::toggle() const
 	
 	gpio_list[_port]->ODR ^= 1 << _pin;
 }
+
+void gpio::mode(enum mode mode, bool state)
+{
+	_mode = mode;
+	
+	GPIO_TypeDef *gpio = gpio_list[_port];
+	
+	/* Input mode */
+	gpio->MODER &= ~(GPIO_MODER_MODE0 << (_pin * 2));
+	
+	/* No pull-up, no pull-down */
+	gpio->PUPDR &= ~(GPIO_PUPDR_PUPD0 << (_pin * 2));
+	
+	switch(_mode)
+	{
+		case mode::DO:
+			/* Digital output type */
+			gpio->MODER |= GPIO_MODER_MODE0_0 << (_pin * 2);
+			/* Push-pull type */
+			gpio->OTYPER &= ~(GPIO_OTYPER_OT0 << _pin);
+			break;
+		
+		case mode::OD:
+			/* Digital output type */
+			gpio->MODER |= GPIO_MODER_MODE0_0 << (_pin * 2);
+			/* Open drain type */
+			gpio->OTYPER |= GPIO_OTYPER_OT0 << _pin;
+			break;
+		
+		case mode::DI:
+			/* Pull-up or pull-down */
+			if(state)
+				gpio->PUPDR |= GPIO_PUPDR_PUPD0_0 << (_pin * 2);
+			else
+				gpio->PUPDR |= GPIO_PUPDR_PUPD0_1 << (_pin * 2);
+			break;
+		
+		case mode::AN:
+			/* Analog mode */
+			gpio->MODER |= GPIO_MODER_MODE0 << (_pin * 2);
+			break;
+		
+		case mode::AF:
+			/* Alternate function mode */
+			gpio->MODER |= GPIO_MODER_MODE0_1 << (_pin * 2);
+			/* Modification of AFR register should be done during periph init */
+			break;
+	}
+}
