@@ -1,6 +1,6 @@
 -include ../../../header.mk
 
-SRC := gpio.cpp
+SRC := gpio/gpio.cpp
 
 INC := .
 
