@@ -58,6 +58,7 @@ namespace hal
 typedef enum
 {
 	GPIO_MODE_DO,
+	GPIO_MODE_OD,
 	GPIO_MODE_DI,
 	GPIO_MODE_AF1,
 	GPIO_MODE_AF2,
