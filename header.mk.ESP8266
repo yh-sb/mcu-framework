@@ -1,4 +1,7 @@
-MODULES := src/hal/ESP8266/ESP8266_RTOS_SDK
+MODULES := src \
+	src/common \
+	src/hal/ESP8266 \
+	src/hal/ESP8266/ESP8266_RTOS_SDK
 
 ROOT := $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
 
@@ -11,7 +14,11 @@ BIN := $(BINDIR)/$(notdir $(CURDIR)).bin
 MAP := $(OUTDIR)/$(notdir $(CURDIR)).map
 LSS := $(OUTDIR)/$(notdir $(CURDIR)).lss
 
-GLOBAL_INC := $(ROOT)/src
+GLOBAL_INC := $(ROOT)/src \
+	$(ROOT)/src/hal/ESP8266 \
+	$(ROOT)/src/hal/ESP8266/ESP8266_RTOS_SDK/include \
+	$(ROOT)/src/hal/ESP8266/ESP8266_RTOS_SDK/include/espressif \
+	$(ROOT)/src/hal/ESP8266/ESP8266_RTOS_SDK/include/freertos
 
 GLOBAL_DEF :=
 
@@ -25,20 +32,12 @@ GLOBAL_CFLAGS := -std=c99
 
 GLOBAL_CPPFLAGS := -std=c++11 \
 	-fno-exceptions -fno-rtti \
-	-fno-threadsafe-statics -fno-use-cxa-atexit -felide-constructors \
-	-fno-use-cxa-atexit
+	-felide-constructors -fno-threadsafe-statics -fno-use-cxa-atexit
 
 GLOBAL_AFLAGS :=
 
-#LDFLAGS := LDFLAGS := -Tsrc/hal/ESP8266/esp8266.ld \
-#	-Tsrc/hal/ESP8266/esp8266.rom.ld \
-#	-Tsrc/hal/ESP8266/esp8266.common.ld \
-
 LDFLAGS := \
-	-Tsrc/hal/ESP8266/esp8266.ld \
-	-Tsrc/hal/ESP8266/esp8266.common.ld \
-	-Tsrc/hal/ESP8266/esp8266.rom.ld \
-	-Tsrc/hal/ESP8266/esp8266.peripherals.ld \
+	-Tsrc/hal/ESP8266/eagle.app.v6.ld \
 	-u call_user_start \
 	-nostdlib \
 	-Wl,--gc-sections \
@@ -46,17 +45,17 @@ LDFLAGS := \
 	#-nostartfiles
 	#-Wl,-static
 
-CC := xtensa-lx106-elf-gcc-5.2.0
-CPP := xtensa-lx106-elf-gcc-5.2.0
-AS := xtensa-lx106-elf-gcc-5.2.0 -x assembler-with-cpp
-LD := xtensa-lx106-elf-gcc-5.2.0
-#OBJCOPY := xtensa-lx106-elf-objcopy
+CC := xtensa-lx106-elf-gcc
+CPP := xtensa-lx106-elf-g++
+AS := xtensa-lx106-elf-gcc -x assembler-with-cpp
+LD := xtensa-lx106-elf-gcc
+OBJCOPY := xtensa-lx106-elf-objcopy
 OBJDUMP := xtensa-lx106-elf-objdump
 SIZE := xtensa-lx106-elf-size
 
 FLASHER := esptool
 
-ESPTOOL_PARAM := --port COM6 --baud 500000
+ESPTOOL_PARAM := --port COM6 --baud 256000
 
 ifeq ($(OS),Windows_NT)
 define MKDIR

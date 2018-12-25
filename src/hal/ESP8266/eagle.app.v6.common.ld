@@ -1,8 +1,6 @@
 /* This linker script generated from xt-genldscripts.tpp for LSP . */
 /* Linker Script for ld -N */
 
-/* #include "sdkconfig.h" */
-
 PHDRS
 {
   dport0_0_phdr PT_LOAD;
@@ -64,20 +62,11 @@ SECTIONS
     _dport0_data_end = ABSOLUTE(.);
   } >dport0_0_seg :dport0_0_phdr
 
-  /* RTC memory holds user's data/rodata */
-  .rtc.data :
-  {
-    _rtc_data_start = ABSOLUTE(.);
-    *(.rtc.data)
-    *(.rtc.rodata)
-    _rtc_data_end = ABSOLUTE(.);
-  } > rtc_seg
-
   .text : ALIGN(4)
   {
     _stext = .;
     _text_start = ABSOLUTE(.);
-    LONG(_text_start)
+    *(.UserEnter.text)
     . = ALIGN(16);
     *(.DebugExceptionVector.text)
     . = ALIGN(16);
@@ -104,41 +93,35 @@ SECTIONS
     *(.entry.text)
     *(.init.literal)
     *(.init)
-    *(.iram1 .iram1.*)
-    *libspi_flash.a:spi_flash_raw.o(.literal .text .literal.* .text.*)
+    *libfreertos.a:(.literal .text .literal.* .text.*)
+    *libmain.a:spi_flash.o(.literal .text .literal.* .text.*)
     *(.literal .text .stub .gnu.warning .gnu.linkonce.literal.* .gnu.linkonce.t.*.literal .gnu.linkonce.t.*)
     *(.fini.literal)
     *(.fini)
     *(.gnu.version)
-/*
-#ifdef CONFIG_LWIP_GLOBAL_DATA_LINK_IRAM
-    *liblwip.a:(.bss .data .bss.* .data.* COMMON)
-#endif
-
-#ifdef CONFIG_TCPIP_ADAPTER_GLOBAL_DATA_LINK_IRAM
-    *libtcpip_adapter.a:(.bss .data .bss.* .data.* COMMON)
-#endif
-
-#ifdef CONFIG_ESP8266_CORE_GLOBAL_DATA_LINK_IRAM
-    *libcore.a:(.bss .data .bss.* .data.* COMMON)
-#endif
-
-#ifdef CONFIG_FREERTOS_GLOBAL_DATA_LINK_IRAM
-    *libfreertos.a:tasks.o(.bss .data .bss.* .data.* COMMON)
-    *libfreertos.a:timers.o(.bss .data .bss.* .data.* COMMON)
-    *libfreertos.a:freertos_hooks.o(.bss .data .bss.* .data.* COMMON)
-#endif
-*/
     _text_end = ABSOLUTE(.);
     _etext = .;
   } >iram1_0_seg :iram1_0_phdr
+
+  .irom0.text : ALIGN(4)
+  {
+    _irom0_text_start = ABSOLUTE(.);
+    *libuser.a:(.rodata.* .rodata)
+    *libcirom.a:(.rodata.* .rodata)
+    *libmbedtls.a:(.rodata.* .rodata)
+    *libssl.a:(.rodata.* .rodata)
+    *libopenssl.a:(.rodata.* .rodata)
+    *libplatforms.a:(.rodata.* .rodata)
+    *(.irom0.literal .irom.literal .irom.text.literal .irom0.text .irom.text)
+    *(.literal.* .text.*)
+    _irom0_text_end = ABSOLUTE(.);
+  } >irom0_0_seg :irom0_0_phdr
 
   .data : ALIGN(4)
   {
     _data_start = ABSOLUTE(.);
     *(.data)
     *(.data.*)
-    *(.dram0)
     *(.gnu.linkonce.d.*)
     *(.data1)
     *(.sdata)
@@ -154,8 +137,8 @@ SECTIONS
   .rodata : ALIGN(4)
   {
     _rodata_start = ABSOLUTE(.);
-    *libpp.a:(.rodata.* .rodata)
-    *liblog.a:(.rodata.* .rodata)
+    *(.rodata)
+    *(.rodata.*)
     *(.gnu.linkonce.r.*)
     *(.rodata1)
     __XT_EXCEPTION_TABLE__ = ABSOLUTE(.);
@@ -223,20 +206,6 @@ SECTIONS
   } >dram0_0_seg :dram0_0_bss_phdr
 /* __stack = 0x3ffc8000; */
 
-  .irom0.text : ALIGN(4)
-  {
-    _irom0_text_start = ABSOLUTE(.);
-    *(.rodata.* .rodata .irom0.literal .irom.literal .irom.text.literal .irom0.text .irom.text)
-    *(.literal.* .text.*)
-
-    . = ALIGN(16);
-    __start_ksymatabesp_socket = .;
-    *(ksymatabesp_socket)
-    __stop_ksymatabesp_socket = .;
-
-    _irom0_text_end = ABSOLUTE(.);
-  } >irom0_0_seg :irom0_0_phdr
-
   .lit4 : ALIGN(4)
   {
     _lit4_start = ABSOLUTE(.);
@@ -247,3 +216,6 @@ SECTIONS
   } >iram1_0_seg :iram1_0_phdr
 
 }
+
+/* get ROM code address */
+INCLUDE "src/hal/ESP8266/eagle.rom.addr.v6.ld"

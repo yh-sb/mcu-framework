@@ -58,7 +58,7 @@ ifeq ($(FLASHER),ST-LINK_CLI)
 endif
 ifeq ($(FLASHER),esptool)
 	$(FLASHER) $(ESPTOOL_PARAM) erase_flash
-#	$(FLASHER) $(ESPTOOL_PARAM) write_flash -fs 4m -ff 40m -fm qio 0x7C000 src/hal/ESP8266/ESP8266_RTOS_SDK/bin/esp_init_data_default.bin
+	$(FLASHER) $(ESPTOOL_PARAM) write_flash -fs 512KB -ff 40m -fm qio 0x7C000 src/hal/ESP8266/ESP8266_RTOS_SDK/bin/esp_init_data_default.bin
 endif
 
 flash:
@@ -77,7 +77,7 @@ ifeq ($(FLASHER),ST-LINK_CLI)
 	$(FLASHER) -c swd -p $(BIN) 0x08000000 -v -rst
 endif
 ifeq ($(FLASHER),esptool)
-	$(FLASHER) $(ESPTOOL_PARAM) write_flash -fs 4m -ff 40m -fm qio 0x00000 $(BINDIR)/$(notdir $(CURDIR))-0x00000.bin 0x20000 $(BINDIR)/$(notdir $(CURDIR))-0x20000.bin
+	$(FLASHER) $(ESPTOOL_PARAM) write_flash -fs 512KB -ff 40m -fm qio 0x00000 $(BINDIR)/$(notdir $(CURDIR))-0x00000.bin 0x20000 $(BINDIR)/$(notdir $(CURDIR))-0x20000.bin
 endif
 
 reset:
@@ -104,13 +104,20 @@ ifeq ($(FLASHER),openocd)
 	$(FLASHER) $(OPENOCD_PARAM_DEBUG)
 endif
 
+check_style:
+	clang-format -style=file $(addprefix src/,$(SRC))
+
 $(ELF): $(ALL_LINKED_OBJ) $(OBJ)
 	@$(call MKDIR,$(@D))
 	$(LD) $(LDFLAGS) $^ -o $@
 
 $(BIN): $(ELF)
 	@$(call MKDIR,$(@D))
+ifeq ($(FLASHER),esptool)
+	esptool elf2image $< -o $(BINDIR)/$(notdir $(CURDIR))-
+else
 	$(OBJCOPY) -O binary $< $@
+endif
 
 $(LSS): $(ELF)
 	@$(call MKDIR,$(@D))

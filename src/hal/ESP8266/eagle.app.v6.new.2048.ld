@@ -14,23 +14,12 @@
 /* 4. Don't change any other seg.                                                                     */
 /* 5. user1.bin and user2.bin are same in this mode, so upgrade only need one of them.                */
 
-/* #include "sdkconfig.h" */
-
 MEMORY
 {
-  dport0_0_seg :    org = 0x3FF00000, len = 0x10
-
-  /* All .data/.bss/heap are in this segment. */
-  dram0_0_seg  :    org = 0x3FFE8000, len = 0x18000
-
-  /* Functions which are critical should be put in this segment. */
-  /* iram1_0_seg  :    org = 0x40100000, len = CONFIG_SOC_IRAM_SIZE */
-  iram1_0_seg  :    org = 0x40100000, len = 0x8000
-
-  /* It is actually mapped to flash. */
-  /* irom0_0_seg  :    org = 0x40200010 + CONFIG_PARTITION_TABLE_CUSTOM_APP_BIN_OFFSET, len = 0x100000 - 0x10 - CONFIG_PARTITION_TABLE_CUSTOM_APP_BIN_OFFSET */
-  irom0_0_seg  :    org = 0x40200010 + 0x10000, len = 0x100000 - 0x10 - 0x10000
-
-  /* RTC memory, persists over deep sleep. */
-  rtc_seg      :    org = 0x60001200, len = 0x200
+  dport0_0_seg :                        org = 0x3FF00000, len = 0x10
+  dram0_0_seg :                         org = 0x3FFE8000, len = 0x18000
+  iram1_0_seg :                         org = 0x40100000, len = 0x8000
+  irom0_0_seg :                         org = 0x40201010, len = 0xE0000
 }
+
+INCLUDE "src/hal/ESP8266/eagle.app.v6.common.ld"
