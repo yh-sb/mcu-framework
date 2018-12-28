@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "drv/1w/1w.hpp"
+#include "drv/onewire/onewire.hpp"
 
 #include "third_party/FreeRTOS/include/FreeRTOS.h"
 #include "third_party/FreeRTOS/include/semphr.h"
@@ -20,16 +20,16 @@ typedef enum
 
 enum ds18b20_err_t
 {
-	DS18B20_ERR_NONE    =  0,
-	DS18B20_ERR_NO_DEV  = -1,
-	DS18B20_ERR_CRC_ERR = -2,
-	DS18B20_ERR_1W_BUSY = -3,
+	DS18B20_ERR_NONE         =  0,
+	DS18B20_ERR_NO_DEV       = -1,
+	DS18B20_ERR_CRC_ERR      = -2,
+	DS18B20_ERR_ONEWIRE_BUSY = -3,
 };
 
 class ds18b20
 {
 	public:
-		ds18b20(_1w &_1w);
+		ds18b20(onewire &onewire);
 		~ds18b20();
 		
 		int8_t get_temp(uint64_t rom, float *temp);
@@ -46,7 +46,7 @@ class ds18b20
 		int8_t write_scratchpad(uint64_t rom, uint8_t th, uint8_t tl, uint8_t conf);
 		int8_t read_scratchpad(uint64_t rom, void *rx_buff, uint8_t rx_size);
 		
-		_1w &__1w;
+		onewire &_onewire;
 		SemaphoreHandle_t api_lock;
 		ds18b20_resol_t _resol;
 };

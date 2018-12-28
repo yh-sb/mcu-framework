@@ -9,20 +9,20 @@
 
 namespace drv
 {
-enum _1w_err_t
+enum onewire_err_t
 {
-	_1W_ERR_NONE      =  0,
-	_1W_ERR_LINE_BUSY = -1,
-	_1W_ERR_NO_DEV    = -2,
-	_1W_ERR_TX_FAIL   = -4,
-	_1W_ERR_RX_FAIL   = -5
+	ONEWIRE_ERR_NONE      =  0,
+	ONEWIRE_ERR_LINE_BUSY = -1,
+	ONEWIRE_ERR_NO_DEV    = -2,
+	ONEWIRE_ERR_TX_FAIL   = -4,
+	ONEWIRE_ERR_RX_FAIL   = -5
 };
 
-class _1w
+class onewire
 {
 	public:
-		_1w(hal::uart &uart);
-		~_1w();
+		onewire(hal::uart &uart);
+		~onewire();
 		
 		int8_t tx(uint64_t rom, void *tx_buff, uint16_t tx_size);
 		int8_t rx(uint64_t rom, void *rx_buff, uint16_t rx_size);
