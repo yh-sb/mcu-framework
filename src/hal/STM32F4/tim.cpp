@@ -201,6 +201,11 @@ tim::tim(tim_t tim):
 	
 	obj_list[_tim] = this;
 	
+	/* Allow that only counter overflow/underflow generates irq
+	   (avoid irq generation when set UG bit)
+	*/
+	tim_list[_tim]->CR1 |= TIM_CR1_URS;
+	
 	// Enable interrupt
 	tim_list[_tim]->DIER |= TIM_DIER_UIE;
 	
