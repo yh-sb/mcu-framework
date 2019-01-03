@@ -38,13 +38,15 @@ class tim
 		tim(tim_t tim);
 		~tim();
 		
+		void cb(tim_cb_t cb, void *ctx);
+		
 		void us(uint32_t us);
 		uint32_t us() const { return _us; }
-		void start_once(tim_cb_t cb, void *ctx);
-		void start_cyclic(tim_cb_t cb, void *ctx);
+		
+		void start(bool is_cyclic = false);
 		void stop();
 		
-		bool is_running() const;
+		bool is_expired() const;
 	
 	private:
 		tim_t _tim;

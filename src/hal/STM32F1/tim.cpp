@@ -224,6 +224,12 @@ tim::~tim()
 	
 }
 
+void tim::cb(tim_cb_t cb, void *ctx)
+{
+	_cb = cb;
+	_ctx = ctx;
+}
+
 void tim::us(uint32_t us)
 {
 	ASSERT(us > 0);
@@ -240,46 +246,32 @@ void tim::us(uint32_t us)
 	tim_list[_tim]->EGR = TIM_EGR_UG;
 }
 
-void tim::start_once(tim_cb_t cb, void *ctx)
+void tim::start(bool is_cyclic)
 {
 	ASSERT(_us > 0);
-	ASSERT(cb);
+	ASSERT(_cb);
 	/* This action allowed only when TIM is disabled */
 	ASSERT(!(tim_list[_tim]->CR1 & TIM_CR1_CEN));
 	
-	_cb = cb;
-	_ctx = ctx;
+	if(is_cyclic)
+		tim_list[_tim]->CR1 &= ~TIM_CR1_OPM;
+	else
+		tim_list[_tim]->CR1 |= TIM_CR1_OPM;
 	
-	tim_list[_tim]->CR1 |= TIM_CR1_OPM | TIM_CR1_CEN;
-}
-
-void tim::start_cyclic(tim_cb_t cb, void *ctx)
-{
-	ASSERT(_us > 0);
-	ASSERT(cb);
-	/* This action allowed only when TIM is disabled */
-	ASSERT(!(tim_list[_tim]->CR1 & TIM_CR1_CEN));
-	
-	_cb = cb;
-	_ctx = ctx;
 	tim_list[_tim]->CNT = 0;
-	tim_list[_tim]->CR1 &= ~TIM_CR1_OPM;
 	tim_list[_tim]->CR1 |= TIM_CR1_CEN;
 }
 
 void tim::stop()
 {
-	_cb = NULL;
-	_ctx = NULL;
-	
 	tim_list[_tim]->CR1 &= ~TIM_CR1_CEN;
 	tim_list[_tim]->CNT = 0;
 	tim_list[_tim]->SR &= ~TIM_SR_UIF;
 }
 
-bool tim::is_running() const
+bool tim::is_expired() const
 {
-	return static_cast<bool>(tim_list[_tim]->CR1 & TIM_CR1_CEN);
+	return !static_cast<bool>(tim_list[_tim]->CR1 & TIM_CR1_CEN);
 }
 
 static void calc_clk(tim_t tim, uint32_t us, uint16_t *presc,
