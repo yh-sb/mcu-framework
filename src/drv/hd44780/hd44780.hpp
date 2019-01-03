@@ -53,6 +53,7 @@ class hd44780
 		uint8_t read_4bit();
 		uint8_t read_bf_and_ddram_addr();
 		
+		static void tim_cb(hal::tim *tim, void *ctx);
 		void delay(uint32_t us);
 };
 }

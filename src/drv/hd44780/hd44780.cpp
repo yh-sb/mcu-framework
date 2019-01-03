@@ -85,6 +85,8 @@ hd44780::hd44780(gpio &rs, gpio &rw, gpio &e, gpio &db4, gpio &db5, gpio &db6,
 	
 	_lock = xSemaphoreCreateBinary();
 	ASSERT(_lock);
+	
+	_tim.cb(tim_cb, _lock);
 }
 
 hd44780::~hd44780()
@@ -245,7 +247,7 @@ uint8_t hd44780::read_4bit()
 	return half_byte;
 }
 
-static void tim_cb(tim *tim, void *ctx)
+void tim_cb(hal::tim *tim, void *ctx)
 {
 	SemaphoreHandle_t _lock = (SemaphoreHandle_t)ctx;
 	
@@ -257,7 +259,7 @@ static void tim_cb(tim *tim, void *ctx)
 void hd44780::delay(uint32_t us)
 {
 	_tim.us(us);
-	_tim.start_once(tim_cb, _lock);
+	_tim.start();
 	
 	xSemaphoreTake(_lock, portMAX_DELAY);
 }
