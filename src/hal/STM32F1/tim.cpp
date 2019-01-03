@@ -317,12 +317,7 @@ extern "C" void tim_irq_hndlr(hal::tim *obj)
 		return;
 	
 	if(obj->_cb)
-	{
 		obj->_cb(obj, obj->_ctx);
-		
-		if(tim_reg->CR1 & TIM_CR1_OPM)
-			obj->_cb = NULL;
-	}
 }
 
 #if defined(STM32F100xB) || defined(STM32F100xE) || defined(STM32F103x6) || \

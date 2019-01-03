@@ -275,12 +275,7 @@ extern "C" void tim_irq_hndlr(hal::tim *obj)
 		return;
 	
 	if(obj->_cb)
-	{
 		obj->_cb(obj, obj->_ctx);
-		
-		if(tim_reg->CR1 & TIM_CR1_OPM)
-			obj->_cb = NULL;
-	}
 }
 
 extern "C" void TIM1_CC_IRQHandler(void)
