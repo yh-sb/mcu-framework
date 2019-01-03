@@ -22,11 +22,14 @@ class exti
 		
 		typedef void (*exti_cb_t)(exti *exti, void *ctx);
 		
-		exti(gpio &gpio, trigger_t trigger);
+		exti(gpio &gpio, trigger_t trigger = trigger_t::TRIGGER_BOTH);
 		~exti();
 		
-		void on(exti_cb_t cb, void *ctx);
+		void cb(exti_cb_t cb, void *ctx);
+		
+		void on();
 		void off();
+		
 		void trigger(trigger_t trigger);
 		trigger_t trigger() const { return _trigger; }
 		

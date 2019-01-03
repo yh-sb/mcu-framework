@@ -166,12 +166,15 @@ exti::~exti()
 	
 }
 
-void exti::on(exti_cb_t cb, void *ctx)
+void exti::cb(exti_cb_t cb, void *ctx)
 {
-	ASSERT(cb);
-	
 	_cb = cb;
 	_ctx = ctx;
+}
+
+void exti::on()
+{
+	ASSERT(_cb);
 	
 	uint8_t pin = _gpio.pin();
 	uint32_t line_bit = 1 << pin;
@@ -185,8 +188,6 @@ void exti::on(exti_cb_t cb, void *ctx)
 
 void exti::off()
 {
-	_cb = NULL;
-	_ctx = NULL;
 	/* Clear EXTI line configuration */
 	EXTI->IMR &= ~(1 << _gpio.pin());
 }

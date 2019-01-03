@@ -25,8 +25,11 @@ class exti
 		exti(gpio &gpio, enum trigger trigger);
 		~exti();
 		
-		void on(exti_cb_t cb, void *ctx);
+		void cb(exti_cb_t cb, void *ctx);
+		
+		void on();
 		void off();
+		
 		void trigger(enum trigger trigger);
 		enum trigger trigger() const { return _trigger; }
 		

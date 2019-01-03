@@ -25,8 +25,11 @@ class exti
 		exti(gpio &gpio, exti_trigger_t trigger);
 		~exti();
 		
-		void on(exti_cb_t cb, void *ctx);
+		void cb(exti_cb_t cb, void *ctx);
+		
+		void on();
 		void off();
+		
 		void trigger(exti_trigger_t trigger);
 		exti_trigger_t trigger() const { return _trigger; }
 		
