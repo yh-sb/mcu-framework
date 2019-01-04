@@ -4,6 +4,7 @@ SRC := di/di.cpp \
 	enc/enc.cpp \
 	onewire/onewire.cpp \
 	dht11/dht11.cpp \
+	dht22/dht22.cpp \
 	ds18b20/ds18b20.cpp \
 	sd/sd.cpp \
 	sd/sd_spi.cpp \
