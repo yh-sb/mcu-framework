@@ -19,7 +19,8 @@ class singlewire
 			OK      =  0,
 			NODEV   = -1,
 			DEVERR  = -2,
-			READERR = -3
+			READERR = -3,
+			BUSY    = -4
 		};
 		
 		singlewire(hal::gpio &gpio, hal::tim &tim, hal::exti &exti);

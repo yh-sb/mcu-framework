@@ -49,6 +49,9 @@ singlewire::~singlewire()
 
 int8_t singlewire::read(uint8_t *buff, uint16_t size)
 {
+	if(!_gpio.get())
+		return BUSY;
+	
 	fsm_start(buff, size);
 	
 	// Semaphore will be given from fsm when data reception will be finished
