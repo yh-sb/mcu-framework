@@ -52,6 +52,6 @@ static void b1_cb(drv::di *di, bool state, void *ctx)
 	
 	drv::dht11 *_dht11 = (drv::dht11 *)ctx;
 	
-	uint8_t t, rh;
-	int8_t res = _dht11->get(&t, &rh);
+	uint8_t rh, t;
+	int8_t res = _dht11->get(&rh, &t);
 }
