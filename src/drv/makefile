@@ -3,9 +3,11 @@
 SRC := di/di.cpp \
 	enc/enc.cpp \
 	onewire/onewire.cpp \
+	dht11/dht11.cpp \
 	ds18b20/ds18b20.cpp \
 	sd/sd.cpp \
 	sd/sd_spi.cpp \
+	singlewire/singlewire.cpp \
 	hd44780/hd44780.cpp
 
 INC :=
