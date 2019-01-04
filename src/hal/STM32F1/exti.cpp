@@ -57,9 +57,9 @@ static uint8_t const src_offset_list[PIN_QTY] =
 
 static exti *obj_list[PIN_QTY];
 
-exti::exti(gpio &gpio, exti_trigger_t trigger):
+exti::exti(gpio &gpio, edge edge):
 	_gpio(gpio),
-	_trigger(trigger),
+	_edge(edge),
 	_ctx(NULL),
 	_cb(NULL)
 {
@@ -82,9 +82,9 @@ exti::exti(gpio &gpio, exti_trigger_t trigger):
 	/* Setup EXTI trigger */
 	EXTI->RTSR &= ~line_bit;
 	EXTI->FTSR &= ~line_bit;
-	if(_trigger == EXTI_TRIGGER_RISING)
+	if(_edge == edge::RISING)
 		EXTI->RTSR |= line_bit;
-	else if(_trigger == EXTI_TRIGGER_FALLING)
+	else if(_edge == edge::FALLING)
 		EXTI->FTSR |= line_bit;
 	else
 	{
@@ -130,13 +130,13 @@ void exti::off()
 	EXTI->IMR &= ~(1 << _gpio.pin());
 }
 
-void exti::trigger(exti_trigger_t trigger)
+void exti::trigger(edge edge)
 {
-	_trigger = trigger;
+	_edge = edge;
 	uint32_t line_bit = 1 << _gpio.pin();
-	if(_trigger == EXTI_TRIGGER_RISING)
+	if(_edge == edge::RISING)
 		EXTI->RTSR |= line_bit;
-	else if(_trigger == EXTI_TRIGGER_FALLING)
+	else if(_edge == edge::FALLING)
 		EXTI->FTSR |= line_bit;
 	else
 	{

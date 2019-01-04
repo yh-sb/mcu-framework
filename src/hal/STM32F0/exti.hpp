@@ -13,7 +13,7 @@ namespace hal
 class exti
 {
 	public:
-		enum class trigger
+		enum class edge
 		{
 			RISING,
 			FALLING,
@@ -22,7 +22,7 @@ class exti
 		
 		typedef void (*exti_cb_t)(exti *exti, void *ctx);
 		
-		exti(gpio &gpio, enum trigger trigger);
+		exti(gpio &gpio, edge edge = edge::BOTH);
 		~exti();
 		
 		void cb(exti_cb_t cb, void *ctx);
@@ -30,14 +30,14 @@ class exti
 		void on();
 		void off();
 		
-		void trigger(enum trigger trigger);
-		enum trigger trigger() const { return _trigger; }
+		void trigger(edge edge);
+		edge trigger() const { return _edge; }
 		
 		exti &operator = (const exti &);
 	
 	private:
 		gpio &_gpio;
-		enum trigger _trigger;
+		edge _edge;
 		void *_ctx;
 		exti_cb_t _cb;
 		friend void ::exti_irq_hndlr(exti *obj);
