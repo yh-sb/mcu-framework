@@ -1,15 +1,15 @@
 -include ../../header.mk
 
-SRC := di/di.cpp \
-	enc/enc.cpp \
-	onewire/onewire.cpp \
-	dht11/dht11.cpp \
+SRC := dht11/dht11.cpp \
 	dht22/dht22.cpp \
+	di/di.cpp \
 	ds18b20/ds18b20.cpp \
-	sd/sd.cpp \
+	enc/enc.cpp \
+	hd44780/hd44780.cpp \
+	onewire/onewire.cpp \
 	sd/sd_spi.cpp \
-	singlewire/singlewire.cpp \
-	hd44780/hd44780.cpp
+	sd/sd.cpp \
+	singlewire/singlewire.cpp
 
 INC :=
 DEF :=
