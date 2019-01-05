@@ -27,7 +27,7 @@ LDFLAGS += -Wl,--start-group $(ALL_LIB) -Wl,--end-group
 endif
 
 define COMPILE_MODULE
-	+$(MAKE) --no-print-directory -C $(module)
+	+$(MAKE) -j $(NUMBER_OF_PROCESSORS) --no-print-directory -C $(module)
 	
 endef
 
@@ -35,9 +35,9 @@ endef
 
 all:
 	$(foreach module,$(MODULES),$(call COMPILE_MODULE,$(module)))
-	+$(MAKE) --no-print-directory $(ELF)
-	+$(MAKE) --no-print-directory $(BIN)
-	+$(MAKE) --no-print-directory $(LSS)
+	+$(MAKE) -j $(NUMBER_OF_PROCESSORS) --no-print-directory $(ELF)
+	+$(MAKE) -j $(NUMBER_OF_PROCESSORS) --no-print-directory $(BIN)
+	+$(MAKE) -j $(NUMBER_OF_PROCESSORS) --no-print-directory $(LSS)
 	$(SIZE) $(ELF)
 
 clean:
