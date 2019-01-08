@@ -1,7 +1,8 @@
 -include ../../header.mk
 
 SRC := fatfs_diskio/fatfs_diskio.cpp \
-	fatfs_diskio/fatfs_diskio_sd.cpp
+	fatfs_diskio/fatfs_diskio_sd.cpp \
+	syslog/syslog.cpp
 
 INC :=
 DEF :=
