@@ -7,25 +7,25 @@
 
 namespace hal
 {
-typedef enum
-{
-	PWM_CH_1,
-	PWM_CH_2,
-	PWM_CH_3,
-	PWM_CH_4,
-	PWM_CH_END
-} pwm_ch_t;
-
-typedef enum
-{
-	PWM_MODE_INVERTED,
-	PWM_MODE_NONINVERTED
-} pwm_mode_t;
-
 class pwm
 {
 	public:
-		pwm(tim_t tim, pwm_ch_t ch, pwm_mode_t mode, gpio &gpio);
+		enum ch_t
+		{
+			CH_1,
+			CH_2,
+			CH_3,
+			CH_4,
+			CH_END
+		};
+
+		enum mode_t
+		{
+			MODE_INVERTED,
+			MODE_NONINVERTED
+		};
+		
+		pwm(tim::tim_t tim, ch_t ch, mode_t mode, gpio &gpio);
 		~pwm();
 		
 		void freq(uint32_t freq);
@@ -37,11 +37,11 @@ class pwm
 		void stop() const;
 	
 	private:
-		tim_t _tim;
-		pwm_ch_t _ch;
+		tim::tim_t _tim;
+		ch_t _ch;
 		uint32_t _freq;
 		uint8_t _duty;
-		pwm_mode_t _mode;
+		mode_t _mode;
 		gpio &_gpio;
 };
 }

@@ -13,7 +13,7 @@ using namespace hal;
 
 #define MAX_RESOL 0xFFFF
 
-static TIM_TypeDef *const tim_list[TIM_END] =
+static TIM_TypeDef *const tim_list[tim::TIM_END] =
 {
 	TIM1,
 #if defined(STM32F401xC) || defined(STM32F401xE) || defined(STM32F405xx) || \
@@ -74,7 +74,7 @@ static TIM_TypeDef *const tim_list[TIM_END] =
 #endif
 };
 
-static uint32_t const rcc_list[TIM_END] =
+static uint32_t const rcc_list[tim::TIM_END] =
 {
 	RCC_APB2ENR_TIM1EN,
 #if defined(STM32F401xC) || defined(STM32F401xE) || defined(STM32F405xx) || \
@@ -135,7 +135,7 @@ static uint32_t const rcc_list[TIM_END] =
 #endif
 };
 
-static volatile uint32_t *rcc_bus_list[TIM_END] =
+static volatile uint32_t *rcc_bus_list[tim::TIM_END] =
 {
 	&RCC->APB2ENR, &RCC->APB1ENR, &RCC->APB1ENR,
 	&RCC->APB1ENR, &RCC->APB1ENR, &RCC->APB1ENR,
@@ -144,7 +144,7 @@ static volatile uint32_t *rcc_bus_list[TIM_END] =
 	&RCC->APB1ENR, &RCC->APB1ENR
 };
 
-static rcc_src_t const rcc_src_list[TIM_END] =
+static rcc_src_t const rcc_src_list[tim::TIM_END] =
 {
 	RCC_SRC_APB2, RCC_SRC_APB1, RCC_SRC_APB1,
 	RCC_SRC_APB1, RCC_SRC_APB1, RCC_SRC_APB1,
@@ -153,16 +153,16 @@ static rcc_src_t const rcc_src_list[TIM_END] =
 	RCC_SRC_APB1, RCC_SRC_APB1
 };
 
-static pwm_ch_t const max_ch_list[TIM_END] =
+static pwm::ch_t const max_ch_list[tim::TIM_END] =
 {
-	PWM_CH_4,   PWM_CH_4, PWM_CH_4,
-	PWM_CH_4,   PWM_CH_4, PWM_CH_END,
-	PWM_CH_END, PWM_CH_4, PWM_CH_2,
-	PWM_CH_1,   PWM_CH_1, PWM_CH_2,
-	PWM_CH_1,   PWM_CH_1
+	pwm::CH_4,   pwm::CH_4, pwm::CH_4,
+	pwm::CH_4,   pwm::CH_4, pwm::CH_END,
+	pwm::CH_END, pwm::CH_4, pwm::CH_2,
+	pwm::CH_1,   pwm::CH_1, pwm::CH_2,
+	pwm::CH_1,   pwm::CH_1
 };
 
-static uint8_t const gpio_af_list[TIM_END] =
+static uint8_t const gpio_af_list[tim::TIM_END] =
 {
 	/* TIM2 for STM32F446xx (AF0) not implemented */
 	0x01, 0x01, 0x02,
@@ -172,7 +172,7 @@ static uint8_t const gpio_af_list[TIM_END] =
 	0x09, 0x09
 };
 
-static uint32_t const ccmr_reg_list[PWM_CH_END][PWM_MODE_NONINVERTED + 1] = 
+static uint32_t const ccmr_reg_list[pwm::CH_END][pwm::MODE_NONINVERTED + 1] = 
 {
 	{TIM_CCMR1_OC1M, TIM_CCMR1_OC1M_2 | TIM_CCMR1_OC1M_1},
 	{TIM_CCMR1_OC2M, TIM_CCMR1_OC2M_2 | TIM_CCMR1_OC2M_1},
@@ -221,14 +221,14 @@ static GPIO_TypeDef *const gpio_list[PORT_QTY] =
 #endif
 };
 
-static void gpio_af_init(tim_t tim, gpio &gpio);
+static void gpio_af_init(tim::tim_t tim, gpio &gpio);
 
-static void calc_freq(tim_t tim, uint32_t freq, uint16_t *presc,
+static void calc_freq(tim::tim_t tim, uint32_t freq, uint16_t *presc,
 	uint16_t *reload);
 
-static uint16_t calc_ccr(tim_t tim, uint8_t duty);
+static uint16_t calc_ccr(tim::tim_t tim, uint8_t duty);
 
-pwm::pwm(tim_t tim, pwm_ch_t ch, pwm_mode_t mode, gpio &gpio):
+pwm::pwm(tim::tim_t tim, ch_t ch, mode_t mode, gpio &gpio):
 	_tim(tim),
 	_ch(ch),
 	_freq(0),
@@ -236,9 +236,10 @@ pwm::pwm(tim_t tim, pwm_ch_t ch, pwm_mode_t mode, gpio &gpio):
 	_mode(mode),
 	_gpio(gpio)
 {
-	ASSERT(_tim < TIM_END && tim_list[_tim]);
-	ASSERT(_ch < PWM_CH_END);
+	ASSERT(_tim < tim::TIM_END && tim_list[_tim]);
+	ASSERT(_ch < CH_END);
 	ASSERT(_ch <= max_ch_list[_tim]);
+	ASSERT(_mode <= MODE_NONINVERTED);
 	ASSERT(_gpio.mode() == gpio::MODE_AF);
 	
 	*rcc_bus_list[_tim] |= rcc_list[_tim];
@@ -250,22 +251,22 @@ pwm::pwm(tim_t tim, pwm_ch_t ch, pwm_mode_t mode, gpio &gpio):
 	
 	switch(_ch)
 	{
-		case PWM_CH_1:
+		case CH_1:
 			tim_list[_tim]->CCMR1 &= ~TIM_CCMR1_OC1M;
 			tim_list[_tim]->CCMR1 |= ccmr_reg_list[_ch][_mode];
 			break;
 		
-		case PWM_CH_2:
+		case CH_2:
 			tim_list[_tim]->CCMR1 &= ~TIM_CCMR1_OC2M;
 			tim_list[_tim]->CCMR1 |= ccmr_reg_list[_ch][_mode];
 			break;
 		
-		case PWM_CH_3:
+		case CH_3:
 			tim_list[_tim]->CCMR2 &= ~TIM_CCMR2_OC3M;
 			tim_list[_tim]->CCMR2 |= ccmr_reg_list[_ch][_mode];
 			break;
 		
-		case PWM_CH_4:
+		case CH_4:
 			tim_list[_tim]->CCMR2 &= ~TIM_CCMR2_OC4M;
 			tim_list[_tim]->CCMR2 |= ccmr_reg_list[_ch][_mode];
 			break;
@@ -275,7 +276,7 @@ pwm::pwm(tim_t tim, pwm_ch_t ch, pwm_mode_t mode, gpio &gpio):
 	
 	/* Enable output for advanced timers */
 	/* RM0090 chapter 17.4.18 (page 575) */
-	if(_tim == TIM_1 || _tim == TIM_8)
+	if(_tim == tim::TIM_1 || _tim == tim::TIM_8)
 		tim_list[_tim]->BDTR |= TIM_BDTR_MOE;
 }
 
@@ -306,10 +307,10 @@ void pwm::duty(uint8_t duty)
 	uint16_t ccr = calc_ccr(_tim, _duty);
 	switch(_ch)
 	{
-		case PWM_CH_1: tim_list[_tim]->CCR1 = ccr; break;
-		case PWM_CH_2: tim_list[_tim]->CCR2 = ccr; break;
-		case PWM_CH_3: tim_list[_tim]->CCR3 = ccr; break;
-		case PWM_CH_4: tim_list[_tim]->CCR4 = ccr; break;
+		case CH_1: tim_list[_tim]->CCR1 = ccr; break;
+		case CH_2: tim_list[_tim]->CCR2 = ccr; break;
+		case CH_3: tim_list[_tim]->CCR3 = ccr; break;
+		case CH_4: tim_list[_tim]->CCR4 = ccr; break;
 		default: ASSERT(0);
 	}
 }
@@ -327,7 +328,7 @@ void pwm::stop() const
 	tim_list[_tim]->CR1 &= ~TIM_CR1_CEN;
 }
 
-static void gpio_af_init(tim_t tim, gpio &gpio)
+static void gpio_af_init(tim::tim_t tim, gpio &gpio)
 {
 	GPIO_TypeDef *gpio_reg = gpio_list[gpio.port()];
 	
@@ -348,7 +349,7 @@ static void gpio_af_init(tim_t tim, gpio &gpio)
 	}
 }
 
-static void calc_freq(tim_t tim, uint32_t freq, uint16_t *presc,
+static void calc_freq(tim::tim_t tim, uint32_t freq, uint16_t *presc,
 	uint16_t *reload)
 {
 	uint32_t tmp_presc = 0;
@@ -384,7 +385,7 @@ static void calc_freq(tim_t tim, uint32_t freq, uint16_t *presc,
 	*reload = (uint16_t)(tmp_reload - 1);
 }
 
-static uint16_t calc_ccr(tim_t tim, uint8_t duty)
+static uint16_t calc_ccr(tim::tim_t tim, uint8_t duty)
 {
 	uint16_t res = 0;
 	
