@@ -93,6 +93,6 @@ class adc
 		} _clbks[ADC_CH_END];
 		
 		void init_regular_chnls(uint8_t index, adc_ch_t ch);
-		static void on_dma(dma *dma, dma_event_t event, void *ctx);
+		static void on_dma(dma *dma, dma::event_t event, void *ctx);
 };
 }

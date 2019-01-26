@@ -82,8 +82,8 @@ adc::adc(adc_t adc, adc_ch_t ch_list[], size_t ch_list_size, adc_tim_t tim,
 	ASSERT(_resol == ADC_RESOL_12BIT);
 	
 	ASSERT(_freq > 0);
-	ASSERT(_dma.dir() == DMA_DIR_PERIPH_TO_MEM);
-	ASSERT(_dma.inc_size() == DMA_INC_SIZE_16);
+	ASSERT(_dma.dir() == dma::DIR_PERIPH_TO_MEM);
+	ASSERT(_dma.inc_size() == dma::INC_SIZE_16);
 	ASSERT(_dma_buff);
 	ASSERT(_num_of_samples > 0);
 	
@@ -211,9 +211,9 @@ void adc::init_regular_chnls(uint8_t index, adc_ch_t ch)
 	}
 }
 
-void adc::on_dma(dma *dma, dma_event_t event, void *ctx)
+void adc::on_dma(dma *dma, dma::event_t event, void *ctx)
 {
-	if(event != DMA_EVENT_CMPLT)
+	if(event != dma::EVENT_CMPLT)
 		return;
 	
 	adc *obj = static_cast<adc *>(ctx);

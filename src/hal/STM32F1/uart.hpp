@@ -82,8 +82,8 @@ class uart
 		SemaphoreHandle_t rx_irq_lock;
 		int8_t rx_irq_res;
 		
-		static void on_dma_tx(dma *dma, dma_event_t event, void *ctx);
-		static void on_dma_rx(dma *dma, dma_event_t event, void *ctx);
+		static void on_dma_tx(dma *dma, dma::event_t event, void *ctx);
+		static void on_dma_rx(dma *dma, dma::event_t event, void *ctx);
 		friend void ::uart_irq_hndlr(uart *obj);
 };
 }

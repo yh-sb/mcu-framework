@@ -344,10 +344,10 @@ spi::spi(spi_t spi, uint32_t baud, spi_cpol_t cpol, spi_cpha_t cpha,
 {
 	ASSERT(_spi < SPI_END && spi_list[_spi]);
 	ASSERT(_baud > 0);
-	ASSERT(tx_dma.dir() == dma::dir_t::DIR_MEM_TO_PERIPH);
-	ASSERT(tx_dma.inc_size() == dma::inc_size_t::INC_SIZE_8);
-	ASSERT(rx_dma.dir() == dma::dir_t::DIR_PERIPH_TO_MEM);
-	ASSERT(rx_dma.inc_size() == dma::inc_size_t::INC_SIZE_8);
+	ASSERT(tx_dma.dir() == dma::DIR_MEM_TO_PERIPH);
+	ASSERT(tx_dma.inc_size() == dma::INC_SIZE_8);
+	ASSERT(rx_dma.dir() == dma::DIR_PERIPH_TO_MEM);
+	ASSERT(rx_dma.inc_size() == dma::INC_SIZE_8);
 	ASSERT(_mosi.mode() == gpio::MODE_AF);
 	ASSERT(_miso.mode() == gpio::MODE_AF);
 	ASSERT(_clk.mode() == gpio::MODE_AF);
@@ -651,7 +651,7 @@ static uint8_t calc_presc(spi_t spi, uint32_t baud)
 
 void spi::on_dma_tx(dma *dma, dma::event_t event, void *ctx)
 {
-	if(event == dma::event_t::EVENT_HALF)
+	if(event == dma::EVENT_HALF)
 		return;
 #if configUSE_TRACE_FACILITY
 	vTraceStoreISRBegin(isr_dma_tx);
@@ -663,7 +663,7 @@ void spi::on_dma_tx(dma *dma, dma::event_t event, void *ctx)
 	SPI_TypeDef *spi = spi_list[obj->_spi];
 	
 	spi->CR2 &= ~SPI_CR2_TXDMAEN;
-	if(event == dma::event_t::EVENT_CMPLT)
+	if(event == dma::EVENT_CMPLT)
 	{
 		if(obj->rx_buff)
 		{
@@ -674,7 +674,7 @@ void spi::on_dma_tx(dma *dma, dma::event_t event, void *ctx)
 		}
 		spi->CR2 |= SPI_CR2_TXEIE;
 	}
-	else if(event == dma::event_t::EVENT_ERROR)
+	else if(event == dma::EVENT_ERROR)
 	{
 		if(obj->rx_buff)
 		{
@@ -701,7 +701,7 @@ void spi::on_dma_tx(dma *dma, dma::event_t event, void *ctx)
 
 void spi::on_dma_rx(dma *dma, dma::event_t event, void *ctx)
 {
-	if(event == dma::event_t::EVENT_HALF)
+	if(event == dma::EVENT_HALF)
 		return;
 #if configUSE_TRACE_FACILITY
 	vTraceStoreISRBegin(isr_dma_rx);
@@ -711,9 +711,9 @@ void spi::on_dma_rx(dma *dma, dma::event_t event, void *ctx)
 	
 	obj->rx_buff = NULL;
 	spi->CR2 &= ~SPI_CR2_RXDMAEN;
-	if(event == dma::event_t::EVENT_CMPLT)
+	if(event == dma::EVENT_CMPLT)
 		obj->irq_res = SPI_ERR_NONE;
-	else if(event == dma::event_t::EVENT_ERROR)
+	else if(event == dma::EVENT_ERROR)
 		obj->irq_res = SPI_ERR_FAIL;
 	
 	if(obj->_cs)

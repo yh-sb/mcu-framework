@@ -5,13 +5,14 @@
 #include "dma.hpp"
 
 #include "hal/STM32F0/CMSIS/device-support/include/stm32f0xx.h"
+#include "hal/STM32F0/CMSIS/core-support/core_cm0.h"
 
 using namespace hal;
 
 #define IRQ_PRIORITY 2
 #define DMA_CHSEL_OFFSET 25
 
-static DMA_Channel_TypeDef *const ch_list[DMA_END][DMA_CH_END] =
+static DMA_Channel_TypeDef *const ch_list[dma::DMA_END][dma::CH_END] =
 {
 	{
 		DMA1_Channel1, DMA1_Channel2, DMA1_Channel3, DMA1_Channel4,
@@ -34,7 +35,7 @@ static DMA_Channel_TypeDef *const ch_list[DMA_END][DMA_CH_END] =
 	}
 };
 
-static IRQn_Type const irq_list[DMA_END][DMA_CH_END] =
+static IRQn_Type const irq_list[dma::DMA_END][dma::CH_END] =
 {
 	{
 #if defined(STM32F091xC) || defined(STM32F098xx)
@@ -73,9 +74,9 @@ static IRQn_Type const irq_list[DMA_END][DMA_CH_END] =
 	}
 };
 
-static dma *obj_list[DMA_END][DMA_CH_END];
+static dma *obj_list[dma::DMA_END][dma::CH_END];
 
-dma::dma(dma_t dma, dma_ch_t ch, dma_dir_t dir, dma_inc_size_t inc_size):
+dma::dma(dma_t dma, ch_t ch, dir_t dir, inc_size_t inc_size):
 	_dma(dma),
 	_ch(ch),
 	_dir(dir),
@@ -86,10 +87,12 @@ dma::dma(dma_t dma, dma_ch_t ch, dma_dir_t dir, dma_inc_size_t inc_size):
 	_ctx(NULL),
 	_cb(NULL)
 {
-	ASSERT(_dma < DMA_END);
-	ASSERT(_ch < DMA_CH_END);
+	ASSERT(dma < DMA_END);
+	ASSERT(ch < CH_END);
+	ASSERT(dir <= DIR_MEM_TO_MEM);
 	/* Only DMA2 is able to perform memory-to-memory transfers */
-	ASSERT(_dir != DMA_DIR_MEM_TO_MEM || _dma != DMA_1);
+	ASSERT(dir != DIR_MEM_TO_MEM || dma != DMA_1);
+	ASSERT(inc_size <= INC_SIZE_32);
 	
 	obj_list[_dma][_ch] = this;
 	
@@ -119,21 +122,21 @@ dma::dma(dma_t dma, dma_ch_t ch, dma_dir_t dir, dma_inc_size_t inc_size):
 	
 	/* Setup data direction. Default is peripheral to memory */
 	dma_ch->CCR &= ~(DMA_CCR_DIR | DMA_CCR_MEM2MEM);
-	if(_dir == DMA_DIR_MEM_TO_PERIPH)
+	if(_dir == DIR_MEM_TO_PERIPH)
 		dma_ch->CCR |= DMA_CCR_DIR;
-	else if(_dir == DMA_DIR_MEM_TO_MEM)
+	else if(_dir == DIR_MEM_TO_MEM)
 		dma_ch->CCR |= DMA_CCR_MEM2MEM;
 	
 	/* Setup data size. Default is 8 */
 	dma_ch->CCR &= ~(DMA_CCR_MSIZE | DMA_CCR_PSIZE);
-	if(_inc_size == DMA_INC_SIZE_16)
+	if(_inc_size == INC_SIZE_16)
 		dma_ch->CCR |= DMA_CCR_MSIZE_0 | DMA_CCR_PSIZE_0;
-	else if(_inc_size == DMA_INC_SIZE_32)
+	else if(_inc_size == INC_SIZE_32)
 		dma_ch->CCR |= DMA_CCR_MSIZE_1 | DMA_CCR_PSIZE_1;
 	
 	/* Setup incremental mode */
 	dma_ch->CCR |= DMA_CCR_MINC;
-	if(_dir == DMA_DIR_MEM_TO_MEM)
+	if(_dir == DIR_MEM_TO_MEM)
 		dma_ch->CCR |= DMA_CCR_PINC;
 	else
 		dma_ch->CCR &= ~DMA_CCR_PINC;
@@ -158,7 +161,7 @@ void dma::src(void *src)
 	ASSERT(!(dma_ch->CCR & DMA_CCR_EN));
 	
 	_src = (uint32_t)src;
-	if(_dir == DMA_DIR_MEM_TO_PERIPH)
+	if(_dir == DIR_MEM_TO_PERIPH)
 		dma_ch->CMAR = _src;
 	else
 		dma_ch->CPAR = _src;
@@ -173,7 +176,7 @@ void dma::dst(void *dst)
 	ASSERT(!(dma_ch->CCR & DMA_CCR_EN));
 	
 	_dst = (uint32_t)dst;
-	if(_dir == DMA_DIR_MEM_TO_PERIPH)
+	if(_dir == DIR_MEM_TO_PERIPH)
 		dma_ch->CPAR = _dst;
 	else
 		dma_ch->CMAR = _dst;
@@ -191,10 +194,11 @@ void dma::size(uint16_t size)
 	dma_ch->CNDTR = _size;
 }
 
-void dma::dir(dma_dir_t dir)
+void dma::dir(dir_t dir)
 {
+	ASSERT(dir <= DIR_MEM_TO_MEM);
 	/* Only DMA2 is able to perform memory-to-memory transfers */
-	ASSERT(dir != DMA_DIR_MEM_TO_MEM || _dma != DMA_1);
+	ASSERT(dir != DIR_MEM_TO_MEM || _dma != DMA_1);
 	
 	DMA_Channel_TypeDef *dma_ch = ch_list[_dma][_ch];
 	/* this action allowed only when DMA is disabled */
@@ -203,21 +207,23 @@ void dma::dir(dma_dir_t dir)
 	_dir = dir;
 	/* Setup data direction. Default is peripheral to memory */
 	dma_ch->CCR &= ~(DMA_CCR_DIR | DMA_CCR_MEM2MEM);
-	if(_dir == DMA_DIR_MEM_TO_PERIPH)
+	if(_dir == DIR_MEM_TO_PERIPH)
 		dma_ch->CCR |= DMA_CCR_DIR;
-	else if(_dir == DMA_DIR_MEM_TO_MEM)
+	else if(_dir == DIR_MEM_TO_MEM)
 		dma_ch->CCR |= DMA_CCR_MEM2MEM;
 	
 	/* Setup incremental mode */
 	dma_ch->CCR |= DMA_CCR_MINC;
-	if(_dir == DMA_DIR_MEM_TO_MEM)
+	if(_dir == DIR_MEM_TO_MEM)
 		dma_ch->CCR |= DMA_CCR_PINC;
 	else
 		dma_ch->CCR &= ~DMA_CCR_PINC;
 }
 
-void dma::inc_size(dma_inc_size_t inc_size)
+void dma::inc_size(inc_size_t inc_size)
 {
+	ASSERT(inc_size <= INC_SIZE_32);
+	
 	DMA_Channel_TypeDef *dma_ch = ch_list[_dma][_ch];
 	/* This action allowed only when DMA is disabled */
 	ASSERT(!(dma_ch->CCR & DMA_CCR_EN));
@@ -225,9 +231,9 @@ void dma::inc_size(dma_inc_size_t inc_size)
 	_inc_size = inc_size;
 	/* Setup data size. Default is 8 */
 	dma_ch->CCR &= ~(DMA_CCR_MSIZE | DMA_CCR_PSIZE);
-	if(_inc_size == DMA_INC_SIZE_16)
+	if(_inc_size == INC_SIZE_16)
 		dma_ch->CCR |= DMA_CCR_MSIZE_0 | DMA_CCR_PSIZE_0;
-	else if(_inc_size == DMA_INC_SIZE_32)
+	else if(_inc_size == INC_SIZE_32)
 		dma_ch->CCR |= DMA_CCR_MSIZE_1 | DMA_CCR_PSIZE_1;
 }
 
@@ -243,7 +249,7 @@ uint16_t dma::remain() const
 	return (uint16_t)dma_ch->CNDTR;
 }
 
-void dma::start_once(dma_cb_t cb, void *ctx)
+void dma::start_once(cb_t cb, void *ctx)
 {
 	ASSERT(_size > 0);
 	ASSERT(_src);
@@ -275,7 +281,7 @@ void dma::start_once(dma_cb_t cb, void *ctx)
 	dma_ch->CCR |= DMA_CCR_EN;
 }
 
-void dma::start_cyclic(dma_cb_t cb, void *ctx)
+void dma::start_cyclic(cb_t cb, void *ctx)
 {
 	ASSERT(_size > 0);
 	ASSERT(_src);
@@ -332,7 +338,7 @@ extern "C" void dma_irq_hndlr(hal::dma *obj)
 	DMA_Channel_TypeDef *dma_ch = ch_list[obj->_dma][obj->_ch];
 	
 	uint32_t isr;
-	if(obj->_dma == DMA_1)
+	if(obj->_dma == dma::DMA_1)
 		isr = DMA1->ISR;
 	else
 #if defined(STM32F091xC) || defined(STM32F098xx)
@@ -342,7 +348,7 @@ extern "C" void dma_irq_hndlr(hal::dma *obj)
 #endif
 	
 	volatile uint32_t *isr_clr_reg;
-	if(obj->_dma == DMA_1)
+	if(obj->_dma == dma::DMA_1)
 		isr_clr_reg = &DMA1->IFCR;
 	else
 #if defined(STM32F091xC) || defined(STM32F098xx)
@@ -362,13 +368,13 @@ extern "C" void dma_irq_hndlr(hal::dma *obj)
 			dma_ch->CCR &= ~DMA_CCR_EN;
 		
 		if(obj->_cb)
-			obj->_cb(obj, DMA_EVENT_CMPLT, obj->_ctx);
+			obj->_cb(obj, dma::EVENT_CMPLT, obj->_ctx);
 	}
 	else if((dma_ch->CCR & DMA_CCR_HTIE) && (isr & (DMA_ISR_HTIF1 << shift)))
 	{
 		*isr_clr_reg = DMA_IFCR_CHTIF1 << shift;
 		if(obj->_cb)
-			obj->_cb(obj, DMA_EVENT_HALF, obj->_ctx);
+			obj->_cb(obj, dma::EVENT_HALF, obj->_ctx);
 	}
 	else if((dma_ch->CCR & DMA_CCR_TEIE) && (isr & (DMA_ISR_TEIF1 << shift)))
 	{
@@ -379,7 +385,7 @@ extern "C" void dma_irq_hndlr(hal::dma *obj)
 			dma_ch->CCR &= ~DMA_CCR_EN;
 		
 		if(obj->_cb)
-			obj->_cb(obj, DMA_EVENT_ERROR, obj->_ctx);
+			obj->_cb(obj, dma::EVENT_ERROR, obj->_ctx);
 	}
 }
 
@@ -390,12 +396,12 @@ extern "C" void dma_irq_hndlr(hal::dma *obj)
 	defined(STM32F072xB) || defined(STM32F078xx)
 extern "C" void DMA1_Channel1_IRQHandler(void)
 {
-	dma_irq_hndlr(obj_list[DMA_1][DMA_CH_1]);
+	dma_irq_hndlr(obj_list[dma::DMA_1][dma::CH_1]);
 }
 #elif defined(STM32F091xC) || defined(STM32F098xx)
 extern "C" void DMA1_Ch1_IRQHandler(void)
 {
-	dma_irq_hndlr(obj_list[DMA_1][DMA_CH_1]);
+	dma_irq_hndlr(obj_list[dma::DMA_1][dma::CH_1]);
 }
 #endif
 
@@ -409,9 +415,9 @@ extern "C" void DMA1_Channel2_3_IRQHandler(void)
 	uint32_t isr = DMA1->ISR;
 	
 	if(isr & DMA_ISR_GIF2)
-		dma_irq_hndlr(obj_list[DMA_1][DMA_CH_2]);
+		dma_irq_hndlr(obj_list[dma::DMA_1][dma::CH_2]);
 	else if(isr & DMA_ISR_GIF3)
-		dma_irq_hndlr(obj_list[DMA_1][DMA_CH_3]);
+		dma_irq_hndlr(obj_list[dma::DMA_1][dma::CH_3]);
 }
 #elif defined(STM32F091xC) || defined(STM32F098xx)
 extern "C" void DMA1_Ch2_3_DMA2_Ch1_2_IRQHandler(void)
@@ -420,13 +426,13 @@ extern "C" void DMA1_Ch2_3_DMA2_Ch1_2_IRQHandler(void)
 	uint32_t isr_dma2 = DMA2->ISR;
 	
 	if(isr_dma1 & DMA_ISR_GIF2)
-		dma_irq_hndlr(obj_list[DMA_1][DMA_CH_2]);
+		dma_irq_hndlr(obj_list[dma::DMA_1][dma::CH_2]);
 	else if(isr_dma1 & DMA_ISR_GIF3)
-		dma_irq_hndlr(obj_list[DMA_1][DMA_CH_3]);
+		dma_irq_hndlr(obj_list[dma::DMA_1][dma::CH_3]);
 	else if(isr_dma2 & DMA_ISR_GIF1)
-		dma_irq_hndlr(obj_list[DMA_2][DMA_CH_1]);
+		dma_irq_hndlr(obj_list[dma::DMA_2][dma::CH_1]);
 	else if(isr_dma2 & DMA_ISR_GIF2)
-		dma_irq_hndlr(obj_list[DMA_2][DMA_CH_2]);
+		dma_irq_hndlr(obj_list[dma::DMA_2][dma::CH_2]);
 }
 #endif
 
@@ -439,9 +445,9 @@ extern "C" void DMA1_Channel4_5_IRQHandler(void)
 	uint32_t isr = DMA1->ISR;
 	
 	if(isr & DMA_ISR_GIF4)
-		dma_irq_hndlr(obj_list[DMA_1][DMA_CH_4]);
+		dma_irq_hndlr(obj_list[dma::DMA_1][dma::CH_4]);
 	else if(isr & DMA_ISR_GIF5)
-		dma_irq_hndlr(obj_list[DMA_1][DMA_CH_5]);
+		dma_irq_hndlr(obj_list[dma::DMA_1][dma::CH_5]);
 }
 #elif defined(STM32F071xB) || defined(STM32F072xB) || defined(STM32F078xx)
 extern "C" void DMA1_Channel4_5_6_7_IRQHandler(void)
@@ -449,13 +455,13 @@ extern "C" void DMA1_Channel4_5_6_7_IRQHandler(void)
 	uint32_t isr = DMA1->ISR;
 	
 	if(isr & DMA_ISR_GIF4)
-		dma_irq_hndlr(obj_list[DMA_1][DMA_CH_4]);
+		dma_irq_hndlr(obj_list[dma::DMA_1][dma::CH_4]);
 	else if(isr & DMA_ISR_GIF5)
-		dma_irq_hndlr(obj_list[DMA_1][DMA_CH_5]);
+		dma_irq_hndlr(obj_list[dma::DMA_1][dma::CH_5]);
 	else if(isr & DMA_ISR_GIF6)
-		dma_irq_hndlr(obj_list[DMA_1][DMA_CH_6]);
+		dma_irq_hndlr(obj_list[dma::DMA_1][dma::CH_6]);
 	else if(isr & DMA_ISR_GIF7)
-		dma_irq_hndlr(obj_list[DMA_1][DMA_CH_7]);
+		dma_irq_hndlr(obj_list[dma::DMA_1][dma::CH_7]);
 }
 #elif defined(STM32F091xC) || defined(STM32F098xx)
 extern "C" void DMA1_Ch4_7_DMA2_Ch3_5_IRQHandler(void)
@@ -464,18 +470,18 @@ extern "C" void DMA1_Ch4_7_DMA2_Ch3_5_IRQHandler(void)
 	uint32_t isr_dma2 = DMA2->ISR;
 	
 	if(isr_dma1 & DMA_ISR_GIF4)
-		dma_irq_hndlr(obj_list[DMA_1][DMA_CH_4]);
+		dma_irq_hndlr(obj_list[dma::DMA_1][dma::CH_4]);
 	else if(isr_dma1 & DMA_ISR_GIF5)
-		dma_irq_hndlr(obj_list[DMA_1][DMA_CH_5]);
+		dma_irq_hndlr(obj_list[dma::DMA_1][dma::CH_5]);
 	else if(isr_dma1 & DMA_ISR_GIF6)
-		dma_irq_hndlr(obj_list[DMA_1][DMA_CH_6]);
+		dma_irq_hndlr(obj_list[dma::DMA_1][dma::CH_6]);
 	else if(isr_dma1 & DMA_ISR_GIF7)
-		dma_irq_hndlr(obj_list[DMA_1][DMA_CH_7]);
+		dma_irq_hndlr(obj_list[dma::DMA_1][dma::CH_7]);
 	else if(isr_dma2 & DMA_ISR_GIF3)
-		dma_irq_hndlr(obj_list[DMA_2][DMA_CH_3]);
+		dma_irq_hndlr(obj_list[dma::DMA_2][dma::CH_3]);
 	else if(isr_dma2 & DMA_ISR_GIF4)
-		dma_irq_hndlr(obj_list[DMA_2][DMA_CH_4]);
+		dma_irq_hndlr(obj_list[dma::DMA_2][dma::CH_4]);
 	else if(isr_dma2 & DMA_ISR_GIF5)
-		dma_irq_hndlr(obj_list[DMA_2][DMA_CH_5]);
+		dma_irq_hndlr(obj_list[dma::DMA_2][dma::CH_5]);
 }
 #endif

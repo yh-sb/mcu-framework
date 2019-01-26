@@ -12,14 +12,14 @@ namespace hal
 class dma
 {
 	public:
-		enum class dma_t
+		enum dma_t
 		{
 			DMA_1,
 			DMA_2,
 			DMA_END
 		};
 		
-		enum class stream_t
+		enum stream_t
 		{
 			STREAM_0,
 			STREAM_1,
@@ -32,7 +32,7 @@ class dma
 			STREAM_END
 		};
 		
-		enum class ch_t
+		enum ch_t
 		{
 			CH_0,
 			CH_1,
@@ -45,28 +45,28 @@ class dma
 			CH_END
 		};
 		
-		enum class dir_t
+		enum dir_t
 		{
 			DIR_PERIPH_TO_MEM,
 			DIR_MEM_TO_PERIPH,
 			DIR_MEM_TO_MEM
 		};
 		
-		enum class inc_size_t
+		enum inc_size_t
 		{
 			INC_SIZE_8,
 			INC_SIZE_16,
 			INC_SIZE_32
 		};
 		
-		enum class event_t
+		enum event_t
 		{
 			EVENT_CMPLT,
 			EVENT_HALF,
 			EVENT_ERROR
 		};
 		
-		typedef void (*dma_cb_t)(dma *dma, event_t event, void *ctx);
+		typedef void (*cb_t)(dma *dma, event_t event, void *ctx);
 		
 		dma(dma_t dma, stream_t stream, ch_t ch, dir_t dir, inc_size_t inc_size);
 		~dma();
@@ -81,8 +81,8 @@ class dma
 		uint16_t transfered() const;
 		uint16_t remain() const;
 		
-		void start_once(dma_cb_t cb, void *ctx);
-		void start_cyclic(dma_cb_t cb, void *ctx);
+		void start_once(cb_t cb, void *ctx);
+		void start_cyclic(cb_t cb, void *ctx);
 		void stop();
 		
 		bool busy();
@@ -97,7 +97,7 @@ class dma
 		uint32_t _dst;
 		uint16_t _size;
 		void *_ctx;
-		dma_cb_t _cb;
+		cb_t _cb;
 		friend void ::dma_irq_hndlr(dma *obj);
 };
 }
