@@ -123,7 +123,7 @@ exti::exti(gpio &gpio, edge edge):
 	_ctx(NULL),
 	_cb(NULL)
 {
-	ASSERT(_gpio.mode() == gpio::mode::DI);
+	ASSERT(_gpio.mode() == gpio::MODE_DI);
 	
 	gpio_af_init(_gpio);
 	

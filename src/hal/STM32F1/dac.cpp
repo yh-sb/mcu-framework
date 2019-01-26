@@ -24,7 +24,7 @@ dac::dac(dac_t dac, dac_align_t align, gpio &gpio):
 	_gpio(gpio)
 {
 	ASSERT(_dac < DAC_END);
-	ASSERT(_gpio.mode() == GPIO_MODE_AN);
+	ASSERT(_gpio.mode() == gpio::MODE_AN);
 	
 	RCC->APB1ENR |= RCC_APB1ENR_DACEN;
 	

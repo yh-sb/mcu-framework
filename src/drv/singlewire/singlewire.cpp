@@ -33,7 +33,7 @@ singlewire::singlewire(hal::gpio &gpio, hal::tim &tim, hal::exti &exti):
 	_tim(tim),
 	_exti(exti)
 {
-	ASSERT(_gpio.mode() == gpio::mode::OD);
+	ASSERT(_gpio.mode() == gpio::MODE_OD);
 	
 	lock = xSemaphoreCreateBinary();
 	ASSERT(lock);

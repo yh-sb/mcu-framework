@@ -26,7 +26,7 @@ dac::dac(periph periph, align align, gpio &gpio):
 	_align(align),
 	_gpio(gpio)
 {
-	ASSERT(_gpio.mode() == gpio::mode::AN);
+	ASSERT(_gpio.mode() == gpio::MODE_AN);
 	
 	RCC->APB1ENR |= RCC_APB1ENR_DACEN;
 	

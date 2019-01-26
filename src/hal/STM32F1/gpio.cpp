@@ -39,45 +39,93 @@ static uint32_t const rcc_list[PORT_QTY] =
 #endif
 };
 
-gpio::gpio(uint8_t port, uint8_t pin, gpio_mode_t mode, bool state):
+gpio::gpio(uint8_t port, uint8_t pin, mode_t mode, bool state):
 	_port(port),
 	_pin(pin),
 	_mode(mode)
 {
 	ASSERT(_port < PORT_QTY && gpio_list[_port]);
 	ASSERT(_pin < PIN_QTY);
-	
-	GPIO_TypeDef *gpio = gpio_list[_port];
+	ASSERT(_mode <= MODE_AF);
 	
 	RCC->APB2ENR |= rcc_list[_port];
 	
+	gpio::mode(_mode, state);
+}
+
+gpio::~gpio()
+{
+	GPIO_TypeDef *gpio = gpio_list[_port];
+	
 	if(_pin < 8)
 	{
-		/* Switch pin to input */
+		/* No pull-up, no pull-down */
 		gpio->CRL &= ~(GPIO_CRL_MODE0 << (_pin * 4));
-		
-		/* Switch pin to analog mode */
+		/* Analog mode */
 		gpio->CRL &= ~(GPIO_CRL_CNF0 << (_pin * 4));
 	}
 	else
 	{
-		/* Switch pin to input */
+		/* No pull-up, no pull-down */
 		gpio->CRH &= ~(GPIO_CRL_MODE0 << ((_pin - 8) * 4));
-		
-		/* Switch pin to analog mode */
+		/* Analog mode */
+		gpio->CRH &= ~(GPIO_CRL_CNF0 << ((_pin - 8) * 4));
+	}
+}
+
+void gpio::set(bool state) const
+{
+	ASSERT(_mode == MODE_DO || _mode == MODE_OD);
+	
+	gpio_list[_port]->BSRR = 1 << (state ? _pin : _pin + 16);
+}
+
+bool gpio::get() const
+{
+	ASSERT(_mode != MODE_AN && _mode != MODE_AF);
+	
+	return (bool)(gpio_list[_port]->IDR & (1 << _pin));
+}
+
+void gpio::toggle() const
+{
+	ASSERT(_mode == MODE_DO || _mode == MODE_OD);
+	
+	gpio_list[_port]->ODR ^= 1 << _pin;
+}
+
+void gpio::mode(mode_t mode, bool state)
+{
+	ASSERT(mode <= MODE_AF);
+	
+	_mode = mode;
+	GPIO_TypeDef *gpio = gpio_list[_port];
+	
+	if(_pin < 8)
+	{
+		/* Input mode */
+		gpio->CRL &= ~(GPIO_CRL_MODE0 << (_pin * 4));
+		/* Analog mode */
+		gpio->CRL &= ~(GPIO_CRL_CNF0 << (_pin * 4));
+	}
+	else
+	{
+		/* Input mode */
+		gpio->CRH &= ~(GPIO_CRL_MODE0 << ((_pin - 8) * 4));
+		/* Analog mode */
 		gpio->CRH &= ~(GPIO_CRL_CNF0 << ((_pin - 8) * 4));
 	}
 	
 	switch(_mode)
 	{
-		case GPIO_MODE_DO:
+		case MODE_DO:
 			if(_pin < 8)
 				gpio->CRL |= GPIO_CRL_MODE0 << (_pin * 4);
 			else
 				gpio->CRH |= GPIO_CRL_MODE0 << ((_pin - 8) * 4);
 			break;
 		
-		case GPIO_MODE_OD:
+		case MODE_OD:
 			if(_pin < 8)
 			{
 				gpio->CRL |= GPIO_CRL_CNF0_0 << (_pin * 4);
@@ -90,7 +138,7 @@ gpio::gpio(uint8_t port, uint8_t pin, gpio_mode_t mode, bool state):
 			}
 			break;
 		
-		case GPIO_MODE_DI:
+		case MODE_DI:
 			if(_pin < 8)
 				gpio->CRL |= GPIO_CRL_CNF0_1 << (_pin * 4);
 			else
@@ -104,11 +152,11 @@ gpio::gpio(uint8_t port, uint8_t pin, gpio_mode_t mode, bool state):
 				gpio->ODR &= ~(GPIO_ODR_ODR0 << _pin);
 			break;
 		
-		case GPIO_MODE_AN:
+		case MODE_AN:
 			/* Analog mode has already enabled */
 			break;
 		
-		case GPIO_MODE_AF:
+		case MODE_AF:
 			if(_pin < 8)
 			{
 				gpio->CRL |= GPIO_CRL_CNF0_1 << (_pin * 4);
@@ -123,57 +171,6 @@ gpio::gpio(uint8_t port, uint8_t pin, gpio_mode_t mode, bool state):
 	}
 	
 	/* Setup default state */
-	if(_mode == GPIO_MODE_DO || _mode == GPIO_MODE_OD)
-	{
-		if(state)
-			gpio->BSRR |= (1 << _pin);
-		else
-			gpio->BRR |= (1 << _pin);
-	}
-}
-
-gpio::~gpio()
-{
-	GPIO_TypeDef *gpio = gpio_list[_port];
-	
-	if(_pin < 8)
-	{
-		/* Switch pin to input */
-		gpio->CRL &= ~(GPIO_CRL_MODE0 << (_pin * 4));
-		
-		/* Switch pin to analog mode */
-		gpio->CRL &= ~(GPIO_CRL_CNF0 << (_pin * 4));
-	}
-	else
-	{
-		/* Switch pin to input */
-		gpio->CRH &= ~(GPIO_CRL_MODE0 << ((_pin - 8) * 4));
-		
-		/* Switch pin to analog mode */
-		gpio->CRH &= ~(GPIO_CRL_CNF0 << ((_pin - 8) * 4));
-	}
-}
-
-void gpio::set(bool state) const
-{
-	ASSERT(_mode == GPIO_MODE_DO || _mode == GPIO_MODE_OD);
-	
-	if(state)
-		gpio_list[_port]->BSRR |= (1 << _pin);
-	else
-		gpio_list[_port]->BRR |= (1 << _pin);
-}
-
-bool gpio::get() const
-{
-	ASSERT(_mode != GPIO_MODE_AN && _mode != GPIO_MODE_AF);
-	
-	return (bool)(gpio_list[_port]->IDR & (1 << _pin));
-}
-
-void gpio::toggle() const
-{
-	ASSERT(_mode == GPIO_MODE_DO || _mode == GPIO_MODE_OD);
-	
-	gpio_list[_port]->ODR ^= 1 << _pin;
+	if(_mode == MODE_DO || _mode == MODE_OD)
+		gpio->BSRR =  1 << (state ? _pin : _pin + 16);
 }

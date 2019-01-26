@@ -63,7 +63,7 @@ exti::exti(gpio &gpio, edge edge):
 	_ctx(NULL),
 	_cb(NULL)
 {
-	ASSERT(_gpio.mode() == GPIO_MODE_DI);
+	ASSERT(_gpio.mode() == gpio::MODE_DI);
 	
 	/* Enable clock */
 	RCC->APB2ENR |= RCC_APB2ENR_AFIOEN;

@@ -189,8 +189,8 @@ i2c::i2c(i2c_t i2c, uint32_t baud, dma &dma_tx, dma &dma_rx, gpio &sda,
 	ASSERT(tx_dma.inc_size() == dma::inc_size_t::INC_SIZE_8);
 	ASSERT(rx_dma.dir() == dma::dir_t::DIR_PERIPH_TO_MEM);
 	ASSERT(rx_dma.inc_size() == dma::inc_size_t::INC_SIZE_8);
-	ASSERT(_sda.mode() == gpio::mode::AF);
-	ASSERT(_scl.mode() == gpio::mode::AF);
+	ASSERT(_sda.mode() == gpio::MODE_AF);
+	ASSERT(_scl.mode() == gpio::MODE_AF);
 	
 	api_lock = xSemaphoreCreateMutex();
 	ASSERT(api_lock);

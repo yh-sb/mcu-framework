@@ -140,8 +140,8 @@ uart::uart(uart_t uart, uint32_t baud, uart_stopbit_t stopbit,
 	ASSERT(tx_dma.inc_size() == DMA_INC_SIZE_8);
 	ASSERT(rx_dma.dir() == DMA_DIR_PERIPH_TO_MEM);
 	ASSERT(rx_dma.inc_size() == DMA_INC_SIZE_8);
-	ASSERT(tx_gpio.mode() == GPIO_MODE_AF);
-	ASSERT(rx_gpio.mode() == GPIO_MODE_AF);
+	ASSERT(tx_gpio.mode() == gpio::MODE_AF);
+	ASSERT(rx_gpio.mode() == gpio::MODE_AF);
 	
 	tx_api_lock = xSemaphoreCreateMutex();
 	ASSERT(tx_api_lock);
