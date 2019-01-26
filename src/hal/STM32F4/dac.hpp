@@ -9,20 +9,21 @@ namespace hal
 class dac
 {
 	public:
-		enum class periph
+		enum dac_t
 		{
 			DAC_1,
-			DAC_2
+			DAC_2,
+			DAC_END
 		};
 		
-		enum class align
+		enum align_t
 		{
-			R_8,
-			R_12,
-			L_12
+			ALIGN_R_8,
+			ALIGN_R_12,
+			ALIGN_L_12
 		};
 		
-		dac(periph periph, align align, gpio &gpio);
+		dac(dac_t dac, align_t align, gpio &gpio);
 		~dac();
 		
 		void set(uint16_t val) const;
@@ -30,8 +31,8 @@ class dac
 		uint16_t get() const;
 	
 	private:
-		periph _periph;
-		align _align;
+		dac_t _dac;
+		align_t _align;
 		gpio &_gpio;
 };
 }

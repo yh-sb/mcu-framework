@@ -18,12 +18,13 @@ using namespace hal;
 
 #define V_REF (float)3.3
 
-dac::dac(dac_t dac, dac_align_t align, gpio &gpio):
+dac::dac(dac_t dac, align_t align, gpio &gpio):
 	_dac(dac),
 	_align(align),
 	_gpio(gpio)
 {
 	ASSERT(_dac < DAC_END);
+	ASSERT(_align <= ALIGN_L_12);
 	ASSERT(_gpio.mode() == gpio::MODE_AN);
 	
 	RCC->APB1ENR |= RCC_APB1ENR_DACEN;
@@ -43,13 +44,13 @@ dac::~dac()
 void dac::set(uint16_t val) const
 {
 	ASSERT(val < 4096);
-	ASSERT(val < 256 || _align != DAC_ALIGN_8_R);
+	ASSERT(val < 256 || _align != ALIGN_R_8);
 	
 	if(_dac == DAC_1)
 	{
-		if(_align == DAC_ALIGN_8_R)
+		if(_align == ALIGN_R_8)
 			DAC->DHR8R1 = val;
-		else if(_align == DAC_ALIGN_12_R)
+		else if(_align == ALIGN_R_12)
 			DAC->DHR12R1 = val;
 		else
 			DAC->DHR12L1 = val;
@@ -57,9 +58,9 @@ void dac::set(uint16_t val) const
 	}
 	else
 	{
-		if(_align == DAC_ALIGN_8_R)
+		if(_align == ALIGN_R_8)
 			DAC->DHR8R2 = val;
-		else if(_align == DAC_ALIGN_12_R)
+		else if(_align == ALIGN_R_12)
 			DAC->DHR12R2 = val;
 		else
 			DAC->DHR12L2 = val;
@@ -73,7 +74,7 @@ void dac::set(float voltage) const
 	
 	uint16_t code = 0;
 	
-	if(_align == DAC_ALIGN_8_R)
+	if(_align == ALIGN_R_8)
 		code = (uint16_t)((voltage / V_REF) * 255);
 	else
 		code = (uint16_t)((voltage / V_REF) * 4095);
