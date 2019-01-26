@@ -2,7 +2,6 @@
 
 #include "hal/STM32F0/rcc.hpp"
 
-//#include "hal/STM32F4/CMSIS/core-support/core_cm4.h"
 #include "hal/STM32F0/CMSIS/device-support/include/stm32f0xx.h"
 #include "hal/STM32F0/CMSIS/device-support/include/system_stm32f0xx.h"
 

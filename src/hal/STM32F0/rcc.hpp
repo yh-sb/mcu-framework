@@ -5,22 +5,22 @@
 
 namespace hal
 {
-typedef enum
+enum rcc_src_t
 {
 	RCC_SRC_SYSCLK,
 	RCC_SRC_AHB,
 	RCC_SRC_APB1,
 	RCC_SRC_APB2
-} rcc_src_t;
+};
 
-typedef enum
+enum rcc_rst_reason_t
 {
 	RCC_RST_REASON_LOW_POWER,
 	RCC_RST_REASON_EXTERNAL,
 	RCC_RST_REASON_INTERNAL,
 	RCC_RST_REASON_WDT,
 	RCC_RST_REASON_UNKNOWN
-} rcc_rst_reason_t;
+};
 
 /**
  * @brief      Specific RCC initialization

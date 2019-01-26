@@ -1,10 +1,7 @@
 #include <stdint.h>
 
-#include "common/assert.h"
-
 #include "hal/STM32F4/rcc.hpp"
 
-//#include "hal/STM32F4/CMSIS/core-support/core_cm4.h"
 #include "hal/STM32F4/CMSIS/device-support/include/stm32f4xx.h"
 #include "hal/STM32F4/CMSIS/device-support/include/system_stm32f4xx.h"
 
