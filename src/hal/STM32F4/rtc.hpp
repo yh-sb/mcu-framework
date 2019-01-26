@@ -5,13 +5,13 @@
 
 namespace hal
 {
-typedef enum
+enum rtc_clk_t
 {
 	RTC_CLK_LSI,
 	RTC_CLK_LSE
-} rtc_clk_t;
+};
 
-typedef struct
+struct rtc_time_t
 {
 	uint8_t year;
 	uint8_t mon;
@@ -20,7 +20,7 @@ typedef struct
 	uint8_t h;
 	uint8_t m;
 	uint8_t s;
-} rtc_time_t;
+};
 
 /**
  * @brief      RTC initialization
