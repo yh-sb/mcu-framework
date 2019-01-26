@@ -177,18 +177,18 @@ int8_t onewire::do_reset()
 	if(_uart.baud() != 9600)
 		_uart.baud(9600);
 	
-	if(_uart.tx(&tx_buff, 1) != UART_ERR_NONE)
+	if(_uart.tx(&tx_buff, 1) != uart::RES_OK)
 	{
 		res = ONEWIRE_ERR_TX_FAIL;
 		goto Exit;
 	}
 	
 	uart_res = _uart.rx(&rx_buff, &size, RX_WAIT_TIMEOUT);
-	if(uart_res == UART_ERR_RX_TIMEOUT)
+	if(uart_res == uart::RES_RX_TIMEOUT)
 		res = ONEWIRE_ERR_NO_DEV;
-	else if(uart_res == UART_ERR_RX_FAIL || size != sizeof(rx_buff))
+	else if(uart_res == uart::RES_RX_FAIL || size != sizeof(rx_buff))
 		res = ONEWIRE_ERR_RX_FAIL;
-	else if(uart_res == UART_ERR_TX_FAIL)
+	else if(uart_res == uart::RES_TX_FAIL)
 		res = ONEWIRE_ERR_TX_FAIL;
 	else if(rx_buff == 0x00)
 		res = ONEWIRE_ERR_LINE_BUSY;
@@ -229,11 +229,11 @@ int8_t onewire::send_byte(uint8_t byte)
 	
 	int8_t uart_res = _uart.exch(tx_buff, size, rx_buff, &size, RX_WAIT_TIMEOUT);
 	
-	if(uart_res == UART_ERR_RX_TIMEOUT)
+	if(uart_res == uart::RES_RX_TIMEOUT)
 		return ONEWIRE_ERR_NO_DEV;
-	else if(uart_res == UART_ERR_RX_FAIL || size != sizeof(rx_buff))
+	else if(uart_res == uart::RES_RX_FAIL || size != sizeof(rx_buff))
 		return ONEWIRE_ERR_RX_FAIL;
-	else if(uart_res == UART_ERR_TX_FAIL)
+	else if(uart_res == uart::RES_TX_FAIL)
 		return ONEWIRE_ERR_TX_FAIL;
 	
 	if(memcmp(tx_buff, rx_buff, sizeof(tx_buff)))
@@ -250,11 +250,11 @@ int8_t onewire::read_byte(uint8_t *byte)
 	memset(tx_buff, 0xFF, sizeof(tx_buff));
 	int8_t uart_res = _uart.exch(tx_buff, size, rx_buff, &size, RX_WAIT_TIMEOUT);
 	
-	if(uart_res == UART_ERR_RX_TIMEOUT)
+	if(uart_res == uart::RES_RX_TIMEOUT)
 		return ONEWIRE_ERR_NO_DEV;
-	else if(uart_res == UART_ERR_RX_FAIL || size != sizeof(rx_buff))
+	else if(uart_res == uart::RES_RX_FAIL || size != sizeof(rx_buff))
 		return ONEWIRE_ERR_RX_FAIL;
-	else if(uart_res == UART_ERR_TX_FAIL)
+	else if(uart_res == uart::RES_TX_FAIL)
 		return ONEWIRE_ERR_TX_FAIL;
 	
 	*byte = 0;
