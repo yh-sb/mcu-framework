@@ -19,7 +19,7 @@ using namespace hal;
 
 #define IRQ_PRIORITY 3
 
-static SPI_TypeDef *const spi_list[SPI_END] =
+static SPI_TypeDef *const spi_list[spi::SPI_END] =
 {
 	SPI1,
 #if defined(STM32F401xC) || defined(STM32F401xE) || defined(STM32F405xx) || \
@@ -72,7 +72,7 @@ static SPI_TypeDef *const spi_list[SPI_END] =
 #endif
 };
 
-static IRQn_Type const irq_list[SPI_END] =
+static IRQn_Type const irq_list[spi::SPI_END] =
 {
 	SPI1_IRQn,
 #if defined(STM32F401xC) || defined(STM32F401xE) || defined(STM32F405xx) || \
@@ -125,7 +125,7 @@ static IRQn_Type const irq_list[SPI_END] =
 #endif
 };
 
-static uint32_t const rcc_list[SPI_END] =
+static uint32_t const rcc_list[spi::SPI_END] =
 {
 	RCC_APB2ENR_SPI1EN,
 #if defined(STM32F401xC) || defined(STM32F401xE) || defined(STM32F405xx) || \
@@ -178,7 +178,7 @@ static uint32_t const rcc_list[SPI_END] =
 #endif
 };
 
-static uint32_t const reset_list[SPI_END] =
+static uint32_t const reset_list[spi::SPI_END] =
 {
 	RCC_APB2RSTR_SPI1RST,
 #if defined(STM32F401xC) || defined(STM32F401xE) || defined(STM32F405xx) || \
@@ -231,7 +231,7 @@ static uint32_t const reset_list[SPI_END] =
 #endif
 };
 
-static volatile uint32_t *rcc_addr_list[SPI_END] =
+static volatile uint32_t *rcc_addr_list[spi::SPI_END] =
 {
 	&RCC->APB2ENR,
 	&RCC->APB1ENR,
@@ -241,7 +241,7 @@ static volatile uint32_t *rcc_addr_list[SPI_END] =
 	&RCC->APB2ENR
 };
 
-static volatile uint32_t *reset_addr_list[SPI_END] =
+static volatile uint32_t *reset_addr_list[spi::SPI_END] =
 {
 	&RCC->APB2RSTR,
 	&RCC->APB1RSTR,
@@ -251,7 +251,7 @@ static volatile uint32_t *reset_addr_list[SPI_END] =
 	&RCC->APB2RSTR
 };
 
-static rcc_src_t const rcc_src_list[SPI_END] =
+static rcc_src_t const rcc_src_list[spi::SPI_END] =
 {
 	RCC_SRC_APB2,
 	RCC_SRC_APB1,
@@ -261,7 +261,7 @@ static rcc_src_t const rcc_src_list[SPI_END] =
 	RCC_SRC_APB2
 };
 
-static uint8_t const gpio_af_list[SPI_END] =
+static uint8_t const gpio_af_list[spi::SPI_END] =
 {
 	0x05,
 	0x05,
@@ -312,17 +312,17 @@ static GPIO_TypeDef *const gpio_list[PORT_QTY] =
 #endif
 };
 
-static spi *obj_list[SPI_END];
+static spi *obj_list[spi::SPI_END];
 
-static void gpio_af_init(spi_t spi, gpio &gpio);
-static uint8_t calc_presc(spi_t spi, uint32_t baud);
+static void gpio_af_init(spi::spi_t spi, gpio &gpio);
+static uint8_t calc_presc(spi::spi_t spi, uint32_t baud);
 
 #if configUSE_TRACE_FACILITY
 static traceHandle isr_dma_tx, isr_dma_rx, isr_spi;
 #endif
 
-spi::spi(spi_t spi, uint32_t baud, spi_cpol_t cpol, spi_cpha_t cpha,
-	spi_bit_order_t bit_order, dma &dma_tx, dma &dma_rx, gpio &mosi,
+spi::spi(spi_t spi, uint32_t baud, cpol_t cpol, cpha_t cpha,
+	bit_order_t bit_order, dma &dma_tx, dma &dma_rx, gpio &mosi,
 	gpio &miso, gpio &clk):
 	_spi(spi),
 	_baud(baud),
@@ -331,7 +331,7 @@ spi::spi(spi_t spi, uint32_t baud, spi_cpol_t cpol, spi_cpha_t cpha,
 	_bit_order(bit_order),
 	api_lock(NULL),
 	irq_lock(NULL),
-	irq_res(SPI_ERR_NONE),
+	irq_res(RES_OK),
 	_mosi(mosi),
 	_miso(miso),
 	_clk(clk),
@@ -340,10 +340,12 @@ spi::spi(spi_t spi, uint32_t baud, spi_cpol_t cpol, spi_cpha_t cpha,
 	tx_buff(NULL),
 	rx_dma(dma_rx),
 	rx_buff(NULL),
-	rx_irq_res(SPI_ERR_NONE)
+	rx_irq_res(RES_OK)
 {
 	ASSERT(_spi < SPI_END && spi_list[_spi]);
 	ASSERT(_baud > 0);
+	ASSERT(_cpol <= CPOL_1);
+	ASSERT(_cpha <= CPHA_1);
 	ASSERT(tx_dma.dir() == dma::DIR_MEM_TO_PERIPH);
 	ASSERT(tx_dma.inc_size() == dma::INC_SIZE_8);
 	ASSERT(rx_dma.dir() == dma::DIR_PERIPH_TO_MEM);
@@ -380,17 +382,17 @@ spi::spi(spi_t spi, uint32_t baud, spi_cpol_t cpol, spi_cpha_t cpha,
 	// Master mode
 	spi_base->CR1 |= SPI_CR1_MSTR;
 	
-	if(_cpol == SPI_CPOL_0)
+	if(_cpol == CPOL_0)
 		spi_base->CR1 &= ~SPI_CR1_CPOL;
 	else
 		spi_base->CR1 |= SPI_CR1_CPOL;
 	
-	if(_cpha == SPI_CPHA_0)
+	if(_cpha == CPHA_0)
 		spi_base->CR1 &= ~SPI_CR1_CPHA;
 	else
 		spi_base->CR1 |= SPI_CR1_CPHA;
 	
-	if(_bit_order == SPI_BIT_ORDER_MSB)
+	if(_bit_order == BIT_ORDER_MSB)
 		spi_base->CR1 &= ~SPI_CR1_LSBFIRST;
 	else
 		spi_base->CR1 |= SPI_CR1_LSBFIRST;
@@ -440,8 +442,10 @@ void spi::baud(uint32_t baud)
 	xSemaphoreGive(api_lock);
 }
 
-void spi::cpol(spi_cpol_t cpol)
+void spi::cpol(cpol_t cpol)
 {
+	ASSERT(cpol <= CPOL_1);
+	
 	xSemaphoreTake(api_lock, portMAX_DELAY);
 	
 	_cpol = cpol;
@@ -449,7 +453,7 @@ void spi::cpol(spi_cpol_t cpol)
 	
 	spi->CR1 &= ~SPI_CR1_SPE;
 	
-	if(_cpol == SPI_CPOL_0)
+	if(_cpol == CPOL_0)
 		spi->CR1 &= ~SPI_CR1_CPOL;
 	else
 		spi->CR1 |= SPI_CR1_CPOL;
@@ -459,8 +463,10 @@ void spi::cpol(spi_cpol_t cpol)
 	xSemaphoreGive(api_lock);
 }
 
-void spi::cpha(spi_cpha_t cpha)
+void spi::cpha(cpha_t cpha)
 {
+	ASSERT(cpha <= CPHA_1);
+	
 	xSemaphoreTake(api_lock, portMAX_DELAY);
 	
 	_cpha = cpha;
@@ -468,7 +474,7 @@ void spi::cpha(spi_cpha_t cpha)
 	
 	spi->CR1 &= ~SPI_CR1_SPE;
 	
-	if(_cpha == SPI_CPHA_0)
+	if(_cpha == CPHA_0)
 		spi->CR1 &= ~SPI_CR1_CPHA;
 	else
 		spi->CR1 |= SPI_CR1_CPHA;
@@ -478,8 +484,10 @@ void spi::cpha(spi_cpha_t cpha)
 	xSemaphoreGive(api_lock);
 }
 
-void spi::bit_order(spi_bit_order_t bit_order)
+void spi::bit_order(bit_order_t bit_order)
 {
+	ASSERT(bit_order <= BIT_ORDER_LSB);
+	
 	xSemaphoreTake(api_lock, portMAX_DELAY);
 	
 	_bit_order = bit_order;
@@ -487,7 +495,7 @@ void spi::bit_order(spi_bit_order_t bit_order)
 	
 	spi->CR1 &= ~SPI_CR1_SPE;
 	
-	if(_bit_order == SPI_BIT_ORDER_MSB)
+	if(_bit_order == BIT_ORDER_MSB)
 		spi->CR1 &= ~SPI_CR1_LSBFIRST;
 	else
 		spi->CR1 |= SPI_CR1_LSBFIRST;
@@ -613,7 +621,7 @@ int8_t spi::exch(void *buff_tx, void *buff_rx, uint16_t size, gpio *cs)
 	return irq_res;
 }
 
-static void gpio_af_init(spi_t spi, gpio &gpio)
+static void gpio_af_init(spi::spi_t spi, gpio &gpio)
 {
 	GPIO_TypeDef *gpio_reg = gpio_list[gpio.port()];
 	
@@ -634,7 +642,7 @@ static void gpio_af_init(spi_t spi, gpio &gpio)
 	}
 }
 
-static uint8_t calc_presc(spi_t spi, uint32_t baud)
+static uint8_t calc_presc(spi::spi_t spi, uint32_t baud)
 {
 	uint32_t div = rcc_get_freq(rcc_src_list[spi]) / baud;
 	
@@ -689,7 +697,7 @@ void spi::on_dma_tx(dma *dma, dma::event_t event, void *ctx)
 			obj->_cs = NULL;
 		}
 		
-		obj->irq_res = SPI_ERR_FAIL;
+		obj->irq_res = RES_FAIL;
 		xSemaphoreGiveFromISR(obj->irq_lock, &hi_task_woken);
 		portYIELD_FROM_ISR(hi_task_woken);
 	}
@@ -712,9 +720,9 @@ void spi::on_dma_rx(dma *dma, dma::event_t event, void *ctx)
 	obj->rx_buff = NULL;
 	spi->CR2 &= ~SPI_CR2_RXDMAEN;
 	if(event == dma::EVENT_CMPLT)
-		obj->irq_res = SPI_ERR_NONE;
+		obj->irq_res = RES_OK;
 	else if(event == dma::EVENT_ERROR)
-		obj->irq_res = SPI_ERR_FAIL;
+		obj->irq_res = RES_FAIL;
 	
 	if(obj->_cs)
 	{
@@ -744,7 +752,7 @@ extern "C" void spi_irq_hndlr(hal::spi *obj)
 		spi->CR2 &= ~(SPI_CR2_TXEIE | SPI_CR2_TXDMAEN);
 		/* Wait for last byte transmission/receiving */
 		while(spi->SR & SPI_SR_BSY);
-		obj->irq_res = SPI_ERR_NONE;
+		obj->irq_res = spi::RES_OK;
 	}
 	else if((spi->CR2 & SPI_CR2_ERRIE) &&
 		(sr & (SPI_SR_UDR | SPI_SR_MODF | SPI_SR_OVR)))
@@ -760,7 +768,7 @@ extern "C" void spi_irq_hndlr(hal::spi *obj)
 			obj->rx_dma.stop();
 			obj->rx_buff = NULL;
 		}
-		obj->irq_res = SPI_ERR_FAIL;
+		obj->irq_res = spi::RES_FAIL;
 	}
 	
 	if(obj->_cs)
@@ -779,7 +787,7 @@ extern "C" void spi_irq_hndlr(hal::spi *obj)
 
 extern "C" void SPI1_IRQHandler(void)
 {
-	spi_irq_hndlr(obj_list[SPI_1]);
+	spi_irq_hndlr(obj_list[spi::SPI_1]);
 }
 
 #if defined(STM32F401xC) || defined(STM32F401xE) || defined(STM32F405xx) || \
@@ -792,7 +800,7 @@ extern "C" void SPI1_IRQHandler(void)
 	defined(STM32F479xx)
 extern "C" void SPI2_IRQHandler(void)
 {
-	spi_irq_hndlr(obj_list[SPI_2]);
+	spi_irq_hndlr(obj_list[spi::SPI_2]);
 }
 #endif
 
@@ -805,7 +813,7 @@ extern "C" void SPI2_IRQHandler(void)
 	defined(STM32F469xx) || defined(STM32F479xx)
 extern "C" void SPI3_IRQHandler(void)
 {
-	spi_irq_hndlr(obj_list[SPI_3]);
+	spi_irq_hndlr(obj_list[spi::SPI_3]);
 }
 #endif
 
@@ -817,7 +825,7 @@ extern "C" void SPI3_IRQHandler(void)
 	defined(STM32F479xx)
 extern "C" void SPI4_IRQHandler(void)
 {
-	spi_irq_hndlr(obj_list[SPI_4]);
+	spi_irq_hndlr(obj_list[spi::SPI_4]);
 }
 #endif
 
@@ -828,7 +836,7 @@ extern "C" void SPI4_IRQHandler(void)
 	defined(STM32F439xx) || defined(STM32F469xx) || defined(STM32F479xx)
 extern "C" void SPI5_IRQHandler(void)
 {
-	spi_irq_hndlr(obj_list[SPI_5]);
+	spi_irq_hndlr(obj_list[spi::SPI_5]);
 }
 #endif
 
@@ -836,6 +844,6 @@ extern "C" void SPI5_IRQHandler(void)
 	defined(STM32F439xx) || defined(STM32F469xx) || defined(STM32F479xx)
 extern "C" void SPI6_IRQHandler(void)
 {
-	spi_irq_hndlr(obj_list[SPI_6]);
+	spi_irq_hndlr(obj_list[spi::SPI_6]);
 }
 #endif

@@ -15,57 +15,57 @@ extern "C" void spi_irq_hndlr(hal::spi *obj);
 
 namespace hal
 {
-typedef enum
-{
-	SPI_1,
-	SPI_2,
-	SPI_3,
-	SPI_4,
-	SPI_5,
-	SPI_6,
-	SPI_END
-} spi_t;
-
-typedef enum
-{
-	SPI_CPOL_1,
-	SPI_CPOL_0
-} spi_cpol_t;
-
-typedef enum
-{
-	SPI_CPHA_0,
-	SPI_CPHA_1
-} spi_cpha_t;
-
-typedef enum
-{
-	SPI_BIT_ORDER_MSB,
-	SPI_BIT_ORDER_LSB
-} spi_bit_order_t;
-
-enum spi_err_t
-{
-	SPI_ERR_NONE =  0,
-	SPI_ERR_FAIL = -1
-};
-
 class spi
 {
 	public:
-		spi(spi_t spi, uint32_t baud, spi_cpol_t cpol, spi_cpha_t cpha,
-			spi_bit_order_t bit_order, dma &dma_tx, dma &dma_rx, gpio &mosi,
+		enum spi_t
+		{
+			SPI_1,
+			SPI_2,
+			SPI_3,
+			SPI_4,
+			SPI_5,
+			SPI_6,
+			SPI_END
+		};
+
+		enum cpol_t
+		{
+			CPOL_0,
+			CPOL_1
+		};
+
+		enum cpha_t
+		{
+			CPHA_0,
+			CPHA_1
+		};
+
+		enum bit_order_t
+		{
+			BIT_ORDER_MSB,
+			BIT_ORDER_LSB
+		};
+
+		enum res_t
+		{
+			RES_OK   =  0,
+			RES_FAIL = -1
+		};
+		
+		spi(spi_t spi, uint32_t baud, cpol_t cpol, cpha_t cpha,
+			bit_order_t bit_order, dma &dma_tx, dma &dma_rx, gpio &mosi,
 			gpio &miso, gpio &clk);
 		~spi();
 		
 		void baud(uint32_t baud);
 		uint32_t baud() const { return _baud; }
-		void cpol(spi_cpol_t cpol);
-		spi_cpol_t cpol() const { return _cpol; }
-		void cpha(spi_cpha_t cpha);
-		spi_cpha_t cpha() const { return _cpha; }
-		void bit_order(spi_bit_order_t bit_order);
-		spi_bit_order_t bit_order() const { return _bit_order; };
+		void cpol(cpol_t cpol);
+		cpol_t cpol() const { return _cpol; }
+		void cpha(cpha_t cpha);
+		cpha_t cpha() const { return _cpha; }
+		void bit_order(bit_order_t bit_order);
+		bit_order_t bit_order() const { return _bit_order; };
 		int8_t tx(void *buff, uint16_t size, gpio *cs = NULL);
 		int8_t tx(uint8_t byte, gpio *cs = NULL);
 		int8_t rx(void *buff, uint16_t size, gpio *cs = NULL);
@@ -76,13 +76,13 @@ class spi
 	private:
 		spi_t _spi;
 		uint32_t _baud;
-		spi_cpol_t _cpol;
-		spi_cpha_t _cpha;
-		spi_bit_order_t _bit_order;
+		cpol_t _cpol;
+		cpha_t _cpha;
+		bit_order_t _bit_order;
 		
 		SemaphoreHandle_t api_lock;
 		SemaphoreHandle_t irq_lock;
-		int8_t irq_res;
+		res_t irq_res;
 		
 		gpio &_mosi;
 		gpio &_miso;
