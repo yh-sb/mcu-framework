@@ -81,7 +81,7 @@ void singlewire::fsm_run(bool is_tim_expired)
 		case REQ:
 			fsm.state = WAIT_RESP_START;
 			_gpio.set(1);
-			_exti.trigger(exti::edge::FALLING);
+			_exti.trigger(exti::TRIGGER_FALLING);
 			_exti.on();
 			_tim.us(timeout[WAIT_RESP_START]);
 			_tim.start();
@@ -97,7 +97,7 @@ void singlewire::fsm_run(bool is_tim_expired)
 			_tim.stop();
 			
 			fsm.state = WAIT_RESP_END;
-			_exti.trigger(exti::edge::RISING);
+			_exti.trigger(exti::TRIGGER_RISING);
 			_tim.us(timeout[WAIT_RESP_END]);
 			_tim.start();
 			break;
@@ -112,7 +112,7 @@ void singlewire::fsm_run(bool is_tim_expired)
 			_tim.stop();
 			
 			fsm.state = WAIT_BIT_START_LOW;
-			_exti.trigger(exti::edge::FALLING);
+			_exti.trigger(exti::TRIGGER_FALLING);
 			_tim.us(timeout[WAIT_BIT_START_LOW]);
 			_tim.start();
 			break;
@@ -127,7 +127,7 @@ void singlewire::fsm_run(bool is_tim_expired)
 			_tim.stop();
 			
 			fsm.state = WAIT_BIT_START_HI;
-			_exti.trigger(exti::edge::RISING);
+			_exti.trigger(exti::TRIGGER_RISING);
 			_tim.us(timeout[WAIT_BIT_START_HI]);
 			_tim.start();
 			break;
@@ -142,7 +142,7 @@ void singlewire::fsm_run(bool is_tim_expired)
 			_tim.stop();
 			
 			fsm.state = WAIT_BIT_CHECK;
-			_exti.trigger(exti::edge::FALLING);
+			_exti.trigger(exti::TRIGGER_FALLING);
 			_tim.us(timeout[WAIT_BIT_CHECK]);
 			_tim.start();
 			break;
@@ -153,7 +153,7 @@ void singlewire::fsm_run(bool is_tim_expired)
 				fsm.buff[fsm.byte] |= 1 << fsm.bit;
 				
 				fsm.state =  WAIT_BIT_START_LOW;
-				_exti.trigger(exti::edge::FALLING);
+				_exti.trigger(exti::TRIGGER_FALLING);
 				_tim.us(timeout[WAIT_BIT_CHECK]);
 				_tim.start();
 			}
@@ -163,7 +163,7 @@ void singlewire::fsm_run(bool is_tim_expired)
 				fsm.buff[fsm.byte] &= ~(1 << fsm.bit);
 				
 				fsm.state = WAIT_BIT_START_HI;
-				_exti.trigger(exti::edge::RISING);
+				_exti.trigger(exti::TRIGGER_RISING);
 				_tim.us(timeout[WAIT_BIT_CHECK] + timeout[WAIT_BIT_START_HI]);
 				_tim.start();
 			}

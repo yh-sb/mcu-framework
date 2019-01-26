@@ -75,12 +75,13 @@ static exti *obj_list[PIN_QTY];
 
 static void gpio_af_init(gpio &gpio);
 
-exti::exti(gpio &gpio, edge edge):
+exti::exti(gpio &gpio, trigger_t trigger):
 	_gpio(gpio),
-	_edge(edge),
+	_trigger(trigger),
 	_ctx(NULL),
 	_cb(NULL)
 {
+	ASSERT(_trigger <= TRIGGER_BOTH);
 	ASSERT(_gpio.mode() == gpio::MODE_DI);
 	
 	gpio_af_init(_gpio);
@@ -102,9 +103,9 @@ exti::exti(gpio &gpio, edge edge):
 	/* Setup EXTI trigger */
 	EXTI->RTSR &= ~line_bit;
 	EXTI->FTSR &= ~line_bit;
-	if(_edge == edge::RISING)
+	if(_trigger == TRIGGER_RISING)
 		EXTI->RTSR |= line_bit;
-	else if(_edge == edge::FALLING)
+	else if(_trigger == TRIGGER_FALLING)
 		EXTI->FTSR |= line_bit;
 	else
 	{
@@ -124,7 +125,7 @@ exti::~exti()
 	
 }
 
-void exti::cb(exti_cb_t cb, void *ctx)
+void exti::cb(cb_t cb, void *ctx)
 {
 	_cb = cb;
 	_ctx = ctx;
@@ -150,13 +151,16 @@ void exti::off()
 	EXTI->IMR &= ~(1 << _gpio.pin());
 }
 
-void exti::trigger(edge edge)
+void exti::trigger(trigger_t trigger)
 {
-	_edge = edge;
+	ASSERT(trigger <= TRIGGER_BOTH);
+	
+	_trigger = trigger;
 	uint32_t line_bit = 1 << _gpio.pin();
-	if(_edge == edge::RISING)
+	
+	if(_trigger == TRIGGER_RISING)
 		EXTI->RTSR |= line_bit;
-	else if(_edge == edge::FALLING)
+	else if(_trigger == TRIGGER_FALLING)
 		EXTI->FTSR |= line_bit;
 	else
 	{
