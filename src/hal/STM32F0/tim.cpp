@@ -6,13 +6,14 @@
 #include "hal/STM32F0/rcc.hpp"
 
 #include "hal/STM32F0/CMSIS/device-support/include/stm32f0xx.h"
+#include "hal/STM32F0/CMSIS/core-support/core_cm0.h"
 
 using namespace hal;
 
 #define IRQ_PRIORITY 1
-#define MAX_RESOL 0xFFFF
+#define MAX_16BIT 0xFFFF
 
-static TIM_TypeDef *const tim_list[TIM_END] =
+static TIM_TypeDef *const tim_list[tim::TIM_END] =
 {
 	TIM1,
 #if defined(STM32F031x6) || defined(STM32F038xx) || defined(STM32F042x6) || \
@@ -52,7 +53,7 @@ static TIM_TypeDef *const tim_list[TIM_END] =
 	TIM17
 };
 
-static uint32_t const rcc_list[TIM_END] =
+static uint32_t const rcc_list[tim::TIM_END] =
 {
 	RCC_APB2ENR_TIM1EN,
 #if defined(STM32F031x6) || defined(STM32F038xx) || defined(STM32F042x6) || \
@@ -93,14 +94,17 @@ static uint32_t const rcc_list[TIM_END] =
 	RCC_APB2ENR_TIM16EN, RCC_APB2ENR_TIM17EN
 };
 
-static volatile uint32_t *const rcc_bus_list[TIM_END] =
+static volatile uint32_t *const rcc_bus_list[tim::TIM_END] =
 {
-	&RCC->APB2ENR, &RCC->APB1ENR, &RCC->APB1ENR, NULL, NULL, &RCC->APB1ENR,
-	&RCC->APB1ENR, NULL, NULL, NULL, NULL, NULL, NULL, &RCC->APB1ENR,
-	&RCC->APB2ENR, &RCC->APB2ENR, &RCC->APB2ENR
+	&RCC->APB2ENR, &RCC->APB1ENR, &RCC->APB1ENR,
+	NULL,          NULL,          &RCC->APB1ENR,
+	&RCC->APB1ENR, NULL,          NULL,
+	NULL,          NULL,          NULL,
+	NULL,          &RCC->APB1ENR, &RCC->APB2ENR,
+	&RCC->APB2ENR, &RCC->APB2ENR
 };
 
-static rcc_src_t const rcc_src_list[TIM_END] =
+static rcc_src_t const rcc_src_list[tim::TIM_END] =
 {
 	RCC_SRC_APB2, RCC_SRC_APB1, RCC_SRC_APB1,
 	static_cast<rcc_src_t>(0), static_cast<rcc_src_t>(0),
@@ -111,7 +115,7 @@ static rcc_src_t const rcc_src_list[TIM_END] =
 	RCC_SRC_APB1, RCC_SRC_APB2, RCC_SRC_APB2, RCC_SRC_APB2
 };
 
-static IRQn_Type const irq_list[TIM_END] =
+static IRQn_Type const irq_list[tim::TIM_END] =
 {
 	TIM1_CC_IRQn,
 #if defined(STM32F031x6) || defined(STM32F038xx) || defined(STM32F042x6) || \
@@ -153,10 +157,9 @@ static IRQn_Type const irq_list[TIM_END] =
 	TIM17_IRQn
 };
 
-static tim *obj_list[TIM_END];
+static tim *obj_list[tim::TIM_END];
 
-static void calc_clk(tim_t tim, uint32_t us, uint16_t *presc,
-	uint16_t *reload);
+static void calc_clk(tim::tim_t tim, uint32_t us, uint16_t *psc, uint16_t *arr);
 
 tim::tim(tim_t tim):
 	_tim(tim),
@@ -175,7 +178,7 @@ tim::tim(tim_t tim):
 	*/
 	tim_list[_tim]->CR1 |= TIM_CR1_URS;
 	
-	/* Enable interrupt */
+	// Enable interrupt
 	tim_list[_tim]->DIER |= TIM_DIER_UIE;
 	
 	NVIC_SetPriority(irq_list[_tim], IRQ_PRIORITY);
@@ -187,7 +190,7 @@ tim::~tim()
 	
 }
 
-void tim::cb(tim_cb_t cb, void *ctx)
+void tim::cb(cb_t cb, void *ctx)
 {
 	_cb = cb;
 	_ctx = ctx;
@@ -198,12 +201,11 @@ void tim::us(uint32_t us)
 	ASSERT(us > 0);
 	
 	_us = us;
-	uint16_t presc = 0;
-	uint16_t reload = 0;
-	calc_clk(_tim, _us, &presc, &reload);
+	uint16_t psc, arr;
+	calc_clk(_tim, _us, &psc, &arr);
 	
-	tim_list[_tim]->PSC = presc;
-	tim_list[_tim]->ARR = reload;
+	tim_list[_tim]->PSC = psc;
+	tim_list[_tim]->ARR = arr;
 	
 	// Update ARR, PSC and clear CNT register
 	tim_list[_tim]->EGR = TIM_EGR_UG;
@@ -237,29 +239,28 @@ bool tim::is_expired() const
 	return !static_cast<bool>(tim_list[_tim]->CR1 & TIM_CR1_CEN);
 }
 
-static void calc_clk(tim_t tim, uint32_t us, uint16_t *presc,
-	uint16_t *reload)
+static void calc_clk(tim::tim_t tim, uint32_t us, uint16_t *psc, uint16_t *arr)
 {
 	uint32_t clk_freq = rcc_get_freq(rcc_src_list[tim]);
 	/* If APBx prescaller no equal to 1, TIMx prescaller multiplies by 2 */
 	if(clk_freq != rcc_get_freq(RCC_SRC_AHB))
 		clk_freq *= 2;
 	
-	uint32_t tmp_presc = 0;
-	uint32_t tmp_reload = us * (clk_freq / 1000000);
-	if(tmp_reload <= MAX_RESOL)
-		tmp_presc = 1;
-	else
+	uint32_t tmp_psc = 1;
+	uint32_t tmp_arr = us * (clk_freq / 1000000);
+	
+	if(tmp_arr > MAX_16BIT)
 	{
-		tmp_presc = ((tmp_reload + (MAX_RESOL / 2)) / MAX_RESOL) + 1;
-		tmp_reload /= tmp_presc;
+		// tmp_arr is too big for ARR register (16 bit), increase the prescaler
+		tmp_psc = ((tmp_arr + (MAX_16BIT / 2)) / MAX_16BIT) + 1;
+		tmp_arr /= tmp_psc;
 	}
 	
-	ASSERT(tmp_presc <= MAX_RESOL);
-	ASSERT(tmp_reload <= MAX_RESOL);
+	ASSERT(tmp_psc <= MAX_16BIT);
+	ASSERT(tmp_arr <= MAX_16BIT);
 	
-	*presc = (uint16_t)(tmp_presc - 1);
-	*reload = (uint16_t)(tmp_reload - 1);
+	*psc = (uint16_t)(tmp_psc - 1);
+	*arr = (uint16_t)(tmp_arr - 1);
 }
 
 extern "C" void tim_irq_hndlr(hal::tim *obj)
@@ -285,7 +286,7 @@ extern "C" void tim_irq_hndlr(hal::tim *obj)
 
 extern "C" void TIM1_CC_IRQHandler(void)
 {
-	tim_irq_hndlr(obj_list[TIM_1]);
+	tim_irq_hndlr(obj_list[tim::TIM_1]);
 }
 
 #if defined(STM32F031x6) || defined(STM32F038xx) || defined(STM32F042x6) || \
@@ -294,26 +295,26 @@ extern "C" void TIM1_CC_IRQHandler(void)
 	defined(STM32F091xC) || defined(STM32F098xx)
 extern "C" void TIM2_IRQHandler(void)
 {
-	tim_irq_hndlr(obj_list[TIM_2]);
+	tim_irq_hndlr(obj_list[tim::TIM_2]);
 }
 #endif
 
 extern "C" void TIM3_IRQHandler(void)
 {
-	tim_irq_hndlr(obj_list[TIM_3]);
+	tim_irq_hndlr(obj_list[tim::TIM_3]);
 }
 
 #if defined(STM32F030x8) || defined(STM32F030xC) || defined(STM32F070xB)
 extern "C" void TIM6_IRQHandler(void)
 {
-	tim_irq_hndlr(obj_list[TIM_6]);
+	tim_irq_hndlr(obj_list[tim::TIM_6]);
 }
 #elif defined(STM32F051x8) || defined(STM32F058xx) || defined(STM32F071xB) || \
 	defined(STM32F072xB) || defined(STM32F078xx) || defined(STM32F091xC) || \
 	defined(STM32F098xx)
 extern "C" void TIM6_DAC_IRQHandler(void)
 {
-	tim_irq_hndlr(obj_list[TIM_6]);
+	tim_irq_hndlr(obj_list[tim::TIM_6]);
 }
 #endif
 
@@ -322,13 +323,13 @@ extern "C" void TIM6_DAC_IRQHandler(void)
 	defined(STM32F098xx)
 void TIM7_IRQHandler(void)
 {
-	tim_irq_hndlr(obj_list[TIM_7]);
+	tim_irq_hndlr(obj_list[tim::TIM_7]);
 }
 #endif
 
 extern "C" void TIM14_IRQHandler(void)
 {
-	tim_irq_hndlr(obj_list[TIM_14]);
+	tim_irq_hndlr(obj_list[tim::TIM_14]);
 }
 
 #if defined(STM32F030x8) || defined(STM32F030xC) || defined(STM32F051x8) || \
@@ -337,16 +338,16 @@ extern "C" void TIM14_IRQHandler(void)
 	defined(STM32F098xx)
 extern "C" void TIM15_IRQHandler(void)
 {
-	tim_irq_hndlr(obj_list[TIM_15]);
+	tim_irq_hndlr(obj_list[tim::TIM_15]);
 }
 #endif
 
 extern "C" void TIM16_IRQHandler(void)
 {
-	tim_irq_hndlr(obj_list[TIM_16]);
+	tim_irq_hndlr(obj_list[tim::TIM_16]);
 }
 
 extern "C" void TIM17_IRQHandler(void)
 {
-	tim_irq_hndlr(obj_list[TIM_17]);
+	tim_irq_hndlr(obj_list[tim::TIM_17]);
 }

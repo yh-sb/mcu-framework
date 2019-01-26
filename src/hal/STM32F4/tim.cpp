@@ -13,7 +13,7 @@ using namespace hal;
 #define IRQ_PRIORITY 1
 #define MAX_16BIT 0xFFFF
 
-static TIM_TypeDef *const tim_list[TIM_END] =
+static TIM_TypeDef *const tim_list[tim::TIM_END] =
 {
 	TIM1,
 #if defined(STM32F401xC) || defined(STM32F401xE) || defined(STM32F405xx) || \
@@ -74,7 +74,7 @@ static TIM_TypeDef *const tim_list[TIM_END] =
 #endif
 };
 
-static uint32_t const reset_list[TIM_END] =
+static uint32_t const reset_list[tim::TIM_END] =
 {
 	RCC_APB2RSTR_TIM1RST,  RCC_APB1RSTR_TIM2RST,  RCC_APB1RSTR_TIM3RST,
 	RCC_APB1RSTR_TIM4RST,  RCC_APB1RSTR_TIM5RST,  RCC_APB1RSTR_TIM6RST,
@@ -83,7 +83,7 @@ static uint32_t const reset_list[TIM_END] =
 	RCC_APB1RSTR_TIM13RST, RCC_APB1RSTR_TIM14RST
 };
 
-static uint32_t const rcc_list[TIM_END] =
+static uint32_t const rcc_list[tim::TIM_END] =
 {
 	RCC_APB2ENR_TIM1EN,  RCC_APB1ENR_TIM2EN,  RCC_APB1ENR_TIM3EN,
 	RCC_APB1ENR_TIM4EN,  RCC_APB1ENR_TIM5EN,  RCC_APB1ENR_TIM6EN,
@@ -92,7 +92,7 @@ static uint32_t const rcc_list[TIM_END] =
 	RCC_APB1ENR_TIM13EN, RCC_APB1ENR_TIM14EN
 };
 
-static volatile uint32_t *reset_addr_list[TIM_END] =
+static volatile uint32_t *reset_addr_list[tim::TIM_END] =
 {
 	&RCC->APB2RSTR, &RCC->APB1RSTR, &RCC->APB1RSTR,
 	&RCC->APB1RSTR, &RCC->APB1RSTR, &RCC->APB1RSTR,
@@ -101,7 +101,7 @@ static volatile uint32_t *reset_addr_list[TIM_END] =
 	&RCC->APB1RSTR, &RCC->APB1RSTR
 };
 
-static volatile uint32_t *const rcc_bus_list[TIM_END] =
+static volatile uint32_t *const rcc_bus_list[tim::TIM_END] =
 {
 	&RCC->APB2ENR, &RCC->APB1ENR, &RCC->APB1ENR,
 	&RCC->APB1ENR, &RCC->APB1ENR, &RCC->APB1ENR,
@@ -110,7 +110,7 @@ static volatile uint32_t *const rcc_bus_list[TIM_END] =
 	&RCC->APB1ENR, &RCC->APB1ENR
 };
 
-static rcc_src_t const rcc_src_list[TIM_END] =
+static rcc_src_t const rcc_src_list[tim::TIM_END] =
 {
 	RCC_SRC_APB2, RCC_SRC_APB1, RCC_SRC_APB1,
 	RCC_SRC_APB1, RCC_SRC_APB1, RCC_SRC_APB1,
@@ -119,7 +119,7 @@ static rcc_src_t const rcc_src_list[TIM_END] =
 	RCC_SRC_APB1, RCC_SRC_APB1
 };
 
-static IRQn_Type const irq_list[TIM_END] =
+static IRQn_Type const irq_list[tim::TIM_END] =
 {
 	TIM1_CC_IRQn,
 #if defined(STM32F401xC) || defined(STM32F401xE) || defined(STM32F405xx) || \
@@ -182,9 +182,9 @@ static IRQn_Type const irq_list[TIM_END] =
 #endif
 };
 
-static tim *obj_list[TIM_END];
+static tim *obj_list[tim::TIM_END];
 
-static void calc_clk(tim_t tim, uint32_t us, uint16_t *psc, uint16_t *arr);
+static void calc_clk(tim::tim_t tim, uint32_t us, uint16_t *psc, uint16_t *arr);
 
 tim::tim(tim_t tim):
 	_tim(tim),
@@ -218,7 +218,7 @@ tim::~tim()
 	
 }
 
-void tim::cb(tim_cb_t cb, void *ctx)
+void tim::cb(cb_t cb, void *ctx)
 {
 	_cb = cb;
 	_ctx = ctx;
@@ -267,7 +267,7 @@ bool tim::is_expired() const
 	return !static_cast<bool>(tim_list[_tim]->CR1 & TIM_CR1_CEN);
 }
 
-static void calc_clk(tim_t tim, uint32_t us, uint16_t *psc, uint16_t *arr)
+static void calc_clk(tim::tim_t tim, uint32_t us, uint16_t *psc, uint16_t *arr)
 {
 	uint32_t clk_freq = rcc_get_freq(rcc_src_list[tim]);
 	/* If APBx prescaller no equal to 1, TIMx prescaller multiplies by 2 */
@@ -314,7 +314,7 @@ extern "C" void tim_irq_hndlr(hal::tim *obj)
 
 extern "C" void TIM1_CC_IRQHandler(void)
 {
-	tim_irq_hndlr(obj_list[TIM_1]);
+	tim_irq_hndlr(obj_list[tim::TIM_1]);
 }
 
 #if defined(STM32F401xC) || defined(STM32F401xE) || defined(STM32F405xx) || \
@@ -326,23 +326,23 @@ extern "C" void TIM1_CC_IRQHandler(void)
 	defined(STM32F469xx) || defined(STM32F479xx)
 extern "C" void TIM2_IRQHandler(void)
 {
-	tim_irq_hndlr(obj_list[TIM_2]);
+	tim_irq_hndlr(obj_list[tim::TIM_2]);
 }
 
 extern "C" void TIM3_IRQHandler(void)
 {
-	tim_irq_hndlr(obj_list[TIM_3]);
+	tim_irq_hndlr(obj_list[tim::TIM_3]);
 }
 
 extern "C" void TIM4_IRQHandler(void)
 {
-	tim_irq_hndlr(obj_list[TIM_4]);
+	tim_irq_hndlr(obj_list[tim::TIM_4]);
 }
 #endif
 
 extern "C" void TIM5_IRQHandler(void)
 {
-	tim_irq_hndlr(obj_list[TIM_5]);
+	tim_irq_hndlr(obj_list[tim::TIM_5]);
 }
 
 #if defined(STM32F405xx) || defined(STM32F407xx) || defined(STM32F410Cx) || \
@@ -354,7 +354,7 @@ extern "C" void TIM5_IRQHandler(void)
 	defined(STM32F469xx) || defined(STM32F479xx)
 extern "C" void TIM6_DAC_IRQHandler(void)
 {
-	tim_irq_hndlr(obj_list[TIM_6]);
+	tim_irq_hndlr(obj_list[tim::TIM_6]);
 }
 #endif
 
@@ -366,21 +366,21 @@ extern "C" void TIM6_DAC_IRQHandler(void)
 	defined(STM32F469xx) || defined(STM32F479xx)
 extern "C" void TIM7_IRQHandler(void)
 {
-	tim_irq_hndlr(obj_list[TIM_7]);
+	tim_irq_hndlr(obj_list[tim::TIM_7]);
 }
 
 extern "C" void TIM8_CC_IRQHandler(void)
 {
-	tim_irq_hndlr(obj_list[TIM_8]);
+	tim_irq_hndlr(obj_list[tim::TIM_8]);
 }
 #endif
 
 extern "C" void TIM1_BRK_TIM9_IRQHandler(void)
 {
 	if((TIM1->DIER & TIM_DIER_BIE) && (TIM1->SR & TIM_SR_BIF))
-		tim_irq_hndlr(obj_list[TIM_1]);
+		tim_irq_hndlr(obj_list[tim::TIM_1]);
 	else
-		tim_irq_hndlr(obj_list[TIM_9]);
+		tim_irq_hndlr(obj_list[tim::TIM_9]);
 }
 
 #if defined(STM32F401xC) || defined(STM32F401xE) || defined(STM32F405xx) || \
@@ -393,9 +393,9 @@ extern "C" void TIM1_BRK_TIM9_IRQHandler(void)
 extern "C" void TIM1_UP_TIM10_IRQHandler(void)
 {
 	if((TIM1->DIER & TIM_DIER_UIE) && (TIM1->SR & TIM_SR_UIF))
-		tim_irq_hndlr(obj_list[TIM_1]);
+		tim_irq_hndlr(obj_list[tim::TIM_1]);
 	else
-		tim_irq_hndlr(obj_list[TIM_10]);
+		tim_irq_hndlr(obj_list[tim::TIM_10]);
 }
 #endif
 
@@ -404,10 +404,10 @@ extern "C" void TIM1_TRG_COM_TIM11_IRQHandler(void)
 	if(((TIM1->DIER & TIM_DIER_COMIE) && (TIM1->SR & TIM_SR_COMIF)) ||
 		((TIM1->DIER & TIM_DIER_TIE) && (TIM1->SR & TIM_SR_TIF)))
 	{
-		tim_irq_hndlr(obj_list[TIM_1]);
+		tim_irq_hndlr(obj_list[tim::TIM_1]);
 	}
 	else
-		tim_irq_hndlr(obj_list[TIM_11]);
+		tim_irq_hndlr(obj_list[tim::TIM_11]);
 }
 
 #if defined(STM32F405xx) || defined(STM32F407xx) || defined(STM32F412Cx) || \
@@ -419,17 +419,17 @@ extern "C" void TIM1_TRG_COM_TIM11_IRQHandler(void)
 extern "C" void TIM8_BRK_TIM12_IRQHandler(void)
 {
 	if((TIM8->DIER & TIM_DIER_BIE) && (TIM8->SR & TIM_SR_BIF))
-		tim_irq_hndlr(obj_list[TIM_8]);
+		tim_irq_hndlr(obj_list[tim::TIM_8]);
 	else
-		tim_irq_hndlr(obj_list[TIM_12]);
+		tim_irq_hndlr(obj_list[tim::TIM_12]);
 }
 
 extern "C" void TIM8_UP_TIM13_IRQHandler(void)
 {
 	if((TIM8->DIER & TIM_DIER_UIE) && (TIM8->SR & TIM_SR_UIF))
-		tim_irq_hndlr(obj_list[TIM_8]);
+		tim_irq_hndlr(obj_list[tim::TIM_8]);
 	else
-		tim_irq_hndlr(obj_list[TIM_13]);
+		tim_irq_hndlr(obj_list[tim::TIM_13]);
 }
 
 extern "C" void TIM8_TRG_COM_TIM14_IRQHandler(void)
@@ -437,9 +437,9 @@ extern "C" void TIM8_TRG_COM_TIM14_IRQHandler(void)
 	if(((TIM8->DIER & TIM_DIER_COMIE) && (TIM8->SR & TIM_SR_COMIF)) ||
 		((TIM8->DIER & TIM_DIER_TIE) && (TIM8->SR & TIM_SR_TIF)))
 	{
-		tim_irq_hndlr(obj_list[TIM_8]);
+		tim_irq_hndlr(obj_list[tim::TIM_8]);
 	}
 	else
-		tim_irq_hndlr(obj_list[TIM_14]);
+		tim_irq_hndlr(obj_list[tim::TIM_14]);
 }
 #endif
