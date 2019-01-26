@@ -19,25 +19,25 @@ extern "C" void i2c_error_irq_hndlr(hal::i2c *obj);
 
 namespace hal
 {
-typedef enum
-{
-	I2C_1,
-	I2C_2,
-	I2C_3,
-	I2C_END
-} i2c_t;
-
-enum i2c_err_t
-{
-	I2C_ERR_NONE    =  0,
-	I2C_ERR_NO_ACK  = -1,
-	I2C_ERR_TX_FAIL = -2,
-	I2C_ERR_RX_FAIL = -3
-};
-
 class i2c
 {
 	public:
+		enum i2c_t
+		{
+			I2C_1,
+			I2C_2,
+			I2C_3,
+			I2C_END
+		};
+
+		enum res_t
+		{
+			RES_OK      =  0,
+			RES_NO_ACK  = -1,
+			RES_TX_FAIL = -2,
+			RES_RX_FAIL = -3
+		};
+		
 		i2c(i2c_t i2c, uint32_t baud, dma &dma_tx, dma &dma_rx, gpio &sda,
 			gpio &scl);
 		~i2c();
@@ -55,7 +55,7 @@ class i2c
 		
 		SemaphoreHandle_t api_lock;
 		SemaphoreHandle_t irq_lock;
-		int8_t irq_res;
+		res_t irq_res;
 		
 		gpio &_sda;
 		gpio &_scl;

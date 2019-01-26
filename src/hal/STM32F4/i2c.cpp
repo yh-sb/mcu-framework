@@ -25,7 +25,7 @@ using namespace hal;
 #define STANDARD_I2C_MAX_SPEED 100000 /* bps */
 #define FAST_I2C_MAX_SPEED 400000 /* bps */
 
-static I2C_TypeDef *const i2c_list[I2C_END] =
+static I2C_TypeDef *const i2c_list[i2c::I2C_END] =
 {
 	I2C1, I2C2,
 #if defined(STM32F401xC) || defined(STM32F401xE) || defined(STM32F405xx) || \
@@ -41,7 +41,7 @@ static I2C_TypeDef *const i2c_list[I2C_END] =
 #endif
 };
 
-static IRQn_Type const event_irq_list[I2C_END] =
+static IRQn_Type const event_irq_list[i2c::I2C_END] =
 {
 	I2C1_EV_IRQn, I2C2_EV_IRQn,
 #if defined(STM32F401xC) || defined(STM32F401xE) || defined(STM32F405xx) || \
@@ -57,7 +57,7 @@ static IRQn_Type const event_irq_list[I2C_END] =
 #endif
 };
 
-static IRQn_Type const err_irq_list[I2C_END] =
+static IRQn_Type const err_irq_list[i2c::I2C_END] =
 {
 	I2C1_ER_IRQn, I2C2_ER_IRQn,
 #if defined(STM32F401xC) || defined(STM32F401xE) || defined(STM32F405xx) || \
@@ -73,7 +73,7 @@ static IRQn_Type const err_irq_list[I2C_END] =
 #endif
 };
 
-static uint32_t const rcc_list[I2C_END] =
+static uint32_t const rcc_list[i2c::I2C_END] =
 {
 	RCC_APB1ENR_I2C1EN, RCC_APB1ENR_I2C2EN,
 #if defined(STM32F401xC) || defined(STM32F401xE) || defined(STM32F405xx) || \
@@ -89,7 +89,7 @@ static uint32_t const rcc_list[I2C_END] =
 #endif
 };
 
-static uint32_t const reset_list[I2C_END] =
+static uint32_t const reset_list[i2c::I2C_END] =
 {
 	RCC_APB1RSTR_I2C1RST, RCC_APB1RSTR_I2C2RST,
 #if defined(STM32F401xC) || defined(STM32F401xE) || defined(STM32F405xx) || \
@@ -105,7 +105,7 @@ static uint32_t const reset_list[I2C_END] =
 #endif
 };
 
-static uint8_t const gpio_af_list[I2C_END] =
+static uint8_t const gpio_af_list[i2c::I2C_END] =
 {
 	0x04,
 #if defined(STM32F401xC) || defined(STM32F401xE) || defined(STM32F411xE)
@@ -156,10 +156,10 @@ static GPIO_TypeDef *const gpio_list[PORT_QTY] =
 #endif
 };
 
-static i2c *obj_list[I2C_END];
+static i2c *obj_list[i2c::I2C_END];
 
-static void gpio_af_init(i2c_t i2c, gpio &gpio);
-static void calc_clk(i2c_t i2c, uint32_t baud, uint8_t *freq, uint8_t *trise,
+static void gpio_af_init(i2c::i2c_t i2c, gpio &gpio);
+static void calc_clk(i2c::i2c_t i2c, uint32_t baud, uint8_t *freq, uint8_t *trise,
 	uint32_t *ccr);
 
 #if configUSE_TRACE_FACILITY
@@ -173,7 +173,7 @@ i2c::i2c(i2c_t i2c, uint32_t baud, dma &dma_tx, dma &dma_rx, gpio &sda,
 	gpio &scl):
 	_i2c(i2c),
 	_baud(baud),
-	irq_res(I2C_ERR_NONE),
+	irq_res(RES_OK),
 	_sda(sda),
 	_scl(scl),
 	tx_dma(dma_tx),
@@ -383,7 +383,7 @@ int8_t i2c::exch(uint16_t addr, void *buff_tx, uint16_t size_tx, void *buff_rx,
 	return irq_res;
 }
 
-static void gpio_af_init(i2c_t i2c, gpio &gpio)
+static void gpio_af_init(i2c::i2c_t i2c, gpio &gpio)
 {
 	GPIO_TypeDef *gpio_reg = gpio_list[gpio.port()];
 	
@@ -404,7 +404,7 @@ static void gpio_af_init(i2c_t i2c, gpio &gpio)
 	}
 }
 
-static void calc_clk(i2c_t i2c, uint32_t baud, uint8_t *freq,
+static void calc_clk(i2c::i2c_t i2c, uint32_t baud, uint8_t *freq,
 	uint8_t *trise, uint32_t *ccr)
 {
 	uint32_t apb1_freq = rcc_get_freq(RCC_SRC_APB1);
@@ -459,7 +459,7 @@ void i2c::on_dma_tx(dma *dma, dma::event_t event, void *ctx)
 		// TODO: for debug
 		vTracePrint(ch1, "err_hndlr");
 		
-		err_hndlr(obj, I2C_ERR_TX_FAIL, &hi_task_woken);
+		err_hndlr(obj, RES_TX_FAIL, &hi_task_woken);
 	}
 #if configUSE_TRACE_FACILITY
 	vTraceStoreISREnd(hi_task_woken);
@@ -488,7 +488,7 @@ void i2c::on_dma_rx(dma *dma, dma::event_t event, void *ctx)
 		// TODO: for debug
 		vTracePrint(ch1, "err_hndlr");
 		
-		err_hndlr(obj, I2C_ERR_RX_FAIL, &hi_task_woken);
+		err_hndlr(obj, RES_RX_FAIL, &hi_task_woken);
 	}
 #if configUSE_TRACE_FACILITY
 	vTraceStoreISREnd(hi_task_woken);
@@ -514,7 +514,7 @@ extern "C" void tx_hndlr(i2c *obj, BaseType_t *hi_task_woken)
 	
 	i2c_base->CR1 |= I2C_CR1_STOP;
 	
-	obj->irq_res = I2C_ERR_NONE;
+	obj->irq_res = i2c::RES_OK;
 	
 	xSemaphoreGiveFromISR(obj->irq_lock, hi_task_woken);
 	portYIELD_FROM_ISR(*hi_task_woken);
@@ -529,7 +529,7 @@ extern "C" void rx_hndlr(i2c *obj, BaseType_t *hi_task_woken)
 	i2c_list[obj->_i2c]->CR2 &= ~I2C_CR2_LAST;
 	i2c_list[obj->_i2c]->CR1 |= I2C_CR1_STOP;
 	
-	obj->irq_res = I2C_ERR_NONE;
+	obj->irq_res = i2c::RES_OK;
 	
 	xSemaphoreGiveFromISR(obj->irq_lock, hi_task_woken);
 	portYIELD_FROM_ISR(*hi_task_woken);
@@ -550,7 +550,7 @@ extern "C" void err_hndlr(i2c *obj, int8_t err, BaseType_t *hi_task_woken)
 	//i2c_list[obj->_i2c]->CR2 &= ~I2C_CR2_LAST;
 	i2c_list[obj->_i2c]->CR1 |= I2C_CR1_STOP;
 	
-	obj->irq_res = err;
+	obj->irq_res = (i2c::res_t)err;
 	
 	xSemaphoreGiveFromISR(obj->irq_lock, hi_task_woken);
 	portYIELD_FROM_ISR(*hi_task_woken);
@@ -635,25 +635,25 @@ extern "C" void i2c_error_irq_hndlr(i2c *obj)
 		
 		/* Error: no ACK from device */
 		i2c_base->SR1 &= ~I2C_SR1_AF;
-		err_hndlr(obj, I2C_ERR_NO_ACK, &hi_task_woken);
+		err_hndlr(obj, i2c::RES_NO_ACK, &hi_task_woken);
 	}
 	else if(sr1 & I2C_SR1_OVR)
 	{
 		/* Error: overrun/underrun has happened */
 		i2c_base->SR1 &= ~I2C_SR1_OVR;
-		err_hndlr(obj, I2C_ERR_RX_FAIL, &hi_task_woken);
+		err_hndlr(obj, i2c::RES_RX_FAIL, &hi_task_woken);
 	}
 	else if(sr1 & I2C_SR1_ARLO)
 	{
 		/* Error: arbitration lost is detected */
 		i2c_base->SR1 &= ~I2C_SR1_ARLO;
-		err_hndlr(obj, I2C_ERR_TX_FAIL, &hi_task_woken);
+		err_hndlr(obj, i2c::RES_TX_FAIL, &hi_task_woken);
 	}
 	else if(sr1 & I2C_SR1_BERR)
 	{
 		/* Error: bus error is detected (misplaced start or stop condition) */
 		i2c_base->SR1 &= ~I2C_SR1_BERR;
-		err_hndlr(obj, I2C_ERR_TX_FAIL, &hi_task_woken);
+		err_hndlr(obj, i2c::RES_TX_FAIL, &hi_task_woken);
 	}
 #if configUSE_TRACE_FACILITY
 	vTraceStoreISREnd(hi_task_woken);
@@ -662,22 +662,22 @@ extern "C" void i2c_error_irq_hndlr(i2c *obj)
 
 extern "C" void I2C1_EV_IRQHandler(void)
 {
-	i2c_event_irq_hndlr(obj_list[I2C_1]);
+	i2c_event_irq_hndlr(obj_list[i2c::I2C_1]);
 }
 
 extern "C" void I2C1_ER_IRQHandler(void)
 {
-	i2c_error_irq_hndlr(obj_list[I2C_1]);
+	i2c_error_irq_hndlr(obj_list[i2c::I2C_1]);
 }
 
 extern "C" void I2C2_EV_IRQHandler(void)
 {
-	i2c_event_irq_hndlr(obj_list[I2C_2]);
+	i2c_event_irq_hndlr(obj_list[i2c::I2C_2]);
 }
 
 extern "C" void I2C2_ER_IRQHandler(void)
 {
-	i2c_error_irq_hndlr(obj_list[I2C_2]);
+	i2c_error_irq_hndlr(obj_list[i2c::I2C_2]);
 }
 
 #if defined(STM32F401xC) || defined(STM32F401xE) || defined(STM32F405xx) || \
@@ -689,11 +689,11 @@ extern "C" void I2C2_ER_IRQHandler(void)
 	defined(STM32F469xx) || defined(STM32F479xx)
 extern "C" void I2C3_EV_IRQHandler(void)
 {
-	i2c_event_irq_hndlr(obj_list[I2C_3]);
+	i2c_event_irq_hndlr(obj_list[i2c::I2C_3]);
 }
 
 extern "C" void I2C3_ER_IRQHandler(void)
 {
-	i2c_error_irq_hndlr(obj_list[I2C_3]);
+	i2c_error_irq_hndlr(obj_list[i2c::I2C_3]);
 }
 #endif
