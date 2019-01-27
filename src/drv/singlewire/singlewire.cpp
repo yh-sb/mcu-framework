@@ -193,14 +193,14 @@ Exit:
 	portYIELD_FROM_ISR(hi_task_woken);
 }
 
-void singlewire::tim_cb(hal::tim *tim, void *ctx)
+void singlewire::tim_cb(tim *tim, void *ctx)
 {
 	singlewire *obj = (singlewire *)ctx;
 	
 	obj->fsm_run(true);
 }
 
-void singlewire::exti_cb(hal::exti *exti, void *ctx)
+void singlewire::exti_cb(exti *exti, void *ctx)
 {
 	singlewire *obj = (singlewire *)ctx;
 	
