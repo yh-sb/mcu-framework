@@ -25,18 +25,18 @@ static void di_task(void *pvParameters)
 int main(void)
 {
 	// Example for STM32F4DISCOVERY development board
-	static gpio b1(0, 0, gpio::mode::DI, 0);
-	static gpio dht22_gpio(0, 7, gpio::mode::OD, 1);
-	static gpio dht22_exti_gpio(0, 10, gpio::mode::DI, 1);
+	static gpio b1(0, 0, gpio::MODE_DI, 0);
+	static gpio dht22_gpio(0, 7, gpio::MODE_OD, 1);
+	static gpio dht22_exti_gpio(0, 10, gpio::MODE_DI, 1);
 	
-	static tim dht22_tim(TIM_7);
+	static tim dht22_tim(tim::TIM_7);
 	
 	static exti dht22_exti(dht22_exti_gpio);
 	
 	static drv::singlewire dht22_singlewire(dht22_gpio, dht22_tim, dht22_exti);
 	static drv::dht22 _dht22(dht22_singlewire);
 	
-	static drv::di b1_di(b1, 100, 1);
+	static drv::di b1_di(b1, 30, 1);
 	b1_di.cb(b1_cb, &_dht22);
 	
 	xTaskCreate(di_task, "di", configMINIMAL_STACK_SIZE * 1, &b1_di,

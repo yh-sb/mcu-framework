@@ -32,21 +32,21 @@ int8_t dht11::get(uint8_t *rh, uint8_t *t)
 	
 	xSemaphoreTake(api_lock, portMAX_DELAY);
 	
-	int8_t res = OK;
+	int8_t res = RES_OK;
 	uint8_t buff[BYTES_TOTAL];
 	
 	switch(_singlewire.read(buff, sizeof(buff)))
 	{
 		case singlewire::OK: break;
-		case singlewire::NODEV: res = NODEV; goto Exit;
-		case singlewire::BUSY: res = BUSY; goto Exit;
-		default: res = DEVERR; goto Exit;
+		case singlewire::NODEV: res = RES_NODEV; goto Exit;
+		case singlewire::BUSY: res = RES_BUSY; goto Exit;
+		default: res = RES_DEVERR; goto Exit;
 	}
 	
 	if(buff[CHECKSUM] != (uint8_t)(buff[RH_INT] + buff[RH_DEC] + buff[T_INT] +
 		buff[T_DEC]))
 	{
-		res = CRCERR;
+		res = RES_CRCERR;
 		goto Exit;
 	}
 	
