@@ -28,30 +28,31 @@ static void di_task(void *pvParameters)
 
 int main(void)
 {
-	static gpio b1(0, 0, GPIO_MODE_DI, 0);
+	static gpio b1(0, 0, gpio::MODE_DI, 0);
 	
-	static gpio spi1_mosi(0, 7, GPIO_MODE_AF, 0);
-	static gpio spi1_miso(0, 6, GPIO_MODE_AF, 0);
-	static gpio spi1_clk(0, 5, GPIO_MODE_AF, 0);
-	static gpio sd_cs(0, 4, GPIO_MODE_DO, 1);
-	static gpio sd_cd(0, 3, GPIO_MODE_DI, 1);
+	static gpio spi1_mosi(0, 7, gpio::MODE_AF, 0);
+	static gpio spi1_miso(0, 6, gpio::MODE_AF, 0);
+	static gpio spi1_clk(0, 5, gpio::MODE_AF, 0);
+	static gpio sd_cs(0, 4, gpio::MODE_DO, 1);
+	static gpio sd_cd(0, 3, gpio::MODE_DI, 1);
 	
-	static dma spi1_rx_dma(DMA_2, DMA_STREAM_0, DMA_CH_3,
-		DMA_DIR_PERIPH_TO_MEM, DMA_INC_SIZE_8);
-	static dma spi1_tx_dma(DMA_2, DMA_STREAM_3, DMA_CH_3,
-		DMA_DIR_MEM_TO_PERIPH, DMA_INC_SIZE_8);
+	static dma spi1_rx_dma(dma::DMA_2, dma::STREAM_0, dma::CH_3,
+		dma::DIR_PERIPH_TO_MEM, dma::INC_SIZE_8);
+	static dma spi1_tx_dma(dma::DMA_2, dma::STREAM_3, dma::CH_3,
+		dma::DIR_MEM_TO_PERIPH, dma::INC_SIZE_8);
 	
-	static spi spi1(SPI_1, 1000000, SPI_CPOL_0, SPI_CPHA_0, SPI_BIT_ORDER_MSB,
-		spi1_tx_dma, spi1_rx_dma, spi1_mosi, spi1_miso, spi1_clk);
+	static spi spi1(spi::SPI_1, 1000000, spi::CPOL_0, spi::CPHA_0,
+		spi::BIT_ORDER_MSB, spi1_tx_dma, spi1_rx_dma, spi1_mosi, spi1_miso,
+		spi1_clk);
 	
 	static sd_spi sd1(spi1, sd_cs, &sd_cd);
 	
-	static di cd_di(sd_cd, 100, 1);
+	static di cd_di(sd_cd, 30, 1);
 	cd_di.cb(cd_cb, &sd1);
 	
 	fatfs_diskio_add(0, sd1);
 	
-	xTaskCreate(di_task, "di", configMINIMAL_STACK_SIZE * 60, &cd_di,
+	xTaskCreate(di_task, "di", configMINIMAL_STACK_SIZE * 3, &cd_di,
 		tskIDLE_PRIORITY + 2, NULL);
 	
 	vTaskStartScheduler();

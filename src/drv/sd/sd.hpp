@@ -13,33 +13,33 @@ namespace drv
 {
 #define SD_BLOCK_SIZE 512
 
-typedef enum
-{
-	SD_CARD_UNKNOWN,
-	SD_CARD_SD_V1_X,
-	SD_CARD_SD_V2_STD_CAPACITY, /* SD v2 or later standard capacity */
-	SD_CARD_SD_V2_HI_CAPACITY,  /* SD v2 or later SDHC or SDXC*/
-	SD_CARD_MMC_V3
-} sd_card_t;
-
-enum sd_err_t
-{
-	SD_ERR_NONE             =  0,
-	SD_ERR_NO_RESPONSE      = -1,
-	SD_ERR_NO_CARD          = -2, /* cd pin is high (if cd is present) */
-	SD_ERR_CRC              = -3,
-	SD_ERR_UNSUPPORTED_CARD = -4,
-	SD_ERR_PARAM            = -5,
-	SD_ERR_ERASE            = -6,
-	SD_ERR_SPI_ERR          = -7,
-	SD_ERR_READ_ERR         = -8,
-	SD_ERR_WRITE_ERR        = -9,
-	SD_ERR_LOCKED           = -10,
-};
-
 class sd
 {
 	public:
+		enum type_t
+		{
+			TYPE_UNKNOWN,
+			TYPE_SD_V1_X,
+			TYPE_SD_V2_STD_CAPACITY, /* SD v2 or later standard capacity */
+			TYPE_SD_V2_HI_CAPACITY,  /* SD v2 or later SDHC or SDXC*/
+			TYPE_MMC_V3
+		};
+
+		enum res_t
+		{
+			RES_OK               =  0,
+			RES_NO_RESPONSE      = -1,
+			RES_NO_CARD          = -2, /* cd pin is high (if cd is present) */
+			RES_CRC_ERR          = -3,
+			RES_UNSUPPORTED_CARD = -4,
+			RES_PARAM_ERR        = -5,
+			RES_ERASE_ERR        = -6,
+			RES_SPI_ERR          = -7,
+			RES_READ_ERR         = -8,
+			RES_WRITE_ERR        = -9,
+			RES_LOCKED           = -10,
+		};
+		
 		sd(hal::gpio *cd = NULL);
 		~sd();
 		
@@ -49,14 +49,14 @@ class sd
 		int8_t write(void *buff, uint32_t block_addr);
 		int8_t erase(uint64_t start_addr, uint64_t end_addr);
 		
-		sd_card_t type() const { return _info.type; }
+		type_t type() const { return _info.type; }
 		uint64_t capacity() const { return _info.capacity; }
 		
 		int8_t read_cid(sd_cid_t *cid);
 		int8_t read_csd(sd_csd_t *csd);
 	
 	protected:
-		typedef enum
+		enum cmd_t
 		{
 			CMD0_GO_IDLE_STATE              = 0,  // Software reset
 			CMD1_SEND_OP_COND               = 1,  // Initiate init process
@@ -81,19 +81,19 @@ class sd
 			                                      // selected blocks
 			CMD55_APP_CMD                   = 55, // Leading cmd of ACMD<n> cmd
 			CMD58_READ_OCR                  = 58  // Read OCR
-		} cmd_t;
+		};
 		
-		typedef enum
+		enum resp_t
 		{
 			R1, // Normal responce. 1 byte
 			R2, // CID or CSD register. R1 + 16 bytes + 2 bytes CRC
 			R3, // Operation conditions register. R1 + 4 bytes. Response for CMD58
 			R6, // Published RCA (relative card address). R1 + 4 bytes
 			R7  // Card interface condition. R1 + 4 bytes. Response for CMD8
-		} resp_t;
+		};
 	
 	private:
-		typedef enum
+		enum reg_t
 		{
 			SD_CID_REG,
 			//SD_RCA_REG,
@@ -103,12 +103,13 @@ class sd
 			//SD_OCR_REG,
 			//SD_SSR_REG,
 			//SD_CSR_REG,
-		} sd_reg_t;
+		};
 		
-		int8_t read_reg(sd_reg_t reg, void *buff);
+		int8_t read_reg(reg_t reg, void *buff);
 		int8_t set_block_size(uint32_t block_size);
 		int8_t process_acmd41(bool is_hi_capacity);
 		int8_t process_cmd1();
+		static res_t check_r1(uint32_t r1);
 		
 		virtual void select(bool is_selected) = 0;
 		virtual int8_t init_sd() = 0;
@@ -122,7 +123,7 @@ class sd
 		
 		struct
 		{
-			sd_card_t type;
+			type_t type;
 			uint64_t  capacity; // in bytes
 		} _info;
 };

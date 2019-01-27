@@ -140,9 +140,9 @@ int8_t sd_spi::init_sd()
 	uint8_t init_buff[8];
 	memset(init_buff, 0xFF, sizeof(init_buff));
 	if(_spi.tx(init_buff, sizeof(init_buff)))
-		return SD_ERR_SPI_ERR;
+		return RES_SPI_ERR;
 	
-	return SD_ERR_NONE;
+	return RES_OK;
 }
 
 void sd_spi::set_speed(uint32_t speed)
@@ -170,20 +170,20 @@ int8_t sd_spi::send_cmd(cmd_t cmd, uint32_t arg, resp_t resp_type, uint8_t *resp
 	cmd_buff[5] = calc_crc7(cmd_buff, sizeof(cmd_buff) - 1);
 	
 	if(_spi.tx(cmd_buff, sizeof(cmd_buff)))
-		return SD_ERR_SPI_ERR;
+		return RES_SPI_ERR;
 
 	uint8_t retry_cnt = WAIT_RESPONSE_CNT;
 	while(retry_cnt--)
 	{
 		resp[0] = 0xFF;
 		if(_spi.rx(resp, 1))
-			return SD_ERR_SPI_ERR;
+			return RES_SPI_ERR;
 		
 		if(!(resp[0] & R1_START_BIT))
 			break;
 	}
 	if(!retry_cnt)
-		return SD_ERR_NO_RESPONSE;
+		return RES_NO_RESPONSE;
 	
 	switch(resp_type)
 	{
@@ -199,7 +199,7 @@ int8_t sd_spi::send_cmd(cmd_t cmd, uint32_t arg, resp_t resp_type, uint8_t *resp
 			// Raw CID CRC7 always has LSB set to 1,
 			//so fix it with CRC7_CID_CSD_MASK
 			if(calc_crc7(&resp[1], 15) != (resp[16] & CRC7_CID_CSD_MASK))
-				return SD_ERR_CRC;
+				return RES_CRC_ERR;
 			break;
 		
 		case R3:
@@ -207,10 +207,10 @@ int8_t sd_spi::send_cmd(cmd_t cmd, uint32_t arg, resp_t resp_type, uint8_t *resp
 		case R7:
 			memset(&resp[1], 0xFF, 4);
 			if(_spi.rx(&resp[1], 4))
-				return SD_ERR_SPI_ERR;
+				return RES_SPI_ERR;
 	}
 	
-	return SD_ERR_NONE;
+	return RES_OK;
 }
 
 int8_t sd_spi::read_data(void *data, uint16_t size)
@@ -221,7 +221,7 @@ int8_t sd_spi::read_data(void *data, uint16_t size)
 	{
 		data_token = 0xFF;
 		if(_spi.rx(&data_token, 1))
-			return SD_ERR_SPI_ERR;
+			return RES_SPI_ERR;
 		
 		if(data_token == DATA_TOKEN_CMD17_18_24)
 			break;
@@ -229,68 +229,68 @@ int8_t sd_spi::read_data(void *data, uint16_t size)
 		if(!(data_token & ~ERR_TOKEN_MASK))
 		{
 			if(data_token & ERR_TOKEN_CARD_LOCKED)
-				return SD_ERR_LOCKED;
+				return RES_LOCKED;
 			else if(data_token & ERR_TOKEN_OUT_OF_RANGE_ERR)
-				return SD_ERR_PARAM;
+				return RES_PARAM_ERR;
 			else if(data_token & ERR_TOKEN_ECC_FAIL)
-				return SD_ERR_READ_ERR;
+				return RES_READ_ERR;
 			else if(data_token & ERR_TOKEN_CC_ERR)
-				return SD_ERR_READ_ERR;
+				return RES_READ_ERR;
 			else if(data_token & ERR_TOKEN_ERR)
-				return SD_ERR_READ_ERR;
+				return RES_READ_ERR;
 			else
-				return SD_ERR_READ_ERR;
+				return RES_READ_ERR;
 		}
 		vTaskDelay(1);
 	}
 	if(!wait_cnt)
-		return SD_ERR_NO_RESPONSE;
+		return RES_NO_RESPONSE;
 	
 	memset(data, 0xFF, size);
 	if(_spi.rx(data, size))
-		return SD_ERR_SPI_ERR;
+		return RES_SPI_ERR;
 	
 	uint8_t crc16[2] = {0xFF, 0xFF};
 	if(_spi.rx(crc16, sizeof(crc16)))
-		return SD_ERR_SPI_ERR;
+		return RES_SPI_ERR;
 	
 	if(calc_crc16((uint8_t *)data, size) != ((crc16[0] << 8) | crc16[1]))
-		return SD_ERR_CRC;
+		return RES_CRC_ERR;
 	
-	return SD_ERR_NONE;
+	return RES_OK;
 }
 
 int8_t sd_spi::write_data(void *data, uint16_t size)
 {
 	if(_spi.tx(DATA_TOKEN_CMD17_18_24))
-		return SD_ERR_SPI_ERR;
+		return RES_SPI_ERR;
 	
 	if(_spi.tx(data, size))
-		return SD_ERR_SPI_ERR;
+		return RES_SPI_ERR;
 	
 	uint16_t crc16_tmp = calc_crc16((uint8_t *)data, size);
 	uint8_t crc16[2] = {(uint8_t)crc16_tmp, (uint8_t)(crc16_tmp << 8)};
 	
 	if(_spi.tx(crc16, sizeof(crc16)))
-		return SD_ERR_SPI_ERR;
+		return RES_SPI_ERR;
 	
 	/* Check data response */
 	uint8_t data_resp;
 	data_resp = 0xFF;
 	if(_spi.rx(&data_resp, sizeof(data_resp)))
-		return SD_ERR_SPI_ERR;
+		return RES_SPI_ERR;
 	
 	if(!(data_resp & DATA_RESP_START_BIT) || (data_resp & DATA_RESP_END_BIT))
 	{
 		/* Data response is not valid */
-		return SD_ERR_WRITE_ERR;
+		return RES_WRITE_ERR;
 	}
 	switch(data_resp & DATA_RESP_MASK)
 	{
 		case DATA_RESP_ACCEPTED: break;
-		case DATA_RESP_CRC_ERR: return SD_ERR_CRC;
+		case DATA_RESP_CRC_ERR: return RES_CRC_ERR;
 		case DATA_RESP_WRITE_ERR:
-		default: return SD_ERR_WRITE_ERR;
+		default: return RES_WRITE_ERR;
 	}
 	
 	return wait_ready();
@@ -305,7 +305,7 @@ int8_t sd_spi::wait_ready()
 	{
 		busy_flag = 0xFF;
 		if(_spi.rx(&busy_flag, 1))
-			return SD_ERR_SPI_ERR;
+			return RES_SPI_ERR;
 		
 		if(busy_flag == 0xFF)
 			break;
@@ -313,7 +313,7 @@ int8_t sd_spi::wait_ready()
 		vTaskDelay(1);
 	};
 	
-	return wait_cnt ? SD_ERR_NONE : SD_ERR_NO_RESPONSE;
+	return wait_cnt ? RES_OK : RES_NO_RESPONSE;
 }
 
 static uint8_t calc_crc7(uint8_t *buff, uint8_t size)

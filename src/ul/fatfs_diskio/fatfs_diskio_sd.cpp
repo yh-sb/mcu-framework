@@ -32,10 +32,10 @@ static DSTATUS status(void *ctx)
 	
 	switch(_sd->read_csd(&csd))
 	{
-		case SD_ERR_NONE: return RES_OK;
-		case SD_ERR_LOCKED: return RES_WRPRT;
-		case SD_ERR_PARAM: return RES_PARERR;
-		case SD_ERR_NO_RESPONSE: return RES_NOTRDY;
+		case sd::RES_OK: return RES_OK;
+		case sd::RES_LOCKED: return RES_WRPRT;
+		case sd::RES_PARAM_ERR: return RES_PARERR;
+		case sd::RES_NO_RESPONSE: return RES_NOTRDY;
 		default: return RES_ERROR;
 	}
 }
@@ -46,10 +46,10 @@ static DSTATUS initialize(void *ctx)
 	
 	switch(_sd->init())
 	{
-		case SD_ERR_NONE: return RES_OK;
-		case SD_ERR_LOCKED: return RES_WRPRT;
-		case SD_ERR_PARAM: return RES_PARERR;
-		case SD_ERR_NO_RESPONSE: return RES_NOTRDY;
+		case sd::RES_OK: return RES_OK;
+		case sd::RES_LOCKED: return RES_WRPRT;
+		case sd::RES_PARAM_ERR: return RES_PARERR;
+		case sd::RES_NO_RESPONSE: return RES_NOTRDY;
 		default: return RES_ERROR;
 	}
 }
@@ -57,12 +57,12 @@ static DSTATUS initialize(void *ctx)
 static DRESULT read(void *ctx, BYTE *buff, DWORD sector, UINT count)
 {
 	sd *_sd = (sd *)ctx;
-	int8_t res = SD_ERR_NONE;
-	sd_card_t card_type = _sd->type();
+	int8_t res = sd::RES_OK;
+	sd::type_t card_type = _sd->type();
 	
-	for(uint32_t i = 0; i < count && res == SD_ERR_NONE; i++)
+	for(uint32_t i = 0; i < count && (res == sd::RES_OK); i++)
 	{
-		if(card_type == SD_CARD_SD_V2_HI_CAPACITY)
+		if(card_type == sd::TYPE_SD_V2_HI_CAPACITY)
 			res = _sd->read(buff, sector + i);
 		else
 			res = _sd->read(buff, (sector + i) * SD_BLOCK_SIZE);
@@ -70,10 +70,10 @@ static DRESULT read(void *ctx, BYTE *buff, DWORD sector, UINT count)
 	
 	switch(res)
 	{
-		case SD_ERR_NONE: return RES_OK;
-		case SD_ERR_PARAM: return RES_PARERR;
-		case SD_ERR_LOCKED: return RES_WRPRT;
-		case SD_ERR_NO_RESPONSE: return RES_NOTRDY;
+		case sd::RES_OK: return RES_OK;
+		case sd::RES_PARAM_ERR: return RES_PARERR;
+		case sd::RES_LOCKED: return RES_WRPRT;
+		case sd::RES_NO_RESPONSE: return RES_NOTRDY;
 		default: return RES_ERROR;
 	}
 }
@@ -81,12 +81,12 @@ static DRESULT read(void *ctx, BYTE *buff, DWORD sector, UINT count)
 static DRESULT write(void *ctx, const BYTE *buff, DWORD sector, UINT count)
 {
 	sd *_sd = (sd *)ctx;
-	int8_t res = SD_ERR_NONE;
-	sd_card_t card_type = _sd->type();
+	int8_t res = RES_OK;
+	sd::type_t card_type = _sd->type();
 	
-	for(uint32_t i = 0; i < count && res == SD_ERR_NONE; i++)
+	for(uint32_t i = 0; i < count && (res == sd::RES_OK); i++)
 	{
-		if(card_type == SD_CARD_SD_V2_HI_CAPACITY)
+		if(card_type == sd::TYPE_SD_V2_HI_CAPACITY)
 			res = _sd->write((BYTE *)buff, sector + i);
 		else
 			res = _sd->write((BYTE *)buff, (sector + i) * SD_BLOCK_SIZE);
@@ -94,10 +94,10 @@ static DRESULT write(void *ctx, const BYTE *buff, DWORD sector, UINT count)
 	
 	switch(res)
 	{
-		case SD_ERR_NONE: return RES_OK;
-		case SD_ERR_PARAM: return RES_PARERR;
-		case SD_ERR_LOCKED: return RES_WRPRT;
-		case SD_ERR_NO_RESPONSE: return RES_NOTRDY;
+		case sd::RES_OK: return RES_OK;
+		case sd::RES_PARAM_ERR: return RES_PARERR;
+		case sd::RES_LOCKED: return RES_WRPRT;
+		case sd::RES_NO_RESPONSE: return RES_NOTRDY;
 		default: return RES_ERROR;
 	}
 }
@@ -105,7 +105,7 @@ static DRESULT write(void *ctx, const BYTE *buff, DWORD sector, UINT count)
 static DRESULT ioctl(void *ctx, BYTE cmd, void *buff)
 {
 	sd *_sd = (sd *)ctx;
-	int8_t res = SD_ERR_NONE;
+	int8_t res = sd::RES_OK;
 	DWORD start, end;
 	
 	switch(cmd)
@@ -133,7 +133,7 @@ static DRESULT ioctl(void *ctx, BYTE cmd, void *buff)
 			end = ((DWORD *)buff)[1];
 			//end = *(((DWORD *)buff) + 1);
 			
-			if(_sd->type() == SD_CARD_SD_V2_HI_CAPACITY)
+			if(_sd->type() == sd::TYPE_SD_V2_HI_CAPACITY)
 			{
 				start *= SD_BLOCK_SIZE;
 				end *= SD_BLOCK_SIZE;
@@ -144,15 +144,15 @@ static DRESULT ioctl(void *ctx, BYTE cmd, void *buff)
 		
 		default:
 			ASSERT(0);
-			res = SD_ERR_PARAM;
+			res = sd::RES_PARAM_ERR;
 	}
 	
 	switch(res)
 	{
-		case SD_ERR_NONE: return RES_OK;
-		case SD_ERR_PARAM: return RES_PARERR;
-		case SD_ERR_LOCKED: return RES_WRPRT;
-		case SD_ERR_NO_RESPONSE: return RES_NOTRDY;
+		case sd::RES_OK: return RES_OK;
+		case sd::RES_PARAM_ERR: return RES_PARERR;
+		case sd::RES_LOCKED: return RES_WRPRT;
+		case sd::RES_NO_RESPONSE: return RES_NOTRDY;
 		default: return RES_ERROR;
 	}
 }

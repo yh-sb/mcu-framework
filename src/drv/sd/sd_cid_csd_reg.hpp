@@ -6,7 +6,7 @@
 namespace drv
 {
 /* Unofficial list of manufacturer IDs description */
-typedef enum
+enum sd_manufact_id_t
 {
 	SD_MANUFACT_ID_PANASONIC = 1,
 	SD_MANUFACT_ID_TOSHIBA   = 2,
@@ -28,9 +28,10 @@ typedef enum
 	SD_MANUFACT_ID_JANGTAY   = 130,
 	SD_MANUFACT_ID_NETCOM    = 131,
 	SD_MANUFACT_ID_STRONTIUM = 133,
-} sd_manufact_id_t;
+};
 
-typedef struct
+/* Card identification register */
+struct sd_cid_t
 {
 	sd_manufact_id_t manufact_id;   /* ManufacturerID */
 	char             oem_app_id[2]; /* OEM/Application ID */
@@ -39,16 +40,16 @@ typedef struct
 	uint32_t         prod_sn;       /* Product serial number */
 	uint16_t         manufact_date; /* Manufacturing date (year + month) */
 	uint8_t          crc7;
-} sd_cid_t; /* Card identification register */
+};
 
-typedef enum
+enum sd_csd_struct_t
 {
 	SD_CSD_STRUCT_VER_1_0 = 0,
 	SD_CSD_STRUCT_VER_2_0 = 1
-} sd_csd_struct_t;
+};
 
 // Bits definitions for "cmd_classes" csd field
-enum
+enum sd_csd_card_cmd_class_t
 {
 	SD_CSD_CARD_CMD_CLASS_0  = (1 << 0),
 	SD_CSD_CARD_CMD_CLASS_1  = (1 << 1),
@@ -64,7 +65,7 @@ enum
 	SD_CSD_CARD_CMD_CLASS_11 = (1 << 11)
 };
 
-typedef enum
+enum sd_csd_dev_size_mul_t
 {
 	SD_CSD_DEV_SIZE_MUL_4   = 0,
 	SD_CSD_DEV_SIZE_MUL_8   = 1,
@@ -74,16 +75,16 @@ typedef enum
 	SD_CSD_DEV_SIZE_MUL_128 = 5,
 	SD_CSD_DEV_SIZE_MUL_256 = 6,
 	SD_CSD_DEV_SIZE_MUL_512 = 7
-} sd_csd_dev_size_mul_t;
+};
 
-typedef enum
+enum sd_csd_max_read_block_len_t
 {
 	SD_CSD_MAX_READ_BLOCK_LEN_512  = 9,
 	SD_CSD_MAX_READ_BLOCK_LEN_1024 = 10,
 	SD_CSD_MAX_READ_BLOCK_LEN_2048 = 11
-} sd_csd_max_read_block_len_t;
+};
 
-typedef enum
+enum sd_csd_max_curr_vdd_min_t
 {
 	SD_CSD_MAX_CURR_VDD_MIN_05_MA  = 0,
 	SD_CSD_MAX_CURR_VDD_MIN_1_MA   = 1,
@@ -93,9 +94,9 @@ typedef enum
 	SD_CSD_MAX_CURR_VDD_MIN_35_MA  = 5,
 	SD_CSD_MAX_CURR_VDD_MIN_60_MA  = 6,
 	SD_CSD_MAX_CURR_VDD_MIN_100_MA = 7
-} sd_csd_max_curr_vdd_min_t;
+};
 
-typedef enum
+enum sd_csd_max_curr_vdd_max_t
 {
 	SD_CSD_MAX_CURR_VDD_MAX_1_MA   = 0,
 	SD_CSD_MAX_CURR_VDD_MAX_5_MA   = 1,
@@ -105,9 +106,9 @@ typedef enum
 	SD_CSD_MAX_CURR_VDD_MAX_45_MA  = 5,
 	SD_CSD_MAX_CURR_VDD_MAX_80_MA  = 6,
 	SD_CSD_MAX_CURR_VDD_MAX_200_MA = 7
-} sd_csd_max_curr_vdd_max_t;
+};
 
-typedef enum
+enum sd_csd_r2w_factor_t
 {
 	SD_CSD_R2W_FACTOR_1  = 0,
 	SD_CSD_R2W_FACTOR_2  = 1, // Write half as fast as read
@@ -115,32 +116,32 @@ typedef enum
 	SD_CSD_R2W_FACTOR_8  = 3,
 	SD_CSD_R2W_FACTOR_16 = 4,
 	SD_CSD_R2W_FACTOR_32 = 5,
-} sd_csd_r2w_factor_t;
+};
 
-typedef enum
+enum sd_csd_max_write_block_len_t
 {
 	SD_CSD_MAX_WRITE_BLOCK_LEN_512  = 9,
 	SD_CSD_MAX_WRITE_BLOCK_LEN_1024 = 10,
 	SD_CSD_MAX_WRITE_BLOCK_LEN_2048 = 11
-} sd_csd_max_write_block_len_t;
+};
 
-typedef enum
+enum sd_csd_file_format_t
 {
 	SD_CSD_FILE_FORMAT_PARTITION_TABLE  = 0,
 	SD_CSD_FILE_FORMAT_BOOT_SECTOR_ONLY = 1,
 	SD_CSD_FILE_FORMAT_UNIVERSAL        = 2,
 	SD_CSD_FILE_FORMAT_OTHER            = 3
-} sd_csd_file_format_t;
+};
 
-typedef enum
+enum sd_csd_spec_ver_t
 {
 	SD_CSD_SPEC_VER_MMC_V10_12 = 0, // MultiMediaCard protocol version 1.0-1.2
 	SD_CSD_SPEC_VER_MMC_V14    = 1, // MultiMediaCard protocol version 1.4
 	SD_CSD_SPEC_VER_MMC_V20_22 = 2, // MultiMediaCard protocol version 2.0-2.2
-} sd_csd_spec_ver_t;
+};
 
 // Map of CSD v1.0 register (SD card v1.01-1.10 and v2.00 std capacity card)
-typedef struct
+struct sd_csd_v1_t
 {
 	sd_csd_struct_t              csd_struct;               // CSD structure (1.0 or 1.1). 2 bits
 	uint8_t                      taac;                     // Data read access-time 1. 8 bits
@@ -171,10 +172,10 @@ typedef struct
 	bool                         temp_write_protection;    // Temporary write protection
 	sd_csd_file_format_t         file_format;              // File format. 2 bits
 	uint8_t                      crc7;                     // 7 bits
-} sd_csd_v1_t;
+};
 
 // Map of CSD v2.0 register (SD card v2.00 high and extended capacity)
-typedef struct
+struct sd_csd_v2_t
 {
 	sd_csd_struct_t              csd_struct;               // CSD structure (1.0 or 1.1). 2 bits
 	uint8_t                      taac;                     // Data read access-time 1. 8 bits
@@ -200,10 +201,10 @@ typedef struct
 	bool                         temp_write_protection;    // Temporary write protection
 	sd_csd_file_format_t         file_format;              // File format. 2 bits
 	uint8_t                      crc7;                     // 7 bits
-} sd_csd_v2_t;
+};
 
 // Map of CSD MMC register
-typedef struct
+struct sd_csd_mmc_t
 {
 	sd_csd_struct_t              csd_struct;               // CSD structure (1.0 or 1.1). 2 bits
 	sd_csd_spec_ver_t            spec_ver;                 // MMC specification version (1.0-1.2, 1.4, 2.0-2.2). 4 bits
@@ -237,12 +238,13 @@ typedef struct
 	sd_csd_file_format_t         file_format;              // File format. 2 bits
 	uint8_t                      eec;                      // Error correction code. 2 bits
 	uint8_t                      crc7;                     // 7 bits
-} sd_csd_mmc_t;
+};
 
-typedef union
+/* Card specific data register */
+union sd_csd_t
 {
 	sd_csd_v1_t  v1;
 	sd_csd_v2_t  v2;
 	sd_csd_mmc_t mmc;
-} sd_csd_t; /* Card specific data register */
+};
 };

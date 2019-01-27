@@ -24,7 +24,7 @@ using namespace hal;
 #define OCR_BUSY_BIT 31 /* Card power up status bit */
 
 /* Response 1 description */
-typedef enum
+enum r1_t
 {
 	R1_IN_IDLE_STATE = 0x01, /* Card is in idle state */
 	R1_ERASE_RST     = 0x02, /* Erase sequence was cleared before executing
@@ -40,12 +40,11 @@ typedef enum
 	                            length) was out of the allowed range for this
 	                            card */
 	R1_START_BIT     = 0x80  /* Should be always 0 */
-} r1_t;
+};
 
-static int8_t check_r1(uint32_t r1);
 static uint32_t get_block_count(sd_csd_t *csd);
 static void decode_cid(uint8_t *raw_cid, sd_cid_t *cid);
-static int8_t decode_csd(uint8_t *raw_csd, sd_csd_t *csd, sd_card_t type);
+static int8_t decode_csd(uint8_t *raw_csd, sd_csd_t *csd, sd::type_t type);
 
 sd::sd(gpio *cd):
 	_cd(cd)
@@ -69,10 +68,10 @@ int8_t sd::init()
 	
 	memset(&_info, 0, sizeof(_info));
 	
-	int8_t res = SD_ERR_NONE;
+	int8_t res = RES_OK;
 	if(_cd && _cd->get())
 	{
-		res = SD_ERR_NO_CARD;
+		res = RES_NO_CARD;
 		goto Exit;
 	}
 	
@@ -95,7 +94,7 @@ int8_t sd::init()
 		goto Exit;
 	if(!(r1 & R1_IN_IDLE_STATE))
 	{
-		res = SD_ERR_UNSUPPORTED_CARD;
+		res = RES_UNSUPPORTED_CARD;
 		goto Exit;
 	}
 	
@@ -114,13 +113,13 @@ int8_t sd::init()
 		
 		/* If it is really error (for example crc) - handle it */
 		res = check_r1(r7[0]);
-		if(res != SD_ERR_UNSUPPORTED_CARD)
+		if(res != RES_UNSUPPORTED_CARD)
 			goto Exit;
 		
 		res = process_acmd41(false);
 		if(!res)
 		{
-			_info.type = SD_CARD_SD_V1_X;
+			_info.type = TYPE_SD_V1_X;
 			res = set_block_size(SD_BLOCK_SIZE);
 			goto Exit;
 		}
@@ -129,7 +128,7 @@ int8_t sd::init()
 		res = process_cmd1();
 		if(!res)
 		{
-			_info.type = SD_CARD_MMC_V3;
+			_info.type = TYPE_MMC_V3;
 			res = set_block_size(SD_BLOCK_SIZE);
 		}
 		goto Exit;
@@ -142,7 +141,7 @@ int8_t sd::init()
 	/* Check CMD8 pattern */
 	if(((r7[3] << 8) | r7[4]) != cmd8_cond)
 	{
-		res = SD_ERR_UNSUPPORTED_CARD;
+		res = RES_UNSUPPORTED_CARD;
 		goto Exit;
 	}
 	
@@ -165,10 +164,10 @@ int8_t sd::init()
 	ocr = (r3[1] << 24) | (r3[2] << 16) | (r3[3] << 8) | r3[4];
 	if(ocr & (1 << OCR_CCS_BIT))
 	{
-		_info.type = SD_CARD_SD_V2_HI_CAPACITY;
+		_info.type = TYPE_SD_V2_HI_CAPACITY;
 		goto Exit;
 	}
-	_info.type = SD_CARD_SD_V2_STD_CAPACITY;
+	_info.type = TYPE_SD_V2_STD_CAPACITY;
 	
 	res = set_block_size(SD_BLOCK_SIZE);
 	
@@ -193,10 +192,10 @@ int8_t sd::read(void *buff, uint32_t block_addr)
 	
 	xSemaphoreTake(api_lock, portMAX_DELAY);
 	
-	int8_t res = SD_ERR_NONE;
+	int8_t res = RES_OK;
 	if(_cd && _cd->get())
 	{
-		res = SD_ERR_NO_CARD;
+		res = RES_NO_CARD;
 		goto Exit;
 	}
 	
@@ -227,10 +226,10 @@ int8_t sd::write(void *buff, uint32_t block_addr)
 	
 	xSemaphoreTake(api_lock, portMAX_DELAY);
 	
-	int8_t res = SD_ERR_NONE;
+	int8_t res = RES_OK;
 	if(_cd && _cd->get())
 	{
-		res = SD_ERR_NO_CARD;
+		res = RES_NO_CARD;
 		goto Exit;
 	}
 	
@@ -261,10 +260,10 @@ int8_t sd::erase(uint64_t start_addr, uint64_t end_addr)
 	
 	xSemaphoreTake(api_lock, portMAX_DELAY);
 	
-	int8_t res = SD_ERR_NONE;
+	int8_t res = RES_OK;
 	if(_cd && _cd->get())
 	{
-		res = SD_ERR_NO_CARD;
+		res = RES_NO_CARD;
 		goto Exit;
 	}
 	
@@ -278,11 +277,11 @@ int8_t sd::erase(uint64_t start_addr, uint64_t end_addr)
 	// Check if card supports erase command
 	if(csd.v1.cmd_classes & (1 << 5))
 	{
-		res = SD_ERR_PARAM;
+		res = RES_PARAM_ERR;
 		goto Exit;
 	}
 	
-	if(_info.type == SD_CARD_SD_V2_HI_CAPACITY)
+	if(_info.type == TYPE_SD_V2_HI_CAPACITY)
 	{
 		start_addr /= SD_BLOCK_SIZE;
 		end_addr /= SD_BLOCK_SIZE;
@@ -328,10 +327,10 @@ int8_t sd::read_cid(sd_cid_t *cid)
 	
 	xSemaphoreTake(api_lock, portMAX_DELAY);
 	
-	int8_t res = SD_ERR_NONE;
+	int8_t res = RES_OK;
 	if(_cd && _cd->get())
 	{
-		res = SD_ERR_NO_CARD;
+		res = RES_NO_CARD;
 		goto Exit;
 	}
 	
@@ -351,10 +350,10 @@ int8_t sd::read_csd(sd_csd_t *csd)
 	
 	xSemaphoreTake(api_lock, portMAX_DELAY);
 	
-	int8_t res = SD_ERR_NONE;
+	int8_t res = RES_OK;
 	if(_cd && _cd->get())
 	{
-		res = SD_ERR_NO_CARD;
+		res = RES_NO_CARD;
 		goto Exit;
 	}
 	
@@ -368,7 +367,7 @@ Exit:
 	return res;
 }
 
-int8_t sd::read_reg(sd_reg_t reg, void *buff)
+int8_t sd::read_reg(reg_t reg, void *buff)
 {
 	int8_t res;
 	uint8_t r2[17];
@@ -403,7 +402,7 @@ int8_t sd::read_reg(sd_reg_t reg, void *buff)
 		
 		default:
 			ASSERT(0);
-			return SD_ERR_PARAM;
+			return RES_PARAM_ERR;
 	}
 	
 	return res;
@@ -451,7 +450,7 @@ int8_t sd::process_acmd41(bool is_hi_capacity)
 		vTaskDelay(1);
 	}
 	if(!retry_cnt)
-		res = SD_ERR_NO_RESPONSE;
+		res = RES_NO_RESPONSE;
 	
 Exit:
 	return res;
@@ -478,24 +477,24 @@ int8_t sd::process_cmd1()
 		vTaskDelay(1);
 	}
 	if(!retry_cnt)
-		res = SD_ERR_NO_RESPONSE;
+		res = RES_NO_RESPONSE;
 	
 Exit:
 	return res;
 }
 
-static int8_t check_r1(uint32_t r1)
+sd::res_t sd::check_r1(uint32_t r1)
 {
-	int8_t res = SD_ERR_NONE;
+	res_t res = RES_OK;
 	
 	if(r1 & R1_COM_CRC_ERR)
-		res = SD_ERR_CRC;
+		res = RES_CRC_ERR;
 	else if((r1 & R1_ERASE_RST) || (r1 & R1_ERASE_SEQ_ERR))
-		res = SD_ERR_ERASE;
+		res = RES_ERASE_ERR;
 	else if((r1 & R1_PARAM_ERR) || (r1 & R1_ADDR_ERR))
-		res = SD_ERR_PARAM;
+		res = RES_PARAM_ERR;
 	else if(r1 & R1_ILLEGAL_CMD)
-		res = SD_ERR_UNSUPPORTED_CARD;
+		res = RES_UNSUPPORTED_CARD;
 	
 	return res;
 }
@@ -533,13 +532,13 @@ static void decode_cid(uint8_t *raw_cid, sd_cid_t *cid)
 	cid->crc7 = raw_cid[15] & 0xFE;
 }
 
-static int8_t decode_csd(uint8_t *raw_csd, sd_csd_t *csd, sd_card_t type)
+static int8_t decode_csd(uint8_t *raw_csd, sd_csd_t *csd, sd::type_t type)
 {
 	uint8_t csd_struct = raw_csd[0] >> 6;
 	
 	// TODO: need to rewrite the following code more understandable way
-	if(csd_struct == SD_CSD_STRUCT_VER_1_0 && (type == SD_CARD_SD_V1_X ||
-		type == SD_CARD_SD_V2_STD_CAPACITY))
+	if(csd_struct == SD_CSD_STRUCT_VER_1_0 && (type == sd::TYPE_SD_V1_X ||
+		type == sd::TYPE_SD_V2_STD_CAPACITY))
 	{
 		csd->v1.csd_struct = (sd_csd_struct_t)csd_struct;
 		csd->v1.taac = raw_csd[1];
@@ -572,7 +571,7 @@ static int8_t decode_csd(uint8_t *raw_csd, sd_csd_t *csd, sd_card_t type)
 		csd->v1.crc7 = raw_csd[15] & 0xFE;
 	}
 	else if(csd_struct == SD_CSD_STRUCT_VER_2_0 &&
-		type == SD_CARD_SD_V2_HI_CAPACITY)
+		type == sd::TYPE_SD_V2_HI_CAPACITY)
 	{
 		csd->v2.csd_struct = (sd_csd_struct_t)csd_struct;
 		csd->v2.taac = raw_csd[1];
@@ -600,7 +599,7 @@ static int8_t decode_csd(uint8_t *raw_csd, sd_csd_t *csd, sd_card_t type)
 		csd->v2.crc7 = raw_csd[15] & 0xFE;
 	}
 	else if((csd_struct == SD_CSD_STRUCT_VER_1_0 ||
-		csd_struct == SD_CSD_STRUCT_VER_2_0) && type == SD_CARD_MMC_V3)
+		csd_struct == SD_CSD_STRUCT_VER_2_0) && type == sd::TYPE_MMC_V3)
 	{
 		csd->mmc.csd_struct = (sd_csd_struct_t)csd_struct;
 		csd->mmc.spec_ver = (sd_csd_spec_ver_t)((raw_csd[0] & 0x3C) >> 2);
@@ -636,7 +635,7 @@ static int8_t decode_csd(uint8_t *raw_csd, sd_csd_t *csd, sd_card_t type)
 		csd->mmc.crc7 = raw_csd[15] & 0xFE;
 	}
 	else
-		return SD_ERR_UNSUPPORTED_CARD;
+		return sd::RES_UNSUPPORTED_CARD;
 	
-	return SD_ERR_NONE;
+	return sd::RES_OK;
 }
