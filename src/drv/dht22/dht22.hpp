@@ -12,11 +12,11 @@ class dht22
 	public:
 		enum res_t
 		{
-			RES_OK     =  0,
-			RES_NODEV  = -1,
-			RES_DEVERR = -2,
-			RES_BUSY   = -3,
-			RES_CRCERR = -4
+			RES_OK      =  0,
+			RES_NODEV   = -1,
+			RES_DEVERR  = -2,
+			RES_BUSY    = -3,
+			RES_CRC_ERR = -4
 		};
 
 		dht22(singlewire &singlewire);

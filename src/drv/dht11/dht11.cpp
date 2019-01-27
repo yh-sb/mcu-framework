@@ -46,7 +46,7 @@ int8_t dht11::get(uint8_t *rh, uint8_t *t)
 	if(buff[CHECKSUM] != (uint8_t)(buff[RH_INT] + buff[RH_DEC] + buff[T_INT] +
 		buff[T_DEC]))
 	{
-		res = RES_CRCERR;
+		res = RES_CRC_ERR;
 		goto Exit;
 	}
 	

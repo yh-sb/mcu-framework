@@ -46,7 +46,7 @@ int8_t dht22::get(uint16_t *rh_x10, int16_t *t_x10)
 	if(buff[CHECKSUM] != (uint8_t)(buff[RH_INT] + buff[RH_DEC] + buff[T_INT] +
 		buff[T_DEC]))
 	{
-		res = RES_CRCERR;
+		res = RES_CRC_ERR;
 		goto Exit;
 	}
 	
