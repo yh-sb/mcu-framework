@@ -27,11 +27,8 @@ dac::dac(dac_t dac, align_t align, gpio &gpio):
 	
 	RCC->APB1ENR |= RCC_APB1ENR_DACEN;
 	
-	uint32_t tmp_cr = DAC_CR_EN1 | DAC_CR_TSEL1;
-	tmp_cr &= ~(DAC_CR_EN1 | DAC_CR_TSEL1 | DAC_CR_WAVE1 | DAC_CR_DMAEN1 |
-		DAC_CR_BOFF1);
-	
-	DAC->CR = tmp_cr << ((_dac == DAC_1) ? 0 : 16);
+	uint32_t cr = DAC_CR_EN1 | DAC_CR_TSEL1;
+	DAC->CR = cr << ((_dac == DAC_1) ? 0 : 16);
 }
 
 dac::~dac()
