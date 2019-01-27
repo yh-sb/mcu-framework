@@ -45,7 +45,7 @@ int main(void)
 
 static void b1_cb(di *di, bool state, void *ctx)
 {
-	if(state)
+	if(!state)
 		return;
 	
 	i2c *i2c1 = (i2c *)ctx;
