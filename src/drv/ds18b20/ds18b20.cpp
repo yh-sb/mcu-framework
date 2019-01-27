@@ -35,8 +35,8 @@ enum
 };
 
 /* Maximum conversion time for each resolution in ms */
-static uint16_t time_list[DS18B20_RESOL_12_BIT + 1] = {94, 188, 375, 750};
-static uint8_t conf_list[DS18B20_RESOL_12_BIT + 1] = {0x1F, 0x3F, 0x5F, 0x7F};
+static uint16_t time_list[ds18b20::RESOL_12_BIT + 1] = {94, 188, 375, 750};
+static uint8_t conf_list[ds18b20::RESOL_12_BIT + 1] = {0x1F, 0x3F, 0x5F, 0x7F};
 
 static const uint8_t crc8_table[256] =
 {
@@ -69,7 +69,7 @@ static float calc_temp(uint8_t temp_lsb, uint8_t temp_msb, uint8_t conf);
 
 ds18b20::ds18b20(onewire &onewire):
 	_onewire(onewire),
-	_resol(DS18B20_RESOL_12_BIT)
+	_resol(RESOL_12_BIT)
 {
 	api_lock = xSemaphoreCreateMutex();
 	ASSERT(api_lock);
@@ -86,14 +86,14 @@ int8_t ds18b20::get_temp(uint64_t rom, float *temp)
 	
 	xSemaphoreTake(api_lock, portMAX_DELAY);
 	
-	int8_t res = DS18B20_ERR_NONE;
+	int8_t res = RES_OK;
 	uint8_t tx_byte = CMD_CONVERT_T;
 	switch(_onewire.tx(rom, &tx_byte, 1))
 	{
 		case ONEWIRE_ERR_LINE_BUSY:
 		case ONEWIRE_ERR_TX_FAIL:
-		case ONEWIRE_ERR_RX_FAIL: res = DS18B20_ERR_ONEWIRE_BUSY; goto Exit;
-		case ONEWIRE_ERR_NO_DEV: res = DS18B20_ERR_NO_DEV; goto Exit;
+		case ONEWIRE_ERR_RX_FAIL: res = RES_ONEWIRE_BUSY; goto Exit;
+		case ONEWIRE_ERR_NO_DEV: res = RES_NO_DEV; goto Exit;
 	}
 	vTaskDelay(time_list[_resol]);
 	
@@ -110,11 +110,11 @@ Exit:
 	return res;
 }
 
-int8_t ds18b20::set_resol(uint64_t rom, ds18b20_resol_t resol)
+int8_t ds18b20::set_resol(uint64_t rom, resol_t resol)
 {
 	xSemaphoreTake(api_lock, portMAX_DELAY);
 	
-	int8_t res = DS18B20_ERR_NONE;
+	int8_t res = RES_OK;
 	uint8_t rx_buff[SCRATCHPAD_TOTAL_SIZE];
 	res = read_scratchpad(rom, rx_buff, sizeof(rx_buff));
 	if(res)
@@ -138,26 +138,26 @@ Exit:
 	return res;
 }
 
-int8_t ds18b20::get_resol(uint64_t rom, ds18b20_resol_t *resol)
+int8_t ds18b20::get_resol(uint64_t rom, resol_t *resol)
 {
 	ASSERT(resol);
 	
 	xSemaphoreTake(api_lock, portMAX_DELAY);
 	
-	int8_t res = DS18B20_ERR_NONE;
+	int8_t res = RES_OK;
 	uint8_t rx_buff[SCRATCHPAD_TOTAL_SIZE];
 	res = read_scratchpad(rom, rx_buff, sizeof(rx_buff));
 	if(res)
 		goto Exit;
 	
-	if(rx_buff[SCRATCHPAD_CONFIG] == conf_list[DS18B20_RESOL_9_BIT])
-		*resol = DS18B20_RESOL_9_BIT;
-	else if(rx_buff[SCRATCHPAD_CONFIG] == conf_list[DS18B20_RESOL_10_BIT])
-		*resol = DS18B20_RESOL_10_BIT;
-	else if(rx_buff[SCRATCHPAD_CONFIG] == conf_list[DS18B20_RESOL_11_BIT])
-		*resol = DS18B20_RESOL_11_BIT;
-	else if(rx_buff[SCRATCHPAD_CONFIG] == conf_list[DS18B20_RESOL_12_BIT])
-		*resol = DS18B20_RESOL_12_BIT;
+	if(rx_buff[SCRATCHPAD_CONFIG] == conf_list[RESOL_9_BIT])
+		*resol = RESOL_9_BIT;
+	else if(rx_buff[SCRATCHPAD_CONFIG] == conf_list[RESOL_10_BIT])
+		*resol = RESOL_10_BIT;
+	else if(rx_buff[SCRATCHPAD_CONFIG] == conf_list[RESOL_11_BIT])
+		*resol = RESOL_11_BIT;
+	else if(rx_buff[SCRATCHPAD_CONFIG] == conf_list[RESOL_12_BIT])
+		*resol = RESOL_12_BIT;
 	else
 		ASSERT(0);
 	
@@ -172,7 +172,7 @@ int8_t ds18b20::set_th(uint64_t rom, uint8_t th)
 {
 	xSemaphoreTake(api_lock, portMAX_DELAY);
 	
-	int8_t res = DS18B20_ERR_NONE;
+	int8_t res = RES_OK;
 	uint8_t rx_buff[SCRATCHPAD_TOTAL_SIZE];
 	res = read_scratchpad(rom, rx_buff, sizeof(rx_buff));
 	if(res)
@@ -195,7 +195,7 @@ int8_t ds18b20::get_th(uint64_t rom, uint8_t *th)
 	
 	xSemaphoreTake(api_lock, portMAX_DELAY);
 	
-	int8_t res = DS18B20_ERR_NONE;
+	int8_t res = RES_OK;
 	uint8_t rx_buff[SCRATCHPAD_TOTAL_SIZE];
 	res = read_scratchpad(rom, rx_buff, sizeof(rx_buff));
 	if(res)
@@ -212,7 +212,7 @@ int8_t ds18b20::set_tl(uint64_t rom, uint8_t tl)
 {
 	xSemaphoreTake(api_lock, portMAX_DELAY);
 	
-	int8_t res = DS18B20_ERR_NONE;
+	int8_t res = RES_OK;
 	uint8_t rx_buff[SCRATCHPAD_TOTAL_SIZE];
 	res = read_scratchpad(rom, rx_buff, sizeof(rx_buff));
 	if(res)
@@ -235,7 +235,7 @@ int8_t ds18b20::get_tl(uint64_t rom, uint8_t *tl)
 	
 	xSemaphoreTake(api_lock, portMAX_DELAY);
 	
-	int8_t res = DS18B20_ERR_NONE;
+	int8_t res = RES_OK;
 	uint8_t rx_buff[SCRATCHPAD_TOTAL_SIZE];
 	res = read_scratchpad(rom, rx_buff, sizeof(rx_buff));
 	if(res)
@@ -252,14 +252,14 @@ int8_t ds18b20::write_eeprom(uint64_t rom)
 {
 	xSemaphoreTake(api_lock, portMAX_DELAY);
 	
-	int8_t res = DS18B20_ERR_NONE;
+	int8_t res = RES_OK;
 	uint8_t tx_byte = CMD_COPY_SCRATCHPAD;
 	switch(_onewire.tx(rom, &tx_byte, 1))
 	{
 		case ONEWIRE_ERR_LINE_BUSY:
 		case ONEWIRE_ERR_TX_FAIL:
-		case ONEWIRE_ERR_RX_FAIL: res = DS18B20_ERR_ONEWIRE_BUSY; break;
-		case ONEWIRE_ERR_NO_DEV: res = DS18B20_ERR_NO_DEV; break;
+		case ONEWIRE_ERR_RX_FAIL: res = RES_ONEWIRE_BUSY; break;
+		case ONEWIRE_ERR_NO_DEV: res = RES_NO_DEV; break;
 	}
 	
 	xSemaphoreGive(api_lock);
@@ -270,14 +270,14 @@ int8_t ds18b20::restore_eeprom(uint64_t rom)
 {
 	xSemaphoreTake(api_lock, portMAX_DELAY);
 	
-	int8_t res = DS18B20_ERR_NONE;
+	int8_t res = RES_OK;
 	uint8_t tx_byte = CMD_RECALL_E2;
 	switch(_onewire.tx(rom, &tx_byte, 1))
 	{
 		case ONEWIRE_ERR_LINE_BUSY:
 		case ONEWIRE_ERR_TX_FAIL:
-		case ONEWIRE_ERR_RX_FAIL: res = DS18B20_ERR_ONEWIRE_BUSY; break;
-		case ONEWIRE_ERR_NO_DEV: res = DS18B20_ERR_NO_DEV; break;
+		case ONEWIRE_ERR_RX_FAIL: res = RES_ONEWIRE_BUSY; break;
+		case ONEWIRE_ERR_NO_DEV: res = RES_NO_DEV; break;
 	}
 	
 	xSemaphoreGive(api_lock);
@@ -291,10 +291,10 @@ int8_t ds18b20::write_scratchpad(uint64_t rom, uint8_t th, uint8_t tl, uint8_t c
 	{
 		case ONEWIRE_ERR_LINE_BUSY:
 		case ONEWIRE_ERR_TX_FAIL:
-		case ONEWIRE_ERR_RX_FAIL: return DS18B20_ERR_ONEWIRE_BUSY;
-		case ONEWIRE_ERR_NO_DEV: return DS18B20_ERR_NO_DEV;
+		case ONEWIRE_ERR_RX_FAIL: return RES_ONEWIRE_BUSY;
+		case ONEWIRE_ERR_NO_DEV: return RES_NO_DEV;
 	}
-	return DS18B20_ERR_NONE;
+	return RES_OK;
 }
 
 int8_t ds18b20::read_scratchpad(uint64_t rom, void *rx_buff, uint8_t rx_size)
@@ -306,13 +306,13 @@ int8_t ds18b20::read_scratchpad(uint64_t rom, void *rx_buff, uint8_t rx_size)
 	{
 		case ONEWIRE_ERR_LINE_BUSY:
 		case ONEWIRE_ERR_TX_FAIL:
-		case ONEWIRE_ERR_RX_FAIL: return DS18B20_ERR_ONEWIRE_BUSY;
-		case ONEWIRE_ERR_NO_DEV: return DS18B20_ERR_NO_DEV;
+		case ONEWIRE_ERR_RX_FAIL: return RES_ONEWIRE_BUSY;
+		case ONEWIRE_ERR_NO_DEV: return RES_NO_DEV;
 	}
 	if(calc_crc(rx_buff, SCRATCHPAD_TOTAL_SIZE))
-		return DS18B20_ERR_CRC_ERR;
+		return RES_CRC_ERR;
 	
-	return DS18B20_ERR_NONE;
+	return RES_OK;
 }
 
 static uint8_t calc_crc(void *buff, uint8_t size)
@@ -346,13 +346,13 @@ static float calc_temp(uint8_t temp_lsb, uint8_t temp_msb, uint8_t conf)
 {
 	int16_t temp = (temp_msb << 8) | temp_lsb;
 	
-	if(conf == conf_list[DS18B20_RESOL_12_BIT])
+	if(conf == conf_list[ds18b20::RESOL_12_BIT])
 		return (float)temp * 0.0625;
-	else if(conf == conf_list[DS18B20_RESOL_11_BIT])
+	else if(conf == conf_list[ds18b20::RESOL_11_BIT])
 		return (float)(temp >> 1) * 0.125;
-	else if(conf == conf_list[DS18B20_RESOL_10_BIT])
+	else if(conf == conf_list[ds18b20::RESOL_10_BIT])
 		return (float)(temp >> 2) * 0.25;
-	else if(conf == conf_list[DS18B20_RESOL_9_BIT])
+	else if(conf == conf_list[ds18b20::RESOL_9_BIT])
 		return (float)(temp >> 3) * 0.5;
 	else
 		ASSERT(0);
