@@ -247,7 +247,7 @@ uint8_t hd44780::read_4bit()
 	return half_byte;
 }
 
-void tim_cb(hal::tim *tim, void *ctx)
+void tim_cb(tim *tim, void *ctx)
 {
 	SemaphoreHandle_t _lock = (SemaphoreHandle_t)ctx;
 	
