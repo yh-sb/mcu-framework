@@ -67,7 +67,7 @@ extern "C" void user_init(void)
 {
 	printf("SDK version:%s %d\n", system_get_sdk_version(), system_get_free_heap_size());
 	
-	static hal::gpio blue_led(0, 2, hal::GPIO_MODE_DO, 1);
+	static hal::gpio blue_led(0, 2, hal::gpio::MODE_DO, 1);
 	
 	xTaskCreate(main_task, (const signed char *)"main",
 		configMINIMAL_STACK_SIZE * 1, &blue_led, tskIDLE_PRIORITY + 1, NULL);

@@ -63,23 +63,84 @@ static const uint32_t func_list[PIN_QTY][5] =
 	{0,           0,              0,              0,               0}
 };
 
-gpio::gpio(uint8_t port, uint8_t pin, gpio_mode_t mode, bool state):
+gpio::gpio(uint8_t port, uint8_t pin, mode_t mode, bool state):
 	_port(port),
 	_pin(pin),
 	_mode(mode)
 {
 	ASSERT(_port < PORT_QTY);
 	ASSERT(_pin < PIN_QTY);
-	
+	ASSERT(_mode <= MODE_AF4);
 	// GPIO0-15 have only pulldown in input mode
-	ASSERT(_mode != GPIO_MODE_DI || _pin > 15 || state);
-	
+	ASSERT(_mode != MODE_DI || _pin > 15 || state);
 	// GPIO16 has only pullup in input mode
-	ASSERT(_mode != GPIO_MODE_DI || _pin < 16 || !state);
+	ASSERT(_mode != MODE_DI || _pin < 16 || !state);
+	
+	gpio::mode(_mode, state);
+}
+
+gpio::~gpio()
+{
+	
+}
+
+void gpio::set(bool state) const
+{
+	ASSERT(_mode == MODE_DO);
+	
+	if(_pin < 16)
+	{
+		GPIO_REG_WRITE((state ? GPIO_OUT_W1TS_ADDRESS : GPIO_OUT_W1TC_ADDRESS),
+			1 << _pin);
+	}
+	else
+	{
+		uint32_t tmp_val = READ_PERI_REG(RTC_GPIO_OUT);
+		WRITE_PERI_REG(RTC_GPIO_OUT, (tmp_val & 0xfffffffe) | state);
+	}
+}
+
+bool gpio::get() const
+{
+	ASSERT(_mode == MODE_DI && _mode == MODE_DO);
+	
+	if(_pin < 16)
+		return (bool)(GPIO_REG_READ(GPIO_IN_ADDRESS) & (1 << _pin));
+	else
+		return (bool)(READ_PERI_REG(RTC_GPIO_IN_DATA) & 1);
+}
+
+void gpio::toggle() const
+{
+	ASSERT(_mode == MODE_DO);
+	
+	if(_pin < 16)
+	{
+		bool state = GPIO_REG_READ(GPIO_IN_ADDRESS) & (1 << _pin);
+		
+		GPIO_REG_WRITE((state ? GPIO_OUT_W1TC_ADDRESS : GPIO_OUT_W1TS_ADDRESS),
+			1 << _pin);
+	}
+	else
+	{
+		bool state = READ_PERI_REG(RTC_GPIO_IN_DATA) & 1;
+		
+		uint32_t tmp_val = READ_PERI_REG(RTC_GPIO_OUT);
+		WRITE_PERI_REG(RTC_GPIO_OUT, (tmp_val & 0xfffffffe) | ~state);
+	}
+}
+
+void gpio::mode(mode_t mode, bool state)
+{
+	ASSERT(_mode <= MODE_AF4);
+	// GPIO0-15 have only pulldown in input mode
+	ASSERT(_mode != MODE_DI || _pin > 15 || state);
+	// GPIO16 has only pullup in input mode
+	ASSERT(_mode != MODE_DI || _pin < 16 || !state);
 	
 	switch(_mode)
 	{
-		case GPIO_MODE_DO:
+		case MODE_DO:
 			if(_pin < 16)
 			{
 				// Set as GPIO
@@ -112,11 +173,11 @@ gpio::gpio(uint8_t port, uint8_t pin, gpio_mode_t mode, bool state):
 			}
 			break;
 		
-		case GPIO_MODE_OD:
+		case MODE_OD:
 			// TODO
 			break;
 		
-		case GPIO_MODE_DI:
+		case MODE_DI:
 			if(_pin < 16)
 			{
 				// Set as GPIO
@@ -147,10 +208,10 @@ gpio::gpio(uint8_t port, uint8_t pin, gpio_mode_t mode, bool state):
 			}
 			break;
 		
-		case GPIO_MODE_AF1:
-		case GPIO_MODE_AF2:
-		case GPIO_MODE_AF3:
-		case GPIO_MODE_AF4:
+		case MODE_AF1:
+		case MODE_AF2:
+		case MODE_AF3:
+		case MODE_AF4:
 			if(_pin < 16)
 			{
 				// Set as AFx
@@ -162,56 +223,5 @@ gpio::gpio(uint8_t port, uint8_t pin, gpio_mode_t mode, bool state):
 				ASSERT(0);
 			}
 			break;
-	}
-}
-
-gpio::~gpio()
-{
-	
-}
-
-void gpio::set(bool state) const
-{
-	ASSERT(_mode == GPIO_MODE_DO);
-	
-	if(_pin < 16)
-	{
-		GPIO_REG_WRITE((state ? GPIO_OUT_W1TS_ADDRESS : GPIO_OUT_W1TC_ADDRESS),
-			1 << _pin);
-	}
-	else
-	{
-		uint32_t tmp_val = READ_PERI_REG(RTC_GPIO_OUT);
-		WRITE_PERI_REG(RTC_GPIO_OUT, (tmp_val & 0xfffffffe) | state);
-	}
-}
-
-bool gpio::get() const
-{
-	ASSERT(_mode == GPIO_MODE_DI && _mode == GPIO_MODE_DO);
-	
-	if(_pin < 16)
-		return (bool)(GPIO_REG_READ(GPIO_IN_ADDRESS) & (1 << _pin));
-	else
-		return (bool)(READ_PERI_REG(RTC_GPIO_IN_DATA) & 1);
-}
-
-void gpio::toggle() const
-{
-	ASSERT(_mode == GPIO_MODE_DO);
-	
-	if(_pin < 16)
-	{
-		bool state = GPIO_REG_READ(GPIO_IN_ADDRESS) & (1 << _pin);
-		
-		GPIO_REG_WRITE((state ? GPIO_OUT_W1TC_ADDRESS : GPIO_OUT_W1TS_ADDRESS),
-			1 << _pin);
-	}
-	else
-	{
-		bool state = READ_PERI_REG(RTC_GPIO_IN_DATA) & 1;
-		
-		uint32_t tmp_val = READ_PERI_REG(RTC_GPIO_OUT);
-		WRITE_PERI_REG(RTC_GPIO_OUT, (tmp_val & 0xfffffffe) | ~state);
 	}
 }
