@@ -170,7 +170,7 @@ Exit:
 
 int8_t onewire::do_reset()
 {
-	int8_t res = ONEWIRE_ERR_NONE, uart_res;
+	int8_t res = RES_OK;//, uart_res;
 	uint8_t tx_buff = 0xF0, rx_buff = 0x00;
 	uint16_t size = sizeof(rx_buff);
 	
@@ -179,19 +179,31 @@ int8_t onewire::do_reset()
 	
 	if(_uart.tx(&tx_buff, 1) != uart::RES_OK)
 	{
-		res = ONEWIRE_ERR_TX_FAIL;
+		res = RES_TX_FAIL;
 		goto Exit;
 	}
 	
-	uart_res = _uart.rx(&rx_buff, &size, RX_WAIT_TIMEOUT);
+	switch(_uart.rx(&rx_buff, &size, RX_WAIT_TIMEOUT))
+	{
+		case uart::RES_RX_TIMEOUT: res = RES_NO_DEV; break;
+		case uart::RES_RX_FAIL: res = RES_RX_FAIL; break;
+		case uart::RES_TX_FAIL: res = RES_TX_FAIL; break;
+		default:
+			if(size != sizeof(rx_buff))
+				res = RES_RX_FAIL;
+			else if(rx_buff == 0x00)
+				res = RES_LINE_BUSY;
+	}
+	
+	/*uart_res = _uart.rx(&rx_buff, &size, RX_WAIT_TIMEOUT);
 	if(uart_res == uart::RES_RX_TIMEOUT)
-		res = ONEWIRE_ERR_NO_DEV;
+		res = RES_NO_DEV;
 	else if(uart_res == uart::RES_RX_FAIL || size != sizeof(rx_buff))
-		res = ONEWIRE_ERR_RX_FAIL;
+		res = RES_RX_FAIL;
 	else if(uart_res == uart::RES_TX_FAIL)
-		res = ONEWIRE_ERR_TX_FAIL;
+		res = RES_TX_FAIL;
 	else if(rx_buff == 0x00)
-		res = ONEWIRE_ERR_LINE_BUSY;
+		res = RES_LINE_BUSY;*/
 	
 Exit:
 	_uart.baud(115200);
@@ -200,20 +212,19 @@ Exit:
 
 int8_t onewire::send_buff(void *buff, uint8_t size)
 {
-	int8_t res = ONEWIRE_ERR_NONE;
+	int8_t res = RES_OK;
 	
-	for(uint8_t i = 0; (i < size) && !res; i++)
+	for(uint8_t i = 0; (i < size) && (res == RES_OK); i++)
 		res = send_byte(static_cast<uint8_t *>(buff)[i]);
-		
 	
 	return res;
 }
 
 int8_t onewire::read_buff(void *buff, uint8_t size)
 {
-	int8_t res = ONEWIRE_ERR_NONE;
+	int8_t res = RES_OK;
 	
-	for(uint8_t i = 0; (i < size) && !res; i++)
+	for(uint8_t i = 0; (i < size) && (res == RES_OK); i++)
 		res = read_byte(&static_cast<uint8_t *>(buff)[i]);
 	
 	return res;
@@ -221,45 +232,60 @@ int8_t onewire::read_buff(void *buff, uint8_t size)
 
 int8_t onewire::send_byte(uint8_t byte)
 {
+	int8_t res = RES_OK;
 	uint8_t tx_buff[8], rx_buff[8];
 	uint16_t size = sizeof(rx_buff);
 	
 	for(uint8_t i = 0; i < size; i++)
 		tx_buff[i] = ((byte >> i) & 1) ? 0xFF : 0x00;
 	
-	int8_t uart_res = _uart.exch(tx_buff, size, rx_buff, &size, RX_WAIT_TIMEOUT);
+	switch(_uart.exch(tx_buff, size, rx_buff, &size, RX_WAIT_TIMEOUT))
+	{
+		case uart::RES_RX_TIMEOUT: res = RES_NO_DEV; break;
+		case uart::RES_RX_FAIL: res = RES_RX_FAIL; break;
+		case uart::RES_TX_FAIL: res = RES_TX_FAIL; break;
+		default:
+			if(size != sizeof(rx_buff))
+				res = RES_RX_FAIL;
+			else if(rx_buff == 0x00)
+				res = RES_LINE_BUSY;
+	}
 	
-	if(uart_res == uart::RES_RX_TIMEOUT)
-		return ONEWIRE_ERR_NO_DEV;
-	else if(uart_res == uart::RES_RX_FAIL || size != sizeof(rx_buff))
-		return ONEWIRE_ERR_RX_FAIL;
-	else if(uart_res == uart::RES_TX_FAIL)
-		return ONEWIRE_ERR_TX_FAIL;
+	if(res == RES_OK)
+	{
+		if(memcmp(tx_buff, rx_buff, sizeof(tx_buff)))
+			res = RES_LINE_BUSY;
+	}
 	
-	if(memcmp(tx_buff, rx_buff, sizeof(tx_buff)))
-		return ONEWIRE_ERR_LINE_BUSY;
-	
-	return ONEWIRE_ERR_NONE;
+	return res;
 }
 
 int8_t onewire::read_byte(uint8_t *byte)
 {
+	int8_t res = RES_OK;
 	uint8_t tx_buff[8], rx_buff[8];
 	uint16_t size = sizeof(rx_buff);
 	
 	memset(tx_buff, 0xFF, sizeof(tx_buff));
-	int8_t uart_res = _uart.exch(tx_buff, size, rx_buff, &size, RX_WAIT_TIMEOUT);
 	
-	if(uart_res == uart::RES_RX_TIMEOUT)
-		return ONEWIRE_ERR_NO_DEV;
-	else if(uart_res == uart::RES_RX_FAIL || size != sizeof(rx_buff))
-		return ONEWIRE_ERR_RX_FAIL;
-	else if(uart_res == uart::RES_TX_FAIL)
-		return ONEWIRE_ERR_TX_FAIL;
+	switch(_uart.exch(tx_buff, size, rx_buff, &size, RX_WAIT_TIMEOUT))
+	{
+		case uart::RES_RX_TIMEOUT: res = RES_NO_DEV; break;
+		case uart::RES_RX_FAIL: res = RES_RX_FAIL; break;
+		case uart::RES_TX_FAIL: res = RES_TX_FAIL; break;
+		default:
+			if(size != sizeof(rx_buff))
+				res = RES_RX_FAIL;
+			else if(rx_buff == 0x00)
+				res = RES_LINE_BUSY;
+	}
 	
-	*byte = 0;
-	for(uint8_t i = 0; i < size; i++)
-		*byte |= (rx_buff[i] == 0xFF) << i;
+	if(res == RES_OK)
+	{
+		*byte = 0;
+		for(uint8_t i = 0; i < size; i++)
+			*byte |= (rx_buff[i] == 0xFF) << i;
+	}
 	
-	return ONEWIRE_ERR_NONE;
+	return res;
 }

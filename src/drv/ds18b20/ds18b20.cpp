@@ -90,10 +90,10 @@ int8_t ds18b20::get_temp(uint64_t rom, float *temp)
 	uint8_t tx_byte = CMD_CONVERT_T;
 	switch(_onewire.tx(rom, &tx_byte, 1))
 	{
-		case ONEWIRE_ERR_LINE_BUSY:
-		case ONEWIRE_ERR_TX_FAIL:
-		case ONEWIRE_ERR_RX_FAIL: res = RES_ONEWIRE_BUSY; goto Exit;
-		case ONEWIRE_ERR_NO_DEV: res = RES_NO_DEV; goto Exit;
+		case onewire::RES_LINE_BUSY:
+		case onewire::RES_TX_FAIL:
+		case onewire::RES_RX_FAIL: res = RES_ONEWIRE_BUSY; goto Exit;
+		case onewire::RES_NO_DEV: res = RES_NO_DEV; goto Exit;
 	}
 	vTaskDelay(time_list[_resol]);
 	
@@ -256,10 +256,10 @@ int8_t ds18b20::write_eeprom(uint64_t rom)
 	uint8_t tx_byte = CMD_COPY_SCRATCHPAD;
 	switch(_onewire.tx(rom, &tx_byte, 1))
 	{
-		case ONEWIRE_ERR_LINE_BUSY:
-		case ONEWIRE_ERR_TX_FAIL:
-		case ONEWIRE_ERR_RX_FAIL: res = RES_ONEWIRE_BUSY; break;
-		case ONEWIRE_ERR_NO_DEV: res = RES_NO_DEV; break;
+		case onewire::RES_LINE_BUSY:
+		case onewire::RES_TX_FAIL:
+		case onewire::RES_RX_FAIL: res = RES_ONEWIRE_BUSY; break;
+		case onewire::RES_NO_DEV: res = RES_NO_DEV; break;
 	}
 	
 	xSemaphoreGive(api_lock);
@@ -274,10 +274,10 @@ int8_t ds18b20::restore_eeprom(uint64_t rom)
 	uint8_t tx_byte = CMD_RECALL_E2;
 	switch(_onewire.tx(rom, &tx_byte, 1))
 	{
-		case ONEWIRE_ERR_LINE_BUSY:
-		case ONEWIRE_ERR_TX_FAIL:
-		case ONEWIRE_ERR_RX_FAIL: res = RES_ONEWIRE_BUSY; break;
-		case ONEWIRE_ERR_NO_DEV: res = RES_NO_DEV; break;
+		case onewire::RES_LINE_BUSY:
+		case onewire::RES_TX_FAIL:
+		case onewire::RES_RX_FAIL: res = RES_ONEWIRE_BUSY; break;
+		case onewire::RES_NO_DEV: res = RES_NO_DEV; break;
 	}
 	
 	xSemaphoreGive(api_lock);
@@ -289,10 +289,10 @@ int8_t ds18b20::write_scratchpad(uint64_t rom, uint8_t th, uint8_t tl, uint8_t c
 	uint8_t tx_buff[] = {CMD_WRITE_SCRATCHPAD, th, tl, conf};
 	switch(_onewire.tx(rom, tx_buff, sizeof(tx_buff)))
 	{
-		case ONEWIRE_ERR_LINE_BUSY:
-		case ONEWIRE_ERR_TX_FAIL:
-		case ONEWIRE_ERR_RX_FAIL: return RES_ONEWIRE_BUSY;
-		case ONEWIRE_ERR_NO_DEV: return RES_NO_DEV;
+		case onewire::RES_LINE_BUSY:
+		case onewire::RES_TX_FAIL:
+		case onewire::RES_RX_FAIL: return RES_ONEWIRE_BUSY;
+		case onewire::RES_NO_DEV: return RES_NO_DEV;
 	}
 	return RES_OK;
 }
@@ -304,10 +304,10 @@ int8_t ds18b20::read_scratchpad(uint64_t rom, void *rx_buff, uint8_t rx_size)
 	uint8_t cmd = CMD_READ_SCRATCHPAD;
 	switch(_onewire.exch(rom, &cmd, 1, rx_buff, SCRATCHPAD_TOTAL_SIZE))
 	{
-		case ONEWIRE_ERR_LINE_BUSY:
-		case ONEWIRE_ERR_TX_FAIL:
-		case ONEWIRE_ERR_RX_FAIL: return RES_ONEWIRE_BUSY;
-		case ONEWIRE_ERR_NO_DEV: return RES_NO_DEV;
+		case onewire::RES_LINE_BUSY:
+		case onewire::RES_TX_FAIL:
+		case onewire::RES_RX_FAIL: return RES_ONEWIRE_BUSY;
+		case onewire::RES_NO_DEV: return RES_NO_DEV;
 	}
 	if(calc_crc(rx_buff, SCRATCHPAD_TOTAL_SIZE))
 		return RES_CRC_ERR;

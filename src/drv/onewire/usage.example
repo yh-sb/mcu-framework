@@ -25,24 +25,24 @@ static void di_task(void *pvParameters)
 
 int main(void)
 {
-	static gpio b1(0, 0, GPIO_MODE_DI, 0);
-	static gpio uart3_tx_gpio(3, 8, GPIO_MODE_AF, 0);
-	static gpio uart3_rx_gpio(1, 11, GPIO_MODE_AF, 0);
+	static gpio b1(0, 0, gpio::MODE_DI, 0);
+	static gpio uart3_tx_gpio(3, 8, gpio::MODE_AF, 0);
+	static gpio uart3_rx_gpio(1, 11, gpio::MODE_AF, 0);
 	
-	static dma uart3_tx_dma(DMA_1, DMA_STREAM_3, DMA_CH_4,
-		DMA_DIR_MEM_TO_PERIPH, DMA_INC_SIZE_8);
-	static dma uart3_rx_dma(DMA_1, DMA_STREAM_1, DMA_CH_4,
-		DMA_DIR_PERIPH_TO_MEM, DMA_INC_SIZE_8);
+	static dma uart3_tx_dma(dma::DMA_1, dma::STREAM_3, dma::CH_4,
+		dma::DIR_MEM_TO_PERIPH, dma::INC_SIZE_8);
+	static dma uart3_rx_dma(dma::DMA_1, dma::STREAM_1, dma::CH_4,
+		dma::DIR_PERIPH_TO_MEM, dma::INC_SIZE_8);
 	
-	static uart uart3(UART_3, 115200, UART_STOPBIT_1, UART_PARITY_NONE,
+	static uart uart3(uart::UART_3, 115200, uart::STOPBIT_1, uart::PARITY_NONE,
 		uart3_tx_dma, uart3_rx_dma, uart3_tx_gpio, uart3_rx_gpio);
 	
 	static onewire _onewire(uart3);
 	
-	static di b1_di(b1, 100, 1);
+	static di b1_di(b1, 30, 1);
 	b1_di.cb(b1_cb, &_onewire);
 	
-	xTaskCreate(di_task, "di", configMINIMAL_STACK_SIZE * 60, &b1_di,
+	xTaskCreate(di_task, "di", configMINIMAL_STACK_SIZE * 2, &b1_di,
 		tskIDLE_PRIORITY + 1, NULL);
 	
 	vTaskStartScheduler();

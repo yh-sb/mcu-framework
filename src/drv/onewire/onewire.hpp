@@ -9,18 +9,18 @@
 
 namespace drv
 {
-enum onewire_err_t
-{
-	ONEWIRE_ERR_NONE      =  0,
-	ONEWIRE_ERR_LINE_BUSY = -1,
-	ONEWIRE_ERR_NO_DEV    = -2,
-	ONEWIRE_ERR_TX_FAIL   = -4,
-	ONEWIRE_ERR_RX_FAIL   = -5
-};
-
 class onewire
 {
 	public:
+		enum res_t
+		{
+			RES_OK        =  0,
+			RES_LINE_BUSY = -1,
+			RES_NO_DEV    = -2,
+			RES_TX_FAIL   = -4,
+			RES_RX_FAIL   = -5
+		};
+		
 		onewire(hal::uart &uart);
 		~onewire();
 		
