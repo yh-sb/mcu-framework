@@ -3,9 +3,8 @@
 
 #include "common/assert.h"
 #include "sd_spi.hpp"
-
-#include "third_party/FreeRTOS/include/FreeRTOS.h"
-#include "third_party/FreeRTOS/include/task.h"
+#include "FreeRTOS.h"
+#include "task.h"
 
 using namespace drv;
 using namespace hal;

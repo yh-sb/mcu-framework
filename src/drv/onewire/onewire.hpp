@@ -2,10 +2,9 @@
 
 #include <stdint.h>
 
-#include "uart.hpp"
-
-#include "third_party/FreeRTOS/include/FreeRTOS.h"
-#include "third_party/FreeRTOS/include/semphr.h"
+#include "uart/uart.hpp"
+#include "FreeRTOS.h"
+#include "semphr.h"
 
 namespace drv
 {

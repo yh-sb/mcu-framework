@@ -3,11 +3,10 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "gpio.hpp"
-#include "tim.hpp"
-
-#include "third_party/FreeRTOS/include/FreeRTOS.h"
-#include "third_party/FreeRTOS/include/semphr.h"
+#include "gpio/gpio.hpp"
+#include "tim/tim.hpp"
+#include "FreeRTOS.h"
+#include "semphr.h"
 
 namespace drv
 {

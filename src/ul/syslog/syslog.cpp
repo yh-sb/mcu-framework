@@ -4,7 +4,6 @@
 #include <stdarg.h>
 
 #include "syslog.hpp"
-
 #include "common/assert.h"
 #include "third_party/printf/printf.h"
 #include "FreeRTOS.h"

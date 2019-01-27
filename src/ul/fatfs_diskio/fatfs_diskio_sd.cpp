@@ -3,7 +3,6 @@
 
 #include "fatfs_diskio_sd.hpp"
 #include "third_party/FatFs/diskio.h"
-
 #include "drv/sd/sd.hpp"
 
 using namespace ul;

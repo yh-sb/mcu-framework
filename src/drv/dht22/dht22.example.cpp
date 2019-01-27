@@ -1,10 +1,9 @@
-#include "gpio.hpp"
-#include "tim.hpp"
-#include "exti.hpp"
+#include "gpio/gpio.hpp"
+#include "tim/tim.hpp"
+#include "exti/exti.hpp"
 #include "drv/di/di.hpp"
 #include "drv/singlewire/singlewire.hpp"
 #include "drv/dht22/dht22.hpp"
-
 #include "FreeRTOS.h"
 #include "task.h"
 

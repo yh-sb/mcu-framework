@@ -1,10 +1,8 @@
-#include "gpio.hpp"
-#include "uart.hpp"
-
+#include "gpio/gpio.hpp"
+#include "uart/uart.hpp"
 #include "common/assert.h"
 #include "ul/syslog/syslog.hpp"
 #include "ul/list/list.hpp"
-
 #include "FreeRTOS.h"
 #include "task.h"
 

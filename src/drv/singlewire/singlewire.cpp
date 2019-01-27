@@ -2,8 +2,7 @@
 
 #include "common/assert.h"
 #include "singlewire.hpp"
-
-#include "exti.hpp"
+#include "exti/exti.hpp"
 
 using namespace hal;
 using namespace drv;

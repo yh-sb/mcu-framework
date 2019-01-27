@@ -4,8 +4,8 @@
 #include <stdbool.h>
 
 #include "sd.hpp"
-#include "gpio.hpp"
-#include "spi.hpp"
+#include "gpio/gpio.hpp"
+#include "spi/spi.hpp"
 
 namespace drv
 {

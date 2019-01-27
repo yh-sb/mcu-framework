@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "gpio.hpp"
+#include "gpio/gpio.hpp"
 
 namespace drv
 {

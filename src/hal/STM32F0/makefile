@@ -1,12 +1,12 @@
 -include ../../../header.mk
 
-SRC := dma.cpp \
-	exti.cpp \
-	gpio.cpp \
-	rcc.cpp \
-	systick.cpp \
-	tim.cpp \
-	wdt.cpp
+SRC := dma/dma.cpp \
+	exti/exti.cpp \
+	gpio/gpio.cpp \
+	rcc/rcc.cpp \
+	systick/systick.cpp \
+	tim/tim.cpp \
+	wdt/wdt.cpp
 
 INC :=
 

@@ -4,9 +4,8 @@
 #include <stdbool.h>
 
 #include "drv/onewire/onewire.hpp"
-
-#include "third_party/FreeRTOS/include/FreeRTOS.h"
-#include "third_party/FreeRTOS/include/semphr.h"
+#include "FreeRTOS.h"
+#include "semphr.h"
 
 namespace drv
 {

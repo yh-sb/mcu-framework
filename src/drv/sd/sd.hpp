@@ -4,10 +4,9 @@
 #include <stdbool.h>
 
 #include "sd_cid_csd_reg.hpp"
-#include "gpio.hpp"
-
-#include "third_party/FreeRTOS/include/FreeRTOS.h"
-#include "third_party/FreeRTOS/include/semphr.h"
+#include "gpio/gpio.hpp"
+#include "FreeRTOS.h"
+#include "semphr.h"
 
 namespace drv
 {

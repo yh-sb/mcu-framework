@@ -3,7 +3,7 @@
 #include "../user.h"
 
 #include "drv/cc3100/cc3100.hpp"
-#include "spi.hpp"
+#include "spi/spi.hpp"
 
 // This API isn't used since we pass pointer to spi to sl_Start
 Fd_t IfOpen(char *ifName, unsigned long flags)

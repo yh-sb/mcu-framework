@@ -3,8 +3,8 @@
 
 #include "common/assert.h"
 #include "ds18b20.hpp"
-
-#include "third_party/FreeRTOS/include/task.h"
+#include "FreeRTOS.h"
+#include "task.h"
 
 using namespace drv;
 

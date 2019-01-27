@@ -1,7 +1,6 @@
 #pragma once
 
 #include "drv/singlewire/singlewire.hpp"
-
 #include "FreeRTOS.h"
 #include "semphr.h"
 

@@ -2,10 +2,9 @@
 
 #include <stdint.h>
 
-#include "gpio.hpp"
-#include "tim.hpp"
-#include "exti.hpp"
-
+#include "gpio/gpio.hpp"
+#include "tim/tim.hpp"
+#include "exti/exti.hpp"
 #include "FreeRTOS.h"
 #include "semphr.h"
 
