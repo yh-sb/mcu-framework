@@ -21,8 +21,8 @@ class pwm
 
 		enum mode_t
 		{
-			MODE_INVERTED,
-			MODE_NONINVERTED
+			MODE_NONINVERTED,
+			MODE_INVERTED
 		};
 		
 		pwm(tim::tim_t tim, ch_t ch, mode_t mode, gpio &gpio);

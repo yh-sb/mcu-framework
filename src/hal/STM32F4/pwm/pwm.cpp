@@ -237,7 +237,7 @@ pwm::pwm(tim::tim_t tim, ch_t ch, mode_t mode, gpio &gpio):
 	ASSERT(_tim < tim::TIM_END && tim_list[_tim]);
 	ASSERT(_ch < CH_END);
 	ASSERT(_ch <= max_ch_list[_tim]);
-	ASSERT(_mode <= MODE_NONINVERTED);
+	ASSERT(_mode <= MODE_INVERTED);
 	ASSERT(_gpio.mode() == gpio::MODE_AF);
 	
 	*rcc_bus_list[_tim] |= rcc_list[_tim];
