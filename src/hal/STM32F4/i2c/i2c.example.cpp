@@ -1,3 +1,4 @@
+#include "common/assert.h"
 #include "gpio/gpio.hpp"
 #include "i2c/i2c.hpp"
 #include "drv/di/di.hpp"
@@ -8,6 +9,16 @@ using namespace hal;
 using namespace drv;
 
 static void b1_cb(di *di, bool state, void *ctx);
+
+static void main_task(void *pvParameters)
+{
+	gpio *green_led = (gpio *)pvParameters;
+	while(1)
+	{
+		green_led->toggle();
+		vTaskDelay(500);
+	}
+}
 
 static void di_task(void *pvParameters)
 {
@@ -33,12 +44,15 @@ int main(void)
 	
 	static i2c i2c1(i2c::I2C_1, 100000, i2c1_tx_dma, i2c1_rx_dma, i2c1_sda,
 		i2c1_scl);
-
+	
 	static di b1_di(b1, 50, 1);
 	b1_di.cb(b1_cb, &i2c1);
-
-	xTaskCreate(di_task, "di", configMINIMAL_STACK_SIZE * 1, &b1_di,
-		tskIDLE_PRIORITY + 2, NULL);
+	
+	ASSERT(xTaskCreate(main_task, "main", configMINIMAL_STACK_SIZE * 1,
+		&green_led, tskIDLE_PRIORITY + 1, NULL) == pdPASS);
+	
+	ASSERT(xTaskCreate(di_task, "di", configMINIMAL_STACK_SIZE * 1, &b1_di,
+		tskIDLE_PRIORITY + 2, NULL) == pdPASS);
 	
 	vTaskStartScheduler();
 }
