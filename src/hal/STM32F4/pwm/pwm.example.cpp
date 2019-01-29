@@ -22,8 +22,7 @@ int main(void)
 	static gpio green_led(3, 12, gpio::MODE_DO, 0);
 	static gpio pwm2_ch2_gpio(0, 1, gpio::MODE_AF, 0);
 	
-	static pwm pwm2_ch2(tim::TIM_2, pwm::CH_2, pwm::MODE_NONINVERTED,
-		pwm2_ch2_gpio);
+	static pwm pwm2_ch2(tim::TIM_2, pwm::CH_2, pwm2_ch2_gpio);
 	pwm2_ch2.freq(100000);
 	pwm2_ch2.duty(20);
 	pwm2_ch2.start();

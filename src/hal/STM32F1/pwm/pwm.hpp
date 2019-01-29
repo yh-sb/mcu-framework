@@ -18,14 +18,14 @@ class pwm
 			CH_4,
 			CH_END
 		};
-
+		
 		enum mode_t
 		{
-			MODE_INVERTED,
-			MODE_NONINVERTED
+			MODE_NONINVERTED,
+			MODE_INVERTED
 		};
 		
-		pwm(tim::tim_t tim, ch_t ch, mode_t mode, gpio &gpio);
+		pwm(tim::tim_t tim, ch_t ch, gpio &gpio, mode_t mode = MODE_NONINVERTED);
 		~pwm();
 		
 		void freq(uint32_t freq);

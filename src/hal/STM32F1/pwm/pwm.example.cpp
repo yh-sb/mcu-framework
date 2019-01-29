@@ -22,8 +22,7 @@ int main(void)
 	static gpio green_led(2, 9, gpio::MODE_DO, 0);
 	static gpio pwm3_ch3_gpio(2, 8, gpio::MODE_AF, 0); // blue led
 	
-	static pwm pwm3_ch3(tim::TIM_3, pwm::CH_3, pwm::MODE_NONINVERTED,
-		pwm3_ch3_gpio);
+	static pwm pwm3_ch3(tim::TIM_3, pwm::CH_3, pwm3_ch3_gpio);
 	pwm3_ch3.freq(100000);
 	pwm3_ch3.duty(20);
 	pwm3_ch3.start();
