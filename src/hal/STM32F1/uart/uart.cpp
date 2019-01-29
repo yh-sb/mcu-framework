@@ -8,7 +8,7 @@
 #include "dma/dma.hpp"
 #include "gpio/gpio.hpp"
 #include "CMSIS/device-support/include/stm32f1xx.h"
-#include "CMSIS/core-support/cmsis_gcc.h"
+#include "CMSIS/core-support/core_cm3.h"
 #include "FreeRTOS.h"
 #include "semphr.h"
 
@@ -17,9 +17,10 @@ using namespace hal;
 #define IRQ_PRIORITY 6
 #define MAX_BRR_VAL 0xFFFF
 
-static USART_TypeDef *const uart_list[UART_END] =
+static USART_TypeDef *const uart_list[uart::UART_END] =
 {
-	USART1, USART2,
+	USART1,
+	USART2,
 #if defined(STM32F100xB) || defined(STM32F100xE) || defined(STM32F101xB) || \
 	defined(STM32F101xE) || defined(STM32F101xG) || defined(STM32F102xB) || \
 	defined(STM32F103xB) || defined(STM32F103xE) || defined(STM32F103xG) || \
@@ -31,15 +32,18 @@ static USART_TypeDef *const uart_list[UART_END] =
 #if defined(STM32F100xE) || defined(STM32F101xE) || defined(STM32F101xG) || \
 	defined(STM32F103xE) || defined(STM32F103xG) || defined(STM32F105xC) || \
 	defined(STM32F107xC)
-	UART4, UART5
+	UART4,
+	UART5
 #else
-	NULL, NULL
+	NULL,
+	NULL
 #endif
 };
 
-static IRQn_Type const irq_list[UART_END] =
+static IRQn_Type const irq_list[uart::UART_END] =
 {
-	USART1_IRQn, USART2_IRQn,
+	USART1_IRQn,
+	USART2_IRQn,
 #if defined(STM32F100xB) || defined(STM32F100xE) || defined(STM32F101xB) || \
 	defined(STM32F101xE) || defined(STM32F101xG) || defined(STM32F102xB) || \
 	defined(STM32F103xB) || defined(STM32F103xE) || defined(STM32F103xG) || \
@@ -51,15 +55,18 @@ static IRQn_Type const irq_list[UART_END] =
 #if defined(STM32F100xE) || defined(STM32F101xE) || defined(STM32F101xG) || \
 	defined(STM32F103xE) || defined(STM32F103xG) || defined(STM32F105xC) || \
 	defined(STM32F107xC)
-	UART4_IRQn, UART5_IRQn
+	UART4_IRQn,
+	UART5_IRQn
 #else
-	static_cast<IRQn_Type>(0), static_cast<IRQn_Type>(0)
+	static_cast<IRQn_Type>(0),
+	static_cast<IRQn_Type>(0)
 #endif
 };
 
-static uint32_t const rcc_list[UART_END] =
+static uint32_t const rcc_list[uart::UART_END] =
 {
-	RCC_APB2ENR_USART1EN, RCC_APB1ENR_USART2EN,
+	RCC_APB2ENR_USART1EN,
+	RCC_APB1ENR_USART2EN,
 #if defined(STM32F100xB) || defined(STM32F100xE) || defined(STM32F101xB) || \
 	defined(STM32F101xE) || defined(STM32F101xG) || defined(STM32F102xB) || \
 	defined(STM32F103xB) || defined(STM32F103xE) || defined(STM32F103xG) || \
@@ -71,20 +78,29 @@ static uint32_t const rcc_list[UART_END] =
 #if defined(STM32F100xE) || defined(STM32F101xE) || defined(STM32F101xG) || \
 	defined(STM32F103xE) || defined(STM32F103xG) || defined(STM32F105xC) || \
 	defined(STM32F107xC)
-	RCC_APB1ENR_UART4EN, RCC_APB1ENR_UART5EN
+	RCC_APB1ENR_UART4EN,
+	RCC_APB1ENR_UART5EN
 #else
 	0, 0
 #endif
 };
 
-static volatile uint32_t *rcc_addr_list[UART_END] =
+static volatile uint32_t *rcc_addr_list[uart::UART_END] =
 {
-	&RCC->APB2ENR, &RCC->APB1ENR, &RCC->APB1ENR, &RCC->APB1ENR, &RCC->APB1ENR
+	&RCC->APB2ENR,
+	&RCC->APB1ENR,
+	&RCC->APB1ENR,
+	&RCC->APB1ENR,
+	&RCC->APB1ENR
 };
 
-static rcc_src_t const rcc_src_list[UART_END] =
+static rcc_src_t const rcc_src_list[uart::UART_END] =
 {
-	RCC_SRC_APB2, RCC_SRC_APB1, RCC_SRC_APB1, RCC_SRC_APB1, RCC_SRC_APB1
+	RCC_SRC_APB2,
+	RCC_SRC_APB1,
+	RCC_SRC_APB1,
+	RCC_SRC_APB1,
+	RCC_SRC_APB1
 };
 
 static GPIO_TypeDef *const gpio_list[PORT_QTY] =
@@ -106,15 +122,14 @@ static GPIO_TypeDef *const gpio_list[PORT_QTY] =
 #endif
 };
 
-static uart *obj_list[UART_END];
+static uart *obj_list[uart::UART_END];
 
 #if configUSE_TRACE_FACILITY
 static traceHandle isr_dma_tx, isr_dma_rx, isr_uart;
 #endif
 
-uart::uart(uart_t uart, uint32_t baud, uart_stopbit_t stopbit,
-	uart_parity_t parity, dma &dma_tx, dma &dma_rx, gpio &gpio_tx,
-	gpio &gpio_rx):
+uart::uart(uart_t uart, uint32_t baud, stopbit_t stopbit, parity_t parity,
+	dma &dma_tx, dma &dma_rx, gpio &gpio_tx, gpio &gpio_rx):
 	_uart(uart),
 	_baud(baud),
 	_stopbit(stopbit),
@@ -123,16 +138,18 @@ uart::uart(uart_t uart, uint32_t baud, uart_stopbit_t stopbit,
 	tx_gpio(gpio_tx),
 	tx_api_lock(NULL),
 	tx_irq_lock(NULL),
-	tx_irq_res(UART_ERR_NONE),
+	tx_irq_res(RES_OK),
 	rx_dma(dma_rx),
 	rx_gpio(gpio_rx),
 	rx_cnt(NULL),
 	rx_api_lock(NULL),
 	rx_irq_lock(NULL),
-	rx_irq_res(UART_ERR_NONE)
+	rx_irq_res(RES_OK)
 {
 	ASSERT(_uart < UART_END && uart_list[_uart]);
 	ASSERT(_baud > 0);
+	ASSERT(_stopbit <= STOPBIT_2);
+	ASSERT(_parity <= PARITY_ODD);
 	ASSERT(tx_dma.dir() == dma::DIR_MEM_TO_PERIPH);
 	ASSERT(tx_dma.inc_size() == dma::INC_SIZE_8);
 	ASSERT(rx_dma.dir() == dma::DIR_PERIPH_TO_MEM);
@@ -167,22 +184,22 @@ uart::uart(uart_t uart, uint32_t baud, uart_stopbit_t stopbit,
 	
 	switch(_stopbit)
 	{
-		case UART_STOPBIT_0_5: uart_base->CR2 |= USART_CR2_STOP_0; break;
-		case UART_STOPBIT_1: uart_base->CR2 &= ~USART_CR2_STOP; break;
-		case UART_STOPBIT_1_5: uart_base->CR2 |= USART_CR2_STOP; break;
-		case UART_STOPBIT_2: uart_base->CR2 |= USART_CR2_STOP_1; break;
+		case STOPBIT_0_5: uart_base->CR2 |= USART_CR2_STOP_0; break;
+		case STOPBIT_1: uart_base->CR2 &= ~USART_CR2_STOP; break;
+		case STOPBIT_1_5: uart_base->CR2 |= USART_CR2_STOP; break;
+		case STOPBIT_2: uart_base->CR2 |= USART_CR2_STOP_1; break;
 	}
 	
 	switch(_parity)
 	{
-		case UART_PARITY_NONE:
+		case PARITY_NONE:
 			uart_base->CR1 &= ~(USART_CR1_PCE | USART_CR1_PS);
 			break;
-		case UART_PARITY_EVEN:
+		case PARITY_EVEN:
 			uart_base->CR1 |= USART_CR1_PCE;
 			uart_base->CR1 &= ~USART_CR1_PS;
 			break;
-		case UART_PARITY_ODD:
+		case PARITY_ODD:
 			uart_base->CR1 |= USART_CR1_PCE | USART_CR1_PS;
 			break;
 	}
@@ -196,7 +213,8 @@ uart::uart(uart_t uart, uint32_t baud, uart_stopbit_t stopbit,
 	tx_dma.dst((uint8_t *)&uart_base->DR);
 	rx_dma.src((uint8_t *)&uart_base->DR);
 	
-	uart_base->CR1 |= USART_CR1_UE | USART_CR1_TE | USART_CR1_IDLEIE;
+	uart_base->CR1 |= USART_CR1_UE | USART_CR1_TE | USART_CR1_IDLEIE |
+		USART_CR1_PEIE;
 	uart_base->CR3 |= USART_CR3_DMAR | USART_CR3_DMAT | USART_CR3_EIE |
 		USART_CR3_ONEBIT;
 	
@@ -280,7 +298,7 @@ int8_t uart::rx(uint8_t *buff, uint16_t *size, uint32_t timeout)
 		NVIC_ClearPendingIRQ(irq_list[_uart]);
 		/* Prevent DMA IRQ */
 		rx_dma.stop();
-		rx_irq_res = UART_ERR_RX_TIMEOUT;
+		rx_irq_res = RES_RX_TIMEOUT;
 		vPortExitCritical();
 	}
 	xSemaphoreGive(rx_api_lock);
@@ -333,14 +351,14 @@ int8_t uart::exch(uint8_t *tx_buff, uint16_t tx_size, uint8_t *rx_buff,
 		NVIC_ClearPendingIRQ(irq_list[_uart]);
 		/* Prevent DMA IRQ */
 		rx_dma.stop();
-		rx_irq_res = UART_ERR_RX_TIMEOUT;
+		rx_irq_res = RES_RX_TIMEOUT;
 		vPortExitCritical();
 	}
 	
 	xSemaphoreGive(rx_api_lock);
 	xSemaphoreGive(tx_api_lock);
 	
-	if(tx_irq_res != UART_ERR_NONE)
+	if(tx_irq_res != RES_OK)
 		return tx_irq_res;
 	
 	return rx_irq_res;
@@ -356,9 +374,9 @@ void uart::on_dma_tx(dma *dma, dma::event_t event, void *ctx)
 	uart *obj = static_cast<uart *>(ctx);
 	
 	if(event == dma::EVENT_CMPLT)
-		obj->tx_irq_res = UART_ERR_NONE;
+		obj->tx_irq_res = RES_OK;
 	else if(event == dma::EVENT_ERROR)
-		obj->tx_irq_res = UART_ERR_TX_FAIL;
+		obj->tx_irq_res = RES_TX_FAIL;
 	
 	BaseType_t hi_task_woken = 0;
 	xSemaphoreGiveFromISR(obj->tx_irq_lock, &hi_task_woken);
@@ -385,9 +403,9 @@ void uart::on_dma_rx(dma *dma, dma::event_t event, void *ctx)
 	NVIC_ClearPendingIRQ(irq_list[obj->_uart]);
 	
 	if(event == dma::EVENT_CMPLT)
-		obj->rx_irq_res = UART_ERR_NONE;
+		obj->rx_irq_res = RES_OK;
 	else if(event == dma::EVENT_ERROR)
-		obj->rx_irq_res = UART_ERR_RX_FAIL;
+		obj->rx_irq_res = RES_RX_FAIL;
 	/* Rx buffer has partly filled (package has received) or Rx buffer has
 	totally filled */
 	if(obj->rx_cnt)
@@ -412,13 +430,13 @@ extern "C" void uart_irq_hndlr(hal::uart *obj)
 	if((uart->CR1 & USART_CR1_IDLEIE) && (sr & USART_SR_IDLE))
 	{
 		/* IDLE event has happened (package has received) */
-		obj->rx_irq_res = UART_ERR_NONE;
+		obj->rx_irq_res = uart::RES_OK;
 	}
 	else if((uart->CR3 & USART_CR3_EIE) && (sr & (USART_SR_PE | USART_SR_FE |
 		USART_SR_NE | USART_SR_ORE)))
 	{
 		/* Error event has happened */
-		obj->rx_irq_res = UART_ERR_RX_FAIL;
+		obj->rx_irq_res = uart::RES_RX_FAIL;
 	}
 	else
 	{
@@ -444,12 +462,12 @@ extern "C" void uart_irq_hndlr(hal::uart *obj)
 
 extern "C" void USART1_IRQHandler(void)
 {
-	uart_irq_hndlr(obj_list[UART_1]);
+	uart_irq_hndlr(obj_list[uart::UART_1]);
 }
 
 extern "C" void USART2_IRQHandler(void)
 {
-	uart_irq_hndlr(obj_list[UART_2]);
+	uart_irq_hndlr(obj_list[uart::UART_2]);
 }
 
 #if defined(STM32F100xB) || defined(STM32F100xE) || defined(STM32F101xB) || \
@@ -458,7 +476,7 @@ extern "C" void USART2_IRQHandler(void)
 	defined(STM32F105xC) || defined(STM32F107xC)
 extern "C" void USART3_IRQHandler(void)
 {
-	uart_irq_hndlr(obj_list[UART_3]);
+	uart_irq_hndlr(obj_list[uart::UART_3]);
 }
 #endif
 
@@ -467,11 +485,11 @@ extern "C" void USART3_IRQHandler(void)
 	defined(STM32F107xC)
 extern "C" void UART4_IRQHandler(void)
 {
-	uart_irq_hndlr(obj_list[UART_4]);
+	uart_irq_hndlr(obj_list[uart::UART_4]);
 }
 
 extern "C" void UART5_IRQHandler(void)
 {
-	uart_irq_hndlr(obj_list[UART_5]);
+	uart_irq_hndlr(obj_list[uart::UART_5]);
 }
 #endif

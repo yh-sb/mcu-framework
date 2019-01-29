@@ -14,45 +14,45 @@ extern "C" void uart_irq_hndlr(hal::uart *obj);
 
 namespace hal
 {
-typedef enum
-{
-	UART_1,
-	UART_2,
-	UART_3,
-	UART_4,
-	UART_5,
-	UART_END
-} uart_t;
-
-typedef enum
-{
-	UART_STOPBIT_0_5,
-	UART_STOPBIT_1,
-	UART_STOPBIT_1_5,
-	UART_STOPBIT_2
-} uart_stopbit_t;
-
-typedef enum
-{
-	UART_PARITY_NONE,
-	UART_PARITY_EVEN,
-	UART_PARITY_ODD
-} uart_parity_t;
-
-enum uart_err_t
-{
-	UART_ERR_NONE       =  0,
-	UART_ERR_RX_TIMEOUT = -1,
-	UART_ERR_TX_FAIL    = -2,
-	UART_ERR_RX_FAIL    = -3
-};
-
 class uart
 {
 	public:
-		uart(uart_t uart, uint32_t baud, uart_stopbit_t stopbit,
-			uart_parity_t parity, dma &dma_tx, dma &dma_rx, gpio &gpio_tx,
-			gpio &gpio_rx);
+		enum uart_t
+		{
+			UART_1,
+			UART_2,
+			UART_3,
+			UART_4,
+			UART_5,
+			UART_6,
+			UART_END
+		};
+
+		enum stopbit_t
+		{
+			STOPBIT_0_5,
+			STOPBIT_1,
+			STOPBIT_1_5,
+			STOPBIT_2
+		};
+
+		enum parity_t
+		{
+			PARITY_NONE,
+			PARITY_EVEN,
+			PARITY_ODD
+		};
+
+		enum res_t
+		{
+			RES_OK         =  0,
+			RES_RX_TIMEOUT = -1,
+			RES_TX_FAIL    = -2,
+			RES_RX_FAIL    = -3
+		};
+		
+		uart(uart_t uart, uint32_t baud, stopbit_t stopbit, parity_t parity,
+			dma &dma_tx, dma &dma_rx, gpio &gpio_tx, gpio &gpio_rx);
 		~uart();
 		
 		void baud(uint32_t baud);
@@ -65,8 +65,8 @@ class uart
 	private:
 		uart_t _uart;
 		uint32_t _baud;
-		uart_stopbit_t _stopbit;
-		uart_parity_t _parity;
+		stopbit_t _stopbit;
+		parity_t _parity;
 		
 		dma &tx_dma;
 		gpio &tx_gpio;
