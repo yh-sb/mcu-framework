@@ -12,10 +12,9 @@ using namespace hal;
 static int8_t first_setup(void);
 static void config_lsi(void);
 static int8_t config_lse(void);
-static bool is_valid(rtc_time_t *time);
 static int8_t enter_init(void);
 
-int8_t hal::rtc_init(rtc_clk_t clk)
+int8_t rtc::init(clk_t clk)
 {
 	/* Backup domain software force reset */
 	//RCC->BDCR |= RCC_BDCR_BDRST;
@@ -27,7 +26,7 @@ int8_t hal::rtc_init(rtc_clk_t clk)
 	/* Disable backup domain write protection */
 	PWR->CR |= PWR_CR_DBP;
 	
-	if(clk == RTC_CLK_LSI)
+	if(clk == CLK_LSI)
 		config_lsi();
 	else
 	{
@@ -45,7 +44,7 @@ int8_t hal::rtc_init(rtc_clk_t clk)
 	return 0;
 }
 
-void hal::rtc_get_time(rtc_time_t *time)
+void rtc::get(time_t *time)
 {
 	ASSERT(time);
 	
@@ -57,8 +56,8 @@ void hal::rtc_get_time(rtc_time_t *time)
 	
 	time->wday = (tmp_date >> 13) & 0x07;
 	
-	time->mon = ((tmp_date >> 12) & 0x01) * 10;
-	time->mon += (tmp_date >> 8) & 0x0F;
+	time->month = ((tmp_date >> 12) & 0x01) * 10;
+	time->month += (tmp_date >> 8) & 0x0F;
 	
 	time->day = ((tmp_date >> 4) & 0x03) * 10;
 	time->day += (tmp_date >> 0) & 0x0F;
@@ -73,29 +72,31 @@ void hal::rtc_get_time(rtc_time_t *time)
 	time->s += (tmp_time >> 0) & 0x0F;
 }
 
-int8_t hal::rtc_set_time(rtc_time_t *time)
+int8_t rtc::set(time_t *time)
 {
 	ASSERT(time);
-	
+	ASSERT(time->year <= 99);
+	ASSERT(time->month > 0 && time->month <= 12);
+	ASSERT(time->day > 0 && time->day <= 31);
+	ASSERT(time->wday > 0 && time->wday <= 7);
+	ASSERT(time->h <= 23);
+	ASSERT(time->m <= 59);
+	ASSERT(time->s <= 59);
+		
 	/* Disable write protection */
 	RTC->WPR = 0xCA;
 	RTC->WPR = 0x53;
 	
 	int8_t res = 0;
 	uint32_t tmp_date, tmp_time;
-	if(!is_valid(time))
-	{
-		res = -1;
-		goto Exit;
-	}
 	
 	tmp_date = (time->year / 10) << 20;
 	tmp_date |= (time->year % 10) << 16;
 	
 	tmp_date |= time->wday << 13;
 	
-	tmp_date |= (time->mon / 10) << 12;
-	tmp_date |= (time->mon % 10) << 8;
+	tmp_date |= (time->month / 10) << 12;
+	tmp_date |= (time->month % 10) << 8;
 	
 	tmp_date |= (time->day / 10) << 4;
 	tmp_date |= (time->day % 10) << 0;
@@ -125,12 +126,12 @@ Exit:
 	return res;
 }
 
-void hal::rtc_bckp_write(uint8_t addr, uint8_t *buff, uint8_t size)
+void rtc::bckp_write(uint8_t addr, void *buff, size_t size)
 {
 	
 }
 
-void hal::rtc_bckp_read(uint8_t addr, uint8_t *buff, uint8_t size)
+void rtc::bckp_read(uint8_t addr, void *buff, size_t size)
 {
 	
 }
@@ -193,19 +194,6 @@ static int8_t config_lse(void)
 		else if(systick_get_past(last_tim) >= INIT_TIMEOUT)
 			return -1;
 	}
-}
-
-static bool is_valid(rtc_time_t *time)
-{
-	if(time->year > 99 ||
-		(time->mon > 12 || time->mon == 0) ||
-		(time->day > 31 || time->day == 0) ||
-		(time->wday > 7 || time->wday == 0) ||
-		(time->h > 23 || time->m > 59 || time->s > 59))
-	{
-		return false;
-	}
-	return true;
 }
 
 static int8_t enter_init(void)
