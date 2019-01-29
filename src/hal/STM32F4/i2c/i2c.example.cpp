@@ -1,5 +1,6 @@
 #include "common/assert.h"
 #include "gpio/gpio.hpp"
+#include "dma/dma.hpp"
 #include "i2c/i2c.hpp"
 #include "drv/di/di.hpp"
 #include "FreeRTOS.h"
