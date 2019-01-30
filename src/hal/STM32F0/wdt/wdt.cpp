@@ -3,13 +3,15 @@
 #include "rcc/rcc.hpp"
 #include "CMSIS/device-support/include/stm32f0xx.h"
 
+using namespace hal;
+
 #define CLK_PERIOD     32 /* WDT clock period in ms without prescaller */
 #define MAX_PRESCALLER 256
 #define MAX_RELOAD     4095
 
 static void calc_clk(uint16_t ms, uint16_t *presc, uint16_t *reload);
 
-void hal::wdt_init(uint16_t ms)
+void wdt::init(uint16_t ms)
 {
 	/* Check input parameter value in case of max reload with max prescaller */
 	ASSERT(((ms * CLK_PERIOD) / MAX_PRESCALLER) <= MAX_RELOAD);
@@ -35,12 +37,12 @@ void hal::wdt_init(uint16_t ms)
 	IWDG->KR = 0x0000;
 }
 
-void hal::wdt_on(void)
+void wdt::on(void)
 {
 	IWDG->KR = 0xCCCC;
 }
 
-void hal::wdt_reload(void)
+void wdt::reload(void)
 {
 	IWDG->KR = 0xAAAA;
 }
