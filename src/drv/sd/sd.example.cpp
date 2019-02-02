@@ -55,7 +55,11 @@ static void sd_cb(di *di, bool state, void *ctx)
 		return;
 	
 	sd *sd1 = (sd *)ctx;
+	
 	int8_t res = sd1->init();
-	if(res)
+	if(res != sd::RES_OK)
 		return;
+	
+	sd_csd_t csd;
+	res = sd1->read_csd(&csd);
 }
