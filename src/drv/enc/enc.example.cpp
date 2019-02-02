@@ -7,8 +7,6 @@
 using namespace hal;
 using namespace drv;
 
-static traceString ch0;
-
 static void enc_cb(enc *enc, int8_t diff, void *ctx);
 
 static void enc_task(void *pvParameters)
@@ -23,10 +21,8 @@ static void enc_task(void *pvParameters)
 
 int main(void)
 {
-	ch0 = xTraceRegisterString("ch0");
-	
-	static gpio enc_a(0, 7, GPIO_MODE_DI, 1);
-	static gpio enc_b(0, 8, GPIO_MODE_DI, 1);
+	static gpio enc_a(0, 7, gpio::MODE_DI, 1);
+	static gpio enc_b(0, 8, gpio::MODE_DI, 1);
 	
 	static enc _enc(enc_a, enc_b);
 	static int32_t enc_counter;
@@ -42,10 +38,9 @@ static void enc_cb(enc *enc, int8_t diff, void *ctx)
 {
 	int32_t *enc_counter = (int32_t *)ctx;
 	
+	// diff is +1 or -1
 	if(diff < 0)
 		enc_counter--;
 	else
 		enc_counter++;
-	
-	vTracePrintF(ch0, "counter = %d", enc_counter);
 }
