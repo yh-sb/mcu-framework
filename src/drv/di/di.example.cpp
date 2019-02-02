@@ -21,10 +21,10 @@ static void di_task(void *pvParameters)
 
 int main(void)
 {
-	static gpio b1(0, 0, GPIO_MODE_DI, 0);
-	static gpio green_led(3, 12, GPIO_MODE_DO, 0);
+	static gpio b1(0, 0, gpio::MODE_DI, 0);
+	static gpio green_led(3, 12, gpio::MODE_DO, 0);
 	
-	static di b1_di(b1, 100, 1);
+	static di b1_di(b1, 50, 1);
 	b1_di.cb(b1_cb, &green_led);
 	
 	xTaskCreate(di_task, "di", configMINIMAL_STACK_SIZE * 1, &b1_di,
@@ -35,7 +35,7 @@ int main(void)
 
 static void b1_cb(di *di, bool state, void *ctx)
 {
-	if(state)
+	if(!state)
 		return;
 	
 	gpio *green_led = (gpio *)ctx;
