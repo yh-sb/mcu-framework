@@ -22,26 +22,25 @@ static void di_task(void *pvParameters)
 
 int main(void)
 {
-	// Example for STM32F4DISCOVERY development board
-	static gpio b1(0, 0, gpio::mode::DI);
+	static gpio b1(0, 0, gpio::MODE_DI);
 	
-	static gpio rs(0, 5, gpio::mode::DO);
-	static gpio rw(0, 4, gpio::mode::DO);
-	static gpio e(0, 3, gpio::mode::DO);
-	static gpio db4(0, 6, gpio::mode::DO);
-	static gpio db5(0, 7, gpio::mode::DO);
-	static gpio db6(0, 8, gpio::mode::DO);
-	static gpio db7(0, 10, gpio::mode::DO);
+	static gpio rs(0, 5, gpio::MODE_DO);
+	static gpio rw(0, 4, gpio::MODE_DO);
+	static gpio e(0, 3, gpio::MODE_DO);
+	static gpio db4(0, 6, gpio::MODE_DO);
+	static gpio db5(0, 7, gpio::MODE_DO);
+	static gpio db6(0, 8, gpio::MODE_DO);
+	static gpio db7(0, 10, gpio::MODE_DO);
 	
-	static tim tim1(TIM_6);
+	static tim tim6(tim::TIM_6);
 	
-	static hd44780 lcd(rs, rw, e, db4, db5, db6, db7, tim1);
+	static hd44780 lcd(rs, rw, e, db4, db5, db6, db7, tim6);
 	
-	static di b1_di(b1, 100, 1);
+	static di b1_di(b1, 50, 1);
 	b1_di.cb(b1_cb, &lcd);
 	
-	xTaskCreate(di_task, "di", configMINIMAL_STACK_SIZE * 60, &b1_di,
-		tskIDLE_PRIORITY + 2, NULL);
+	xTaskCreate(di_task, "di", configMINIMAL_STACK_SIZE * 3, &b1_di,
+		tskIDLE_PRIORITY + 1, NULL);
 	
 	vTaskStartScheduler();
 }
