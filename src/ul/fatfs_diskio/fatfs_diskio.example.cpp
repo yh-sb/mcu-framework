@@ -11,7 +11,6 @@
 
 using namespace hal;
 using namespace drv;
-using namespace ul;
 
 static void cd_cb(di *di, bool state, void *ctx);
 
@@ -46,10 +45,10 @@ int main(void)
 	
 	static sd_spi sd1(spi1, sd_cs, &sd_cd);
 	
-	static di cd_di(sd_cd, 30, 1);
+	static di cd_di(sd_cd, 50, 1);
 	cd_di.cb(cd_cb, &sd1);
 	
-	fatfs_diskio_add(0, sd1);
+	ul::fatfs_diskio_add(0, sd1);
 	
 	xTaskCreate(di_task, "di", configMINIMAL_STACK_SIZE * 3, &cd_di,
 		tskIDLE_PRIORITY + 2, NULL);
@@ -59,7 +58,7 @@ int main(void)
 
 static void cd_cb(di *di, bool state, void *ctx)
 {
-	if(state)
+	if(!state)
 		return;
 	
 	sd *sd1 = (sd *)ctx;
