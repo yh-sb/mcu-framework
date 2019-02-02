@@ -37,7 +37,7 @@ int main(void)
 	
 	static onewire _onewire(uart3);
 	
-	static di b1_di(b1, 30, 1);
+	static di b1_di(b1, 50, 1);
 	b1_di.cb(b1_cb, &_onewire);
 	
 	xTaskCreate(di_task, "di", configMINIMAL_STACK_SIZE * 2, &b1_di,
@@ -48,7 +48,7 @@ int main(void)
 
 static void b1_cb(di *di, bool state, void *ctx)
 {
-	if(state)
+	if(!state)
 		return;
 	
 	onewire *_onewire = (onewire *)ctx;
@@ -60,6 +60,4 @@ static void b1_cb(di *di, bool state, void *ctx)
 	
 	uint8_t tx_buff[3] = {0x01, 0x02, 0x03};
 	res = _onewire->tx(rom, tx_buff, sizeof(tx_buff));
-	if(res)
-		return;
 }
