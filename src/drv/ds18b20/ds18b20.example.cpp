@@ -10,8 +10,6 @@
 using namespace hal;
 using namespace drv;
 
-static traceString ch0;
-
 static void b1_cb(di *di, bool state, void *ctx);
 
 static void di_task(void *pvParameters)
@@ -26,8 +24,6 @@ static void di_task(void *pvParameters)
 
 int main(void)
 {
-	ch0 = xTraceRegisterString("ch0");
-	
 	static gpio b1(0, 0, gpio::MODE_DI, 0);
 	static gpio uart3_tx_gpio(3, 8, gpio::MODE_AF, 0);
 	static gpio uart3_rx_gpio(1, 11, gpio::MODE_AF, 0);
@@ -43,10 +39,10 @@ int main(void)
 	static onewire _onewire(uart3);
 	static ds18b20 _ds18b20(_onewire);
 	
-	static di b1_di(b1, 30, 1);
+	static di b1_di(b1, 50, 1);
 	b1_di.cb(b1_cb, &_ds18b20);
 	
-	xTaskCreate(di_task, "di", configMINIMAL_STACK_SIZE * 60, &b1_di,
+	xTaskCreate(di_task, "di", configMINIMAL_STACK_SIZE * 3, &b1_di,
 		tskIDLE_PRIORITY + 1, NULL);
 	
 	vTaskStartScheduler();
@@ -54,16 +50,11 @@ int main(void)
 
 static void b1_cb(di *di, bool state, void *ctx)
 {
-	if(state)
+	if(!state)
 		return;
 	
 	ds18b20 *_ds18b20 = (ds18b20 *)ctx;
 	
 	float temp = 0;
 	int8_t res = _ds18b20->get_temp(0, &temp);
-	if(res)
-		return;
-	
-	vTracePrintF(ch0, "temp = %d,%d", (int16_t)temp,
-		(int16_t)((temp - (int16_t)temp) * 100));
 }
