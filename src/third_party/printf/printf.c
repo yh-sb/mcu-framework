@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // \author (c) Marco Paland (info@paland.com)
-//             2014-2018, PALANDesign Hannover, Germany
+//             2014-2019, PALANDesign Hannover, Germany
 //
 // \license The MIT License (MIT)
 //
@@ -134,14 +134,15 @@ static inline void _out_char(char character, void* buffer, size_t idx, size_t ma
 static inline void _out_fct(char character, void* buffer, size_t idx, size_t maxlen)
 {
   (void)idx; (void)maxlen;
-  // buffer is the output fct pointer
-  ((out_fct_wrap_type*)buffer)->fct(character, ((out_fct_wrap_type*)buffer)->arg);
+  if (character) {
+    // buffer is the output fct pointer
+    ((out_fct_wrap_type*)buffer)->fct(character, ((out_fct_wrap_type*)buffer)->arg);
+  }
 }
 
 
 // internal secure strlen
-// \return The length of the string (excluding the terminating 0)
-//         limited by 'max' size if non-zero
+// \return The length of the string (excluding the terminating 0) limited by 'maxsize'
 static inline unsigned int _strnlen_s(const char* str, size_t maxsize)
 {
   const char* s;
@@ -176,6 +177,9 @@ static size_t _ntoa_format(out_fct_type out, char* buffer, size_t idx, size_t ma
 
   // pad leading zeros
   if (!(flags & FLAGS_LEFT)) {
+    if (width && (flags & FLAGS_ZEROPAD) && (negative || (flags & (FLAGS_PLUS | FLAGS_SPACE)))) {
+      width--;
+    }
     while ((len < prec) && (len < PRINTF_NTOA_BUFFER_SIZE)) {
       buf[len++] = '0';
     }
@@ -206,10 +210,6 @@ static size_t _ntoa_format(out_fct_type out, char* buffer, size_t idx, size_t ma
     }
   }
 
-  // handle sign
-  if (len && (len == width) && (negative || (flags & FLAGS_PLUS) || (flags & FLAGS_SPACE))) {
-    len--;
-  }
   if (len < PRINTF_NTOA_BUFFER_SIZE) {
     if (negative) {
       buf[len++] = '-';
@@ -310,6 +310,14 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
   // powers of 10
   static const double pow10[] = { 1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000 };
 
+  // test for NaN
+  if (value != value) {
+    out('n', buffer, idx++, maxlen);
+    out('a', buffer, idx++, maxlen);
+    out('n', buffer, idx++, maxlen);
+    return idx;
+  }
+
   // test for negative
   bool negative = false;
   if (value < 0) {
@@ -340,8 +348,10 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
       ++whole;
     }
   }
-  else if ((diff == 0.5) && ((frac == 0U) || (frac & 1U))) {
-    // if halfway, round up if odd, OR if last digit is 0
+  else if (diff < 0.5) {
+  }
+  else if ((frac == 0U) || (frac & 1U)) {
+    // if halfway, round up if odd OR if last digit is 0
     ++frac;
   }
 
@@ -353,11 +363,7 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
 
   if (prec == 0U) {
     diff = value - (double)whole;
-    if (diff > 0.5) {
-      // greater than 0.5, round up, e.g. 1.6 -> 2
-      ++whole;
-    }
-    else if ((diff == 0.5) && (whole & 1)) {
+    if ((!(diff < 0.5) || (diff > 0.5)) && (whole & 1)) {
       // exactly 0.5 and ODD, then round up
       // 1.5 -> 2, but 2.5 -> 2
       ++whole;
@@ -393,15 +399,14 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
 
   // pad leading zeros
   if (!(flags & FLAGS_LEFT) && (flags & FLAGS_ZEROPAD)) {
+    if (width && (negative || (flags & (FLAGS_PLUS | FLAGS_SPACE)))) {
+      width--;
+    }
     while ((len < width) && (len < PRINTF_FTOA_BUFFER_SIZE)) {
       buf[len++] = '0';
     }
   }
 
-  // handle sign
-  if ((len == width) && (negative || (flags & FLAGS_PLUS) || (flags & FLAGS_SPACE))) {
-    len--;
-  }
   if (len < PRINTF_FTOA_BUFFER_SIZE) {
     if (negative) {
       buf[len++] = '-';
@@ -647,7 +652,7 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
       }
 
       case 's' : {
-        char* p = va_arg(va, char*);
+        const char* p = va_arg(va, char*);
         unsigned int l = _strnlen_s(p, precision ? precision : (size_t)-1);
         // pre padding
         if (flags & FLAGS_PRECISION) {
@@ -754,7 +759,7 @@ int fctprintf(void (*out)(char character, void* arg), void* arg, const char* for
   va_list va;
   va_start(va, format);
   const out_fct_wrap_type out_fct_wrap = { out, arg };
-  const int ret = _vsnprintf(_out_fct, (char*)&out_fct_wrap, (size_t)-1, format, va);
+  const int ret = _vsnprintf(_out_fct, (char*)(uintptr_t)&out_fct_wrap, (size_t)-1, format, va);
   va_end(va);
   return ret;
 }
