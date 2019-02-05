@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Trace Recorder Library for Tracealyzer v3.3.0
+ * Trace Recorder Library for Tracealyzer v4.2.8
  * Percepio AB, www.percepio.com
  *
  * trcStreamingConfig.h
@@ -39,7 +39,7 @@
  *
  * Tabs are used for indent in this file (1 tab = 4 spaces)
  *
- * Copyright Percepio AB, 2017.
+ * Copyright Percepio AB, 2018.
  * www.percepio.com
  ******************************************************************************/
 
@@ -123,20 +123,22 @@ extern "C" {
  * Specifies the number of pages used by the paged event buffer.
  * This may need to be increased if there are a lot of missed events.
  *
- * Note: not used by the J-Link RTT stream port (see SEGGER_RTT_Conf.h instead)
+ * Note: not used by the J-Link RTT stream port (see trcStreamingPort.h instead)
  ******************************************************************************/
-#define TRC_CFG_PAGED_EVENT_BUFFER_PAGE_COUNT 2
+#define TRC_CFG_PAGED_EVENT_BUFFER_PAGE_COUNT 10
 
 /*******************************************************************************
  * Configuration Macro: TRC_CFG_PAGED_EVENT_BUFFER_PAGE_SIZE
  *
  * Specifies the size of each page in the paged event buffer. This can be tuned 
  * to match any internal low-level buffers used by the streaming interface, like
- * the Ethernet MTU (Maximum Transmission Unit).
+ * the Ethernet MTU (Maximum Transmission Unit). However, since the currently
+ * active page can't be transfered, having more but smaller pages is more
+ * efficient with respect memory usage, than having a few large pages.  
  *
- * Note: not used by the J-Link RTT stream port (see SEGGER_RTT_Conf.h instead)
+ * Note: not used by the J-Link RTT stream port (see trcStreamingPort.h instead)
  ******************************************************************************/
-#define TRC_CFG_PAGED_EVENT_BUFFER_PAGE_SIZE 2500
+#define TRC_CFG_PAGED_EVENT_BUFFER_PAGE_SIZE 500
 
 /*******************************************************************************
  * TRC_CFG_ISR_TAILCHAINING_THRESHOLD

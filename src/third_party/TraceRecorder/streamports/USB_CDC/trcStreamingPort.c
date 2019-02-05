@@ -1,7 +1,8 @@
+
 #include "trcRecorder.h"
 
 #if (TRC_USE_TRACEALYZER_RECORDER == 1)
-#if(TRC_CFG_RECORDER_MODE == TRC_RECORDER_MODE_STREAMING)
+#if (TRC_CFG_RECORDER_MODE == TRC_RECORDER_MODE_STREAMING)
 
 #include "stdint.h"
 

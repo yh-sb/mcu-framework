@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Trace Recorder Library for Tracealyzer v3.3.0
+ * Trace Recorder Library for Tracealyzer v4.2.8
  * Percepio AB, www.percepio.com
  *
  * trcStreamingPort.h
@@ -40,7 +40,7 @@
  *
  * Tabs are used for indent in this file (1 tab = 4 spaces)
  *
- * Copyright Percepio AB, 2017.
+ * Copyright Percepio AB, 2018.
  * www.percepio.com
  ******************************************************************************/
 

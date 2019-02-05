@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Trace Recorder Library for Tracealyzer v3.3.0
+ * Trace Recorder Library for Tracealyzer v4.2.8
  * Percepio AB, www.percepio.com
  *
  * trcStreamingPort.c
@@ -41,7 +41,7 @@
  *
  * Tabs are used for indent in this file (1 tab = 4 spaces)
  *
- * Copyright Percepio AB, 2017.
+ * Copyright Percepio AB, 2018.
  * www.percepio.com
  ******************************************************************************/
 
@@ -75,7 +75,7 @@ int32_t trcSocketSend( void* data, int32_t size, int32_t* bytesWritten )
   if (*bytesWritten < 0)
   {
     /* EWOULDBLOCK may be expected when buffers are full */
-    if (errno != EWOULDBLOCK)
+    if (errno != 0 && errno != EWOULDBLOCK)
     {
       closesocket(new_sd);
       new_sd = -1;
@@ -97,7 +97,7 @@ int32_t trcSocketReceive( void* data, int32_t size, int32_t* bytesRead )
   if ( *bytesRead < 0 )
   {
     /* EWOULDBLOCK may be expected when there is no data to receive */
-    if (errno != EWOULDBLOCK)
+    if (errno != 0 && errno != EWOULDBLOCK)
     {
       closesocket(new_sd);
       new_sd = -1;

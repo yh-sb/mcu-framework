@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Trace Recorder Library for Tracealyzer v3.3.0
+ * Trace Recorder Library for Tracealyzer v4.2.8
  * Percepio AB, www.percepio.com
  *
  * trcConfig.h
@@ -41,7 +41,7 @@
  *
  * Tabs are used for indent in this file (1 tab = 4 spaces)
  *
- * Copyright Percepio AB, 2016.
+ * Copyright Percepio AB, 2018.
  * www.percepio.com
  ******************************************************************************/
 
@@ -210,18 +210,6 @@ extern "C" {
 #define TRC_CFG_INCLUDE_OSTICK_EVENTS 1
 
  /*****************************************************************************
- * TRC_CFG_INCLUDE_PEND_FUNC_CALL_EVENTS
- *
- * Macro which should be defined as either zero (0) or one (1).
- *
- * If this is zero (0), the trace will exclude any "pending function call" 
- * events, such as xTimerPendFunctionCall().
- *
- * Default value is 0 since dependent on timers.c
- *****************************************************************************/
-#define TRC_CFG_INCLUDE_PEND_FUNC_CALL_EVENTS 1
-
- /*****************************************************************************
  * TRC_CFG_INCLUDE_EVENT_GROUP_EVENTS
  *
  * Macro which should be defined as either zero (0) or one (1).
@@ -242,6 +230,30 @@ extern "C" {
  * Default value is 0 since dependent on timers.c
  *****************************************************************************/
 #define TRC_CFG_INCLUDE_TIMER_EVENTS 0
+
+ /*****************************************************************************
+ * TRC_CFG_INCLUDE_PEND_FUNC_CALL_EVENTS
+ *
+ * Macro which should be defined as either zero (0) or one (1).
+ *
+ * If this is zero (0), the trace will exclude any "pending function call" 
+ * events, such as xTimerPendFunctionCall().
+ *
+ * Default value is 0 since dependent on timers.c
+ *****************************************************************************/
+#define TRC_CFG_INCLUDE_PEND_FUNC_CALL_EVENTS 1
+
+/*******************************************************************************
+ * Configuration Macro: TRC_CFG_INCLUDE_STREAM_BUFFER_EVENTS
+ *
+ * Macro which should be defined as either zero (0) or one (1).
+ *
+ * If this is zero (0), the trace will exclude any stream buffer or message
+ * buffer events.
+ *
+ * Default value is 0 since dependent on stream_buffer.c (new in FreeRTOS v10)
+ ******************************************************************************/
+#define TRC_CFG_INCLUDE_STREAM_BUFFER_EVENTS 1
 
 /*******************************************************************************
  * Configuration Macro: TRC_CFG_RECORDER_BUFFER_ALLOCATION

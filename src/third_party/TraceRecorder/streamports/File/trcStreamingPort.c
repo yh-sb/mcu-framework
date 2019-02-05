@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Trace Recorder Library for Tracealyzer v3.3.0
+ * Trace Recorder Library for Tracealyzer v4.2.8
  * Percepio AB, www.percepio.com
  *
  * trcStreamingPort.c
@@ -41,7 +41,7 @@
  *
  * Tabs are used for indent in this file (1 tab = 4 spaces)
  *
- * Copyright Percepio AB, 2017.
+ * Copyright Percepio AB, 2018.
  * www.percepio.com
  ******************************************************************************/
 
@@ -69,15 +69,21 @@ void openFile(char* fileName)
 }
 
 int32_t writeToFile(void* data, uint32_t size, int32_t *ptrBytesWritten)
-{	
+{
+	int32_t written = 0;
 	if (traceFile != NULL)
 	{
-		*ptrBytesWritten = fwrite(data, 1, size, traceFile);
-	}else{
-		*ptrBytesWritten = 0;
+		written = fwrite(data, 1, size, traceFile);
+	}
+	else
+	{
+		written = 0;
 	}
 
-	if ((int32_t)size == *ptrBytesWritten)
+	if (ptrBytesWritten != 0)
+		*ptrBytesWritten = written;
+
+	if ((int32_t)size == written)
 		return 0;
 	else
 		return -1;

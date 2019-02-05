@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Trace Recorder Library for Tracealyzer v3.3.0
+ * Trace Recorder Library for Tracealyzer v4.2.8
  * Percepio AB, www.percepio.com
  *
  * trcStreamingPort.h
@@ -44,7 +44,7 @@
  *
  * Tabs are used for indent in this file (1 tab = 4 spaces)
  *
- * Copyright Percepio AB, 2017.
+ * Copyright Percepio AB, 2018.
  * www.percepio.com
  ******************************************************************************/
 
@@ -118,17 +118,18 @@ extern "C" {
  * internal RAM buffer read by the J-Link probes during execution.
  *
  * Possible values:
- * - SEGGER_RTT_MODE_BLOCK_IF_FIFO_FULL (default)
- * - SEGGER_RTT_MODE_NO_BLOCK_SKIP
+ * - SEGGER_RTT_MODE_BLOCK_IF_FIFO_FULL 
+ * - SEGGER_RTT_MODE_NO_BLOCK_SKIP (default)
  *
- * We recommend using SEGGER_RTT_MODE_BLOCK_IF_FIFO_FULL, to ensure you get a
+ * Using SEGGER_RTT_MODE_BLOCK_IF_FIFO_FULL ensure that you get a
  * complete and valid trace. This may however cause blocking if your streaming
  * interface isn't fast enough, which may disturb the real-time behavior.
- * We therefore recommend to try SEGGER_RTT_MODE_NO_BLOCK_SKIP as well. 
- * In this mode, Tracealyzer will report lost events if the transfer is not
+ * 
+ * We therefore recommend SEGGER_RTT_MODE_NO_BLOCK_SKIP. In this mode, 
+ * Tracealyzer will report lost events if the transfer is not
  * fast enough. In that case, try increasing the size of the "up buffer".
  ******************************************************************************/
-#define TRC_CFG_RTT_MODE SEGGER_RTT_MODE_BLOCK_IF_FIFO_FULL
+#define TRC_CFG_RTT_MODE SEGGER_RTT_MODE_NO_BLOCK_SKIP
 
 #include "SEGGER_RTT_Conf.h"
 #include "SEGGER_RTT.h"

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Trace Recorder Library for Tracealyzer v3.3.0
+ * Trace Recorder Library for Tracealyzer v4.2.8
  * Percepio AB, www.percepio.com
  *
  * trcStreamingPort.h
@@ -39,7 +39,7 @@
  *
  * Tabs are used for indent in this file (1 tab = 4 spaces)
  *
- * Copyright Percepio AB, 2017.
+ * Copyright Percepio AB, 2018.
  * www.percepio.com
  ******************************************************************************/
 
@@ -58,11 +58,25 @@ void closeFile(void);
 
 void openFile(char* fileName);
 
+/* This define will determine whether to use the internal PagedEventBuffer or not.
+If file writing creates additional trace events (i.e. it uses semaphores or mutexes), 
+then the paged event buffer must be enabled to avoid infinite recursion. */
+#define TRC_STREAM_PORT_USE_INTERNAL_BUFFER 1
+
 #define TRC_STREAM_PORT_READ_DATA(_ptrData, _size, _ptrBytesRead) 0 /* Does not read commands from Tz (yet) */
 
 #define TRC_STREAM_PORT_WRITE_DATA(_ptrData, _size, _ptrBytesSent) writeToFile(_ptrData, _size, _ptrBytesSent)
 
-#define TRC_STREAM_PORT_INIT() openFile("trace.psf")
+#if (TRC_CFG_RECORDER_BUFFER_ALLOCATION == TRC_RECORDER_BUFFER_ALLOCATION_DYNAMIC)
+#define TRC_STREAM_PORT_MALLOC() \
+			_TzTraceData = TRC_PORT_MALLOC((TRC_CFG_PAGED_EVENT_BUFFER_PAGE_COUNT) * (TRC_CFG_PAGED_EVENT_BUFFER_PAGE_SIZE));
+extern char* _TzTraceData;
+#else
+#define TRC_STREAM_PORT_MALLOC()  /* Custom or static allocation. Not used. */
+#endif
+#define TRC_STREAM_PORT_INIT() \
+		TRC_STREAM_PORT_MALLOC(); \
+		openFile("trace.psf")
 
 #define TRC_STREAM_PORT_ON_TRACE_END() closeFile()
 
