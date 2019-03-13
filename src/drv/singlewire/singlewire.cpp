@@ -34,7 +34,7 @@ singlewire::singlewire(hal::gpio &gpio, hal::tim &tim, hal::exti &exti):
 {
 	ASSERT(_gpio.mode() == gpio::MODE_OD);
 	
-	lock = xSemaphoreCreateBinary();
+	lock = xSemaphoreCreateMutex();
 	ASSERT(lock);
 	
 	_tim.cb(tim_cb, this);

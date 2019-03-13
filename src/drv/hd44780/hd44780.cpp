@@ -83,7 +83,7 @@ hd44780::hd44780(gpio &rs, gpio &rw, gpio &e, gpio &db4, gpio &db5, gpio &db6,
 		_db[i]->set(1);
 	}
 	
-	_lock = xSemaphoreCreateBinary();
+	_lock = xSemaphoreCreateMutex();
 	ASSERT(_lock);
 	
 	_tim.cb(tim_cb, _lock);
