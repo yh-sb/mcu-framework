@@ -16,15 +16,12 @@ $(eval ALL_LIBDIR += $(addprefix -L$(module)/,$(LIBDIR)))
 $(eval ALL_LIB += $(addprefix -l,$(LIB)))
 $(eval ALL_LINKED_OBJ += $(addprefix $(module)/,$(LINKED_OBJ)))
 endef
+
 # Include module and save its SRC.o to OBJ for future linking (repeat for each module)
 $(foreach module,$(MODULES),$(eval $(call INCLUDE_MODULE,$(module))))
 
-LDFLAGS += $(strip $(ALL_LIBDIR))
+ALL_LIBDIR := $(strip $(ALL_LIBDIR))
 ALL_LIB := $(strip $(ALL_LIB))
-
-ifdef ALL_LIB
-LDFLAGS += -Wl,--start-group $(ALL_LIB) -Wl,--end-group
-endif
 
 define COMPILE_MODULE
 	+$(MAKE) -j $(NUMBER_OF_PROCESSORS) --no-print-directory -C $(module)
@@ -109,7 +106,11 @@ check_style:
 
 $(ELF): $(ALL_LINKED_OBJ) $(OBJ)
 	@$(call MKDIR,$(@D))
+ifeq ($(ALL_LIB),)
 	$(LD) $(LDFLAGS) $^ -o $@
+else
+	$(LD) $(LDFLAGS) $^ $(ALL_LIBDIR) -Wl,--start-group $(ALL_LIB) -Wl,--end-group -o $@
+endif
 
 $(BIN): $(ELF)
 	@$(call MKDIR,$(@D))
