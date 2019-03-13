@@ -94,8 +94,7 @@ debug:
 	$(MAKE) all
 	$(MAKE) flash
 ifeq ($(FLASHER),JLink)
-	jlinkGDBserverCL $(JLINK_PARAM) -vd -singlerun
-#	jlinkGDBserverCL $(JLINK_PARAM) -vd -singlerun -rtos GDBServer/RTOSPlugin_FreeRTOS
+	jlinkGDBserverCL $(JLINK_PARAM) -strict -vd -nogui -singlerun
 endif
 ifeq ($(FLASHER),openocd)
 	$(FLASHER) $(OPENOCD_PARAM_DEBUG)
