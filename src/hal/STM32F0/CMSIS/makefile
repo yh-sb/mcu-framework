@@ -1,4 +1,4 @@
--include ../../../../header.mk
+-include ../../../../config.mk
 
 SRC := device-support/startup_stm32f072xb.s \
 	device-support/system_stm32f0xx.c \

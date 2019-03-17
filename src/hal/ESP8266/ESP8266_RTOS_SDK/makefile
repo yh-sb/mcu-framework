@@ -1,4 +1,4 @@
--include ../../../../header.mk
+-include ../../../../config.mk
 
 # ESP8266_RTOS_SDK v2.x.x (7d4782fcd34fe55d6b403bdd33e5988741e11239)
 

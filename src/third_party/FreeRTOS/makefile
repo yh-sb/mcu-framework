@@ -1,4 +1,4 @@
--include ../../../header.mk
+-include ../../../config.mk
 
 SRC := croutine.c \
 	event_groups.c \

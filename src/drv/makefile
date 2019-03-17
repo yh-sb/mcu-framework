@@ -1,4 +1,4 @@
--include ../../header.mk
+-include ../../config.mk
 
 SRC := dht11/dht11.cpp \
 	dht22/dht22.cpp \

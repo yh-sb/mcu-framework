@@ -1,4 +1,4 @@
-include header.mk
+include config.mk
 
 define INCLUDE_MODULE
 $(eval include $(module)/makefile)

@@ -1,4 +1,4 @@
--include ../../../header.mk
+-include ../../../config.mk
 
 SRC := dma/dma.cpp \
 	exti/exti.cpp \

@@ -1,4 +1,4 @@
--include ../../../header.mk
+-include ../../../config.mk
 
 SRC := adc/adc.cpp \
 	dac/dac.cpp \
