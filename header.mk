@@ -28,7 +28,9 @@ GLOBAL_INC := $(ROOT)/src \
 	$(ROOT)/src/third_party/FreeRTOS/portable/ARM_CM4 \
 	$(ROOT)/src/third_party/TraceRecorder/include \
 	$(ROOT)/src/third_party/TraceRecorder/streamports/Jlink_RTT/include \
-	$(ROOT)/src/third_party/TraceRecorder/config
+	$(ROOT)/src/third_party/TraceRecorder/config \
+	$(ROOT)/src/third_party/simplelink \
+	$(ROOT)/src/third_party/simplelink/include
 
 GLOBAL_DEF := STM32F407xx
 
@@ -59,7 +61,6 @@ CC := arm-none-eabi-gcc
 CPP := arm-none-eabi-g++
 AS := arm-none-eabi-gcc -x assembler-with-cpp
 LD := arm-none-eabi-g++
-GDB := arm-none-eabi-gdb
 OBJCOPY := arm-none-eabi-objcopy
 OBJDUMP := arm-none-eabi-objdump
 SIZE := arm-none-eabi-size
@@ -81,23 +82,33 @@ OPENOCD_PARAM_DEBUG := $(OPENOCD_PARAM) \
 	-c "reset_config srst_only"
 
 ifeq ($(OS),Windows_NT)
+
 define MKDIR
-	if not exist "$(1)" mkdir "$(1)"
+@if not exist "$(1)" mkdir "$(1)"
+
 endef
 define RMDIR
-	if exist "$(1)" rmdir /s /q "$(1)"
+@if exist "$(1)" rmdir /s /q "$(1)"
+
 endef
 define RM
-	del /q "$(1)" 2>nul
+@del /q "$(1)" 2>nul
+
 endef
+
 else
+
 define MKDIR
-	mkdir -p "$(1)"
+@mkdir -p "$(1)"
+
 endef
 define RMDIR
-	rm -rf "$(1)"
+@rm -r "$(1)"
+
 endef
 define RM
-	rf -f "$(1)"
+@rm "$(1)"
+
 endef
+
 endif

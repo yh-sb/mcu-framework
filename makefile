@@ -1,43 +1,40 @@
 include header.mk
 
-OBJ :=
-ALL_LIBDIR :=
-ALL_LIB :=
-ALL_LINKED_OBJ :=
-
 define INCLUDE_MODULE
 $(eval include $(module)/makefile)
-$(eval OBJ += $(patsubst %.c,$(OBJDIR)/$(module)/%.o,$(filter %.c,$(SRC))) \
-	$(patsubst %.cpp,$(OBJDIR)/$(module)/%.o,$(filter %.cpp,$(SRC))) \
-	$(patsubst %.s,$(OBJDIR)/$(module)/%.o,$(filter %.s,$(SRC))) \
-	$(patsubst %.S,$(OBJDIR)/$(module)/%.o,$(filter %.S,$(SRC))) \
-)
+$(eval ALL_OBJ += $(patsubst $(OBJDIR)/%.o,$(OBJDIR)/$(module)/%.o,$(OBJ)))
 $(eval ALL_LIBDIR += $(addprefix -L$(module)/,$(LIBDIR)))
 $(eval ALL_LIB += $(addprefix -l,$(LIB)))
 $(eval ALL_LINKED_OBJ += $(addprefix $(module)/,$(LINKED_OBJ)))
 endef
 
-# Include module and save its SRC.o to OBJ for future linking (repeat for each module)
-$(foreach module,$(MODULES),$(eval $(call INCLUDE_MODULE,$(module))))
-
-ALL_LIBDIR := $(strip $(ALL_LIBDIR))
-ALL_LIB := $(strip $(ALL_LIB))
-
 define COMPILE_MODULE
-	+$(MAKE) -j $(NUMBER_OF_PROCESSORS) --no-print-directory -C $(module)
-	
+@echo --- Compile "$(module)":
+@$(MAKE) -j $(NUMBER_OF_PROCESSORS) --no-print-directory -C $(module)
+
 endef
 
-.PHONY: all clean erase flash reset debug
+define CLEAN_MODULE
+@echo --- Clean "$(module)":
+@$(MAKE) -j $(NUMBER_OF_PROCESSORS) --no-print-directory -C $(module) clean
+
+endef
+
+# Collect prerequisites from modules for linkage
+$(foreach module,$(MODULES),$(call INCLUDE_MODULE,$(module)))
+ALL_LIBDIR := $(strip $(ALL_LIBDIR))
+ALL_LIB := $(strip $(ALL_LIB))
+ALL_LINKED_OBJ := $(strip $(ALL_LINKED_OBJ))
 
 all:
 	$(foreach module,$(MODULES),$(call COMPILE_MODULE,$(module)))
-	+$(MAKE) -j $(NUMBER_OF_PROCESSORS) --no-print-directory $(ELF)
-	+$(MAKE) -j $(NUMBER_OF_PROCESSORS) --no-print-directory $(BIN)
-	+$(MAKE) -j $(NUMBER_OF_PROCESSORS) --no-print-directory $(LSS)
+	@$(MAKE) -j $(NUMBER_OF_PROCESSORS) --no-print-directory $(ELF)
+	@$(MAKE) -j $(NUMBER_OF_PROCESSORS) --no-print-directory $(BIN)
+	@$(MAKE) -j $(NUMBER_OF_PROCESSORS) --no-print-directory $(LSS)
 	$(SIZE) $(ELF)
 
 clean:
+	$(foreach module,$(MODULES),$(call CLEAN_MODULE,$(module)))
 	$(call RMDIR,$(OUTDIR))
 ifeq ($(FLASHER),JLink)
 	$(call RM,script.jlink)
@@ -103,10 +100,8 @@ ifeq ($(FLASHER),openocd)
 	$(FLASHER) $(OPENOCD_PARAM_DEBUG)
 endif
 
-check_style:
-	clang-format -style=file $(addprefix src/,$(SRC))
-
-$(ELF): $(ALL_LINKED_OBJ) $(OBJ)
+$(ELF): $(ALL_OBJ) $(ALL_LINKED_OBJ)
+	@echo --- Linking "$(BIN)":
 	@$(call MKDIR,$(@D))
 ifeq ($(ALL_LIB),)
 	$(LD) $(LDFLAGS) $^ -o $@
@@ -115,7 +110,6 @@ else
 endif
 
 $(BIN): $(ELF)
-	@$(call MKDIR,$(@D))
 ifeq ($(FLASHER),esptool)
 	esptool elf2image $< -o $(BINDIR)/$(notdir $(CURDIR))-
 else
@@ -123,5 +117,4 @@ else
 endif
 
 $(LSS): $(ELF)
-	@$(call MKDIR,$(@D))
 	$(OBJDUMP) -dC $< >> $@
