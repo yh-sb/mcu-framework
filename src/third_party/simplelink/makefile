@@ -1,4 +1,4 @@
--include ../../../header.mk
+-include ../../../config.mk
 
 SRC := source/device.c \
 	source/driver.c \
