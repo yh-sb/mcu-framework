@@ -177,13 +177,13 @@ int8_t onewire::do_reset()
 	if(_uart.baud() != 9600)
 		_uart.baud(9600);
 	
-	if(_uart.tx(&tx_buff, 1) != uart::RES_OK)
+	if(_uart.write(&tx_buff, 1) != uart::RES_OK)
 	{
 		res = RES_TX_FAIL;
 		goto Exit;
 	}
 	
-	switch(_uart.rx(&rx_buff, &size, RX_WAIT_TIMEOUT))
+	switch(_uart.read(&rx_buff, &size, RX_WAIT_TIMEOUT))
 	{
 		case uart::RES_RX_TIMEOUT: res = RES_NO_DEV; break;
 		case uart::RES_RX_FAIL: res = RES_RX_FAIL; break;
@@ -195,7 +195,7 @@ int8_t onewire::do_reset()
 				res = RES_LINE_BUSY;
 	}
 	
-	/*uart_res = _uart.rx(&rx_buff, &size, RX_WAIT_TIMEOUT);
+	/*uart_res = _uart.read(&rx_buff, &size, RX_WAIT_TIMEOUT);
 	if(uart_res == uart::RES_RX_TIMEOUT)
 		res = RES_NO_DEV;
 	else if(uart_res == uart::RES_RX_FAIL || size != sizeof(rx_buff))

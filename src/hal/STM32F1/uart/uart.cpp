@@ -249,7 +249,7 @@ void uart::baud(uint32_t baud)
 	xSemaphoreGive(tx_api_lock);
 }
 
-int8_t uart::tx(const uint8_t *buff, uint16_t size)
+int8_t uart::write(const uint8_t *buff, uint16_t size)
 {
 	ASSERT(buff);
 	ASSERT(size > 0);
@@ -269,7 +269,7 @@ int8_t uart::tx(const uint8_t *buff, uint16_t size)
 	return tx_irq_res;
 }
 
-int8_t uart::rx(uint8_t *buff, uint16_t *size, uint32_t timeout)
+int8_t uart::read(uint8_t *buff, uint16_t *size, uint32_t timeout)
 {
 	ASSERT(buff);
 	ASSERT(size);

@@ -67,5 +67,5 @@ static void b1_cb(di *di, bool state, void *ctx)
 
 	uint8_t tx_buff[] = "test";
 	
-	int8_t res = uart1->tx(tx_buff, sizeof(tx_buff) - 1);
+	int8_t res = uart1->write(tx_buff, sizeof(tx_buff) - 1);
 }

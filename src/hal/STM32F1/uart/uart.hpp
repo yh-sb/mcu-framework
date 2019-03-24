@@ -57,8 +57,8 @@ class uart
 		
 		void baud(uint32_t baud);
 		uint32_t baud() const { return _baud; }
-		int8_t tx(const uint8_t *buff, uint16_t size);
-		int8_t rx(uint8_t *buff, uint16_t *size, uint32_t timeout);
+		int8_t write(const uint8_t *buff, uint16_t size);
+		int8_t read(uint8_t *buff, uint16_t *size, uint32_t timeout);
 		int8_t exch(uint8_t *tx_buff, uint16_t tx_size, uint8_t *rx_buff,
 			uint16_t *rx_size, uint32_t timeout);
 	
