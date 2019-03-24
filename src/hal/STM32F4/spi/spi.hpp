@@ -65,9 +65,9 @@ class spi
 		cpha_t cpha() const { return _cpha; }
 		void bit_order(bit_order_t bit_order);
 		bit_order_t bit_order() const { return _bit_order; };
-		int8_t tx(void *buff, uint16_t size, gpio *cs = NULL);
-		int8_t tx(uint8_t byte, gpio *cs = NULL);
-		int8_t rx(void *buff, uint16_t size, gpio *cs = NULL);
+		int8_t write(void *buff, uint16_t size, gpio *cs = NULL);
+		int8_t write(uint8_t byte, gpio *cs = NULL);
+		int8_t read(void *buff, uint16_t size, gpio *cs = NULL);
 		int8_t exch(void *buff_tx, void *buff_rx, uint16_t size, gpio *cs = NULL);
 		
 		spi &operator = (const spi &);

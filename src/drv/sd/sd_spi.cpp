@@ -138,7 +138,7 @@ int8_t sd_spi::init_sd()
 	/* Send 80 pulses without cs */
 	uint8_t init_buff[8];
 	memset(init_buff, 0xFF, sizeof(init_buff));
-	if(_spi.tx(init_buff, sizeof(init_buff)))
+	if(_spi.write(init_buff, sizeof(init_buff)))
 		return RES_SPI_ERR;
 	
 	return RES_OK;
@@ -168,14 +168,14 @@ int8_t sd_spi::send_cmd(cmd_t cmd, uint32_t arg, resp_t resp_type, uint8_t *resp
 	cmd_buff[4] = arg;
 	cmd_buff[5] = calc_crc7(cmd_buff, sizeof(cmd_buff) - 1);
 	
-	if(_spi.tx(cmd_buff, sizeof(cmd_buff)))
+	if(_spi.write(cmd_buff, sizeof(cmd_buff)))
 		return RES_SPI_ERR;
 
 	uint8_t retry_cnt = WAIT_RESPONSE_CNT;
 	while(retry_cnt--)
 	{
 		resp[0] = 0xFF;
-		if(_spi.rx(resp, 1))
+		if(_spi.read(resp, 1))
 			return RES_SPI_ERR;
 		
 		if(!(resp[0] & R1_START_BIT))
@@ -205,7 +205,7 @@ int8_t sd_spi::send_cmd(cmd_t cmd, uint32_t arg, resp_t resp_type, uint8_t *resp
 		case R6:
 		case R7:
 			memset(&resp[1], 0xFF, 4);
-			if(_spi.rx(&resp[1], 4))
+			if(_spi.read(&resp[1], 4))
 				return RES_SPI_ERR;
 	}
 	
@@ -219,7 +219,7 @@ int8_t sd_spi::read_data(void *data, uint16_t size)
 	while(wait_cnt--)
 	{
 		data_token = 0xFF;
-		if(_spi.rx(&data_token, 1))
+		if(_spi.read(&data_token, 1))
 			return RES_SPI_ERR;
 		
 		if(data_token == DATA_TOKEN_CMD17_18_24)
@@ -246,11 +246,11 @@ int8_t sd_spi::read_data(void *data, uint16_t size)
 		return RES_NO_RESPONSE;
 	
 	memset(data, 0xFF, size);
-	if(_spi.rx(data, size))
+	if(_spi.read(data, size))
 		return RES_SPI_ERR;
 	
 	uint8_t crc16[2] = {0xFF, 0xFF};
-	if(_spi.rx(crc16, sizeof(crc16)))
+	if(_spi.read(crc16, sizeof(crc16)))
 		return RES_SPI_ERR;
 	
 	if(calc_crc16((uint8_t *)data, size) != ((crc16[0] << 8) | crc16[1]))
@@ -261,22 +261,22 @@ int8_t sd_spi::read_data(void *data, uint16_t size)
 
 int8_t sd_spi::write_data(void *data, uint16_t size)
 {
-	if(_spi.tx(DATA_TOKEN_CMD17_18_24))
+	if(_spi.write(DATA_TOKEN_CMD17_18_24))
 		return RES_SPI_ERR;
 	
-	if(_spi.tx(data, size))
+	if(_spi.write(data, size))
 		return RES_SPI_ERR;
 	
 	uint16_t crc16_tmp = calc_crc16((uint8_t *)data, size);
 	uint8_t crc16[2] = {(uint8_t)crc16_tmp, (uint8_t)(crc16_tmp << 8)};
 	
-	if(_spi.tx(crc16, sizeof(crc16)))
+	if(_spi.write(crc16, sizeof(crc16)))
 		return RES_SPI_ERR;
 	
 	/* Check data response */
 	uint8_t data_resp;
 	data_resp = 0xFF;
-	if(_spi.rx(&data_resp, sizeof(data_resp)))
+	if(_spi.read(&data_resp, sizeof(data_resp)))
 		return RES_SPI_ERR;
 	
 	if(!(data_resp & DATA_RESP_START_BIT) || (data_resp & DATA_RESP_END_BIT))
@@ -303,7 +303,7 @@ int8_t sd_spi::wait_ready()
 	while(wait_cnt--)
 	{
 		busy_flag = 0xFF;
-		if(_spi.rx(&busy_flag, 1))
+		if(_spi.read(&busy_flag, 1))
 			return RES_SPI_ERR;
 		
 		if(busy_flag == 0xFF)

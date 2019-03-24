@@ -502,7 +502,7 @@ void spi::bit_order(bit_order_t bit_order)
 	xSemaphoreGive(api_lock);
 }
 
-int8_t spi::tx(void *buff, uint16_t size, gpio *cs)
+int8_t spi::write(void *buff, uint16_t size, gpio *cs)
 {
 	ASSERT(buff);
 	ASSERT(size > 0);
@@ -528,7 +528,7 @@ int8_t spi::tx(void *buff, uint16_t size, gpio *cs)
 	return irq_res;
 }
 
-int8_t spi::tx(uint8_t byte, gpio *cs)
+int8_t spi::write(uint8_t byte, gpio *cs)
 {
 	xSemaphoreTake(api_lock, portMAX_DELAY);
 	
@@ -551,7 +551,7 @@ int8_t spi::tx(uint8_t byte, gpio *cs)
 	return irq_res;
 }
 
-int8_t spi::rx(void *buff, uint16_t size, gpio *cs)
+int8_t spi::read(void *buff, uint16_t size, gpio *cs)
 {
 	ASSERT(buff);
 	ASSERT(size > 0);
