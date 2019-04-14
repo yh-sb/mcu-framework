@@ -2,8 +2,6 @@
 
 #include <stdint.h>
 
-#include "ESP8266_RTOS_SDK/include/espressif/c_types.h"
-
 /*
 List of ESP8266 pin functions from Espressif documentation:
 | GPIO |    Name    |  Func1   |   Func2   |   Func3    |   Func4   |   Func5    |

@@ -1,14 +1,10 @@
 #include <stdint.h>
 #include <stddef.h>
-
 #include "common/assert.h"
-
 #include "gpio.hpp"
-
-#include "ESP8266_RTOS_SDK/include/espressif/c_types.h"
-#include "ESP8266_RTOS_SDK/include/espressif/esp8266/pin_mux_register.h"
-#include "ESP8266_RTOS_SDK/include/espressif/esp8266/gpio_register.h"
-#include "ESP8266_RTOS_SDK/include/espressif/esp8266/eagle_soc.h"
+#include "ESP8266_RTOS_SDK/components/esp8266/include/esp8266/pin_mux_register.h"
+#include "ESP8266_RTOS_SDK/components/esp8266/include/esp8266/gpio_register.h"
+#include "ESP8266_RTOS_SDK/components/esp8266/include/esp8266/eagle_soc.h"
 
 using namespace hal;
 
