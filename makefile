@@ -30,7 +30,9 @@ all:
 	$(foreach module,$(MODULES),$(call COMPILE_MODULE,$(module)))
 	@$(MAKE) -j $(NUMBER_OF_PROCESSORS) --no-print-directory $(ELF)
 	@$(MAKE) -j $(NUMBER_OF_PROCESSORS) --no-print-directory $(BIN)
+ifneq ($(FLASHER),esptool)
 	@$(MAKE) -j $(NUMBER_OF_PROCESSORS) --no-print-directory $(LSS)
+endif
 	$(SIZE) $(ELF)
 
 clean:
@@ -54,7 +56,9 @@ ifeq ($(FLASHER),ST-LINK_CLI)
 endif
 ifeq ($(FLASHER),esptool)
 	$(FLASHER) $(ESPTOOL_PARAM) erase_flash
-	$(FLASHER) $(ESPTOOL_PARAM) write_flash -fs 512KB -ff 40m -fm qio 0x7C000 src/hal/ESP8266/ESP8266_RTOS_SDK/bin/esp_init_data_default.bin
+	$(FLASHER) $(ESPTOOL_PARAM) write_flash \
+	0xfc000 src/hal/ESP8266/ESP8266_RTOS_SDK/components/esp8266/firmware/esp_init_data_default.bin \
+	0xfe000 src/hal/ESP8266/ESP8266_RTOS_SDK/components/esp8266/firmware/blank.bin
 endif
 
 flash:
@@ -73,7 +77,9 @@ ifeq ($(FLASHER),ST-LINK_CLI)
 	$(FLASHER) -c swd -p $(BIN) 0x08000000 -v -rst
 endif
 ifeq ($(FLASHER),esptool)
-	$(FLASHER) $(ESPTOOL_PARAM) write_flash -fs 512KB -ff 40m -fm qio 0x00000 $(BINDIR)/$(notdir $(CURDIR))-0x00000.bin 0x20000 $(BINDIR)/$(notdir $(CURDIR))-0x20000.bin
+	$(FLASHER) $(ESPTOOL_PARAM) write_flash \
+	0x00000 $(BINDIR)/$(notdir $(CURDIR))-0x00000.bin \
+	0x10000 $(BINDIR)/$(notdir $(CURDIR))-0x10000.bin
 endif
 
 reset:

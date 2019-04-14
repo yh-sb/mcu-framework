@@ -16,45 +16,66 @@ LSS := $(OUTDIR)/$(notdir $(CURDIR)).lss
 
 GLOBAL_INC := $(ROOT)/src \
 	$(ROOT)/src/hal/ESP8266 \
-	$(ROOT)/src/hal/ESP8266/ESP8266_RTOS_SDK/include \
-	$(ROOT)/src/hal/ESP8266/ESP8266_RTOS_SDK/include/espressif \
-	$(ROOT)/src/hal/ESP8266/ESP8266_RTOS_SDK/include/freertos
+	$(ROOT)/src/hal/ESP8266/ESP8266_RTOS_SDK \
+	$(ROOT)/src/hal/ESP8266/ESP8266_RTOS_SDK/components/esp8266/include \
+	$(ROOT)/src/hal/ESP8266/ESP8266_RTOS_SDK/components/freertos/include \
+	$(ROOT)/src/hal/ESP8266/ESP8266_RTOS_SDK/components/freertos/include/freertos \
+	$(ROOT)/src/hal/ESP8266/ESP8266_RTOS_SDK/components/freertos/include/freertos/private \
+	$(ROOT)/src/hal/ESP8266/ESP8266_RTOS_SDK/components/freertos/port/esp8266/include \
+	$(ROOT)/src/hal/ESP8266/ESP8266_RTOS_SDK/components/freertos/port/esp8266/include/freertos \
+	$(ROOT)/src/hal/ESP8266/ESP8266_RTOS_SDK/components/heap/include \
+	$(ROOT)/src/hal/ESP8266/ESP8266_RTOS_SDK/components/heap/port/esp8266/include \
+	\
+	$(ROOT)/src/hal/ESP8266/ESP8266_RTOS_SDK/components/lwip/lwip/src/include \
+	$(ROOT)/src/hal/ESP8266/ESP8266_RTOS_SDK/components/lwip/port/esp8266/include \
+	$(ROOT)/src/hal/ESP8266/ESP8266_RTOS_SDK/components/tcpip_adapter/include \
+	$(ROOT)/src/hal/ESP8266/ESP8266_RTOS_SDK/components/lwip/include/lwip/apps
 
 GLOBAL_DEF :=
 
 GLOBAL_C_CPP_FLAGS := -O0 -g3 \
 	-Wall \
-	-ffunction-sections -fdata-sections \
-	-mlongcalls -mtext-section-literals
-	#-Wpointer-arith -fno-builtin-printf -fno-jump-tables
+	-ffunction-sections \
+	-fdata-sections \
+	-mlongcalls \
+	-mtext-section-literals
 
 GLOBAL_CFLAGS := -std=c99
 
 GLOBAL_CPPFLAGS := -std=c++11 \
-	-fno-exceptions -fno-rtti \
-	-felide-constructors -fno-threadsafe-statics -fno-use-cxa-atexit
+	-fno-exceptions \
+	-fno-rtti \
+	-felide-constructors \
+	-fno-threadsafe-statics \
+	-fno-use-cxa-atexit
 
-GLOBAL_AFLAGS :=
+GLOBAL_AFLAGS := -g3
 
-LDFLAGS := -Tsrc/hal/ESP8266/eagle.app.v6.ld \
-	-u call_user_start \
+LDFLAGS := -Tsrc/hal/ESP8266/ESP8266_RTOS_SDK/esp8266.ld \
+	-Tsrc/hal/ESP8266/ESP8266_RTOS_SDK/esp8266.common.ld \
+	-Tsrc/hal/ESP8266/ESP8266_RTOS_SDK/esp8266.peripherals.ld \
+	-Tsrc/hal/ESP8266/ESP8266_RTOS_SDK/esp8266.rom.ld \
+	-Tsrc/hal/ESP8266/ESP8266_RTOS_SDK/rom_8266.ld \
+	\
 	-nostdlib \
-	-Wl,--gc-sections \
-	-Wl,-Map="$(MAP)",--cref
-	#-nostartfiles
-	#-Wl,-static
+	-u call_user_start \
+	-Wl,--no-check-sections \
+	-Wl,-static \
+	-Wl,--cref \
+	-Wl,--Map="$(MAP)", \
+	-Wl,-EL
 
-CC := xtensa-lx106-elf-gcc
-CPP := xtensa-lx106-elf-g++
-AS := xtensa-lx106-elf-gcc -x assembler-with-cpp
-LD := xtensa-lx106-elf-gcc
+CC := xtensa-lx106-elf-gcc-5.2.0
+CPP := xtensa-lx106-elf-gcc-5.2.0
+AS := xtensa-lx106-elf-gcc-5.2.0
+LD := xtensa-lx106-elf-gcc-5.2.0
 OBJCOPY := xtensa-lx106-elf-objcopy
 OBJDUMP := xtensa-lx106-elf-objdump
 SIZE := xtensa-lx106-elf-size
 
 FLASHER := esptool
 
-ESPTOOL_PARAM := --port COM6 --baud 256000
+ESPTOOL_PARAM := --port COM6 --baud 256000 --chip esp8266
 
 ifeq ($(OS),Windows_NT)
 

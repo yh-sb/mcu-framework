@@ -1,63 +1,150 @@
 -include ../../../../config.mk
 
-# ESP8266_RTOS_SDK v2.x.x (7d4782fcd34fe55d6b403bdd33e5988741e11239)
+SRC := components\freertos\freertos\event_groups.c \
+	components\freertos\freertos\list.c \
+	components\freertos\freertos\queue.c \
+	components\freertos\freertos\stream_buffer.c \
+	components\freertos\freertos\tasks.c \
+	components\freertos\freertos\timers.c \
+	components\freertos\port\esp8266\freertos_hooks.c \
+	components\freertos\port\esp8266\impure.c \
+	components\freertos\port\esp8266\os_cpu_a.S \
+	components\freertos\port\esp8266\panic.c \
+	components\freertos\port\esp8266\port.c \
+	components\freertos\port\esp8266\xtensa_context.S \
+	components\freertos\port\esp8266\xtensa_init.c \
+	components\freertos\port\esp8266\xtensa_vectors.S \
+	\
+	components\esp8266\source\chip_boot.c \
+	components\esp8266\source\esp_timer.c \
+	components\esp8266\source\esp_wifi_os_adapter.c \
+	components\esp8266\source\esp_wifi.c \
+	components\esp8266\source\ets_printf.c \
+	components\esp8266\source\event_default_handlers.c \
+	components\esp8266\source\event_loop.c \
+	components\esp8266\source\phy_init.c \
+	components\esp8266\source\reset_reason.c \
+	components\esp8266\source\startup.c \
+	components\esp8266\source\system_api.c \
+	components\esp8266\source\task_wdt.c \
+	\
+	components\heap\src\esp_heap_caps.c \
+	components\heap\src\esp_heap_trace.c \
+	components\heap\port\esp8266\esp_heap_init.c \
+	\
+	components\log\log.c \
+	\
+	components\lwip\apps\dhcpserver\dhcpserver.c \
+	components\lwip\lwip\src\api\tcpip.c \
+	components\lwip\lwip\src\core\def.c \
+	components\lwip\lwip\src\core\dns.c \
+	components\lwip\lwip\src\core\inet_chksum.c \
+	components\lwip\lwip\src\core\init.c \
+	components\lwip\lwip\src\core\ip.c \
+	components\lwip\lwip\src\core\memp.c \
+	components\lwip\lwip\src\core\netif.c \
+	components\lwip\lwip\src\core\pbuf.c \
+	components\lwip\lwip\src\core\tcp_in.c \
+	components\lwip\lwip\src\core\tcp_out.c \
+	components\lwip\lwip\src\core\tcp.c \
+	components\lwip\lwip\src\core\timeouts.c \
+	components\lwip\lwip\src\core\udp.c \
+	components\lwip\lwip\src\core\ipv4\dhcp.c \
+	components\lwip\lwip\src\core\ipv4\etharp.c \
+	components\lwip\lwip\src\core\ipv4\icmp.c \
+	components\lwip\lwip\src\core\ipv4\igmp.c \
+	components\lwip\lwip\src\core\ipv4\ip4_addr.c \
+	components\lwip\lwip\src\core\ipv4\ip4.c \
+	components\lwip\lwip\src\netif\ethernet.c \
+	components\lwip\port\esp8266\freertos\heap.c \
+	components\lwip\port\esp8266\freertos\sys_arch.c \
+	components\lwip\port\esp8266\freertos\udp_sync.c \
+	components\lwip\port\esp8266\netif\ethernetif.c \
+	\
+	components\newlib\newlib\port\esp_malloc.c \
+	components\newlib\newlib\port\esp_newlib.c \
+	components\newlib\newlib\port\locks.c \
+	components\newlib\newlib\port\syscall.c \
+	components\newlib\newlib\port\time.c \
+	\
+	components\nvs_flash\src\nvs_api.cpp \
+	components\nvs_flash\src\nvs_item_hash_list.cpp \
+	components\nvs_flash\src\nvs_page.cpp \
+	components\nvs_flash\src\nvs_pagemanager.cpp \
+	components\nvs_flash\src\nvs_storage.cpp \
+	components\nvs_flash\src\nvs_types.cpp \
+	\
+	components\spi_flash\src\partition.c \
+	components\spi_flash\src\spi_flash_raw.c \
+	components\spi_flash\src\spi_flash.c \
+	\
+	components\tcpip_adapter\tcpip_adapter_lwip.c \
+	\
+	components\util\src\crc.c \
+	\
+	components\wpa_supplicant\src\crypto\aes-internal-enc.c \
+	components\wpa_supplicant\src\crypto\aes-wrap.c
 
-SRC := atexit.cpp
+INC := . \
+	components/bootloader_support/include \
+	components/bootloader_support/include_priv \
+	\
+	components/freertos/include \
+	components/log/include \
+	components/lwip/include/lwip/apps \
+	components/lwip/lwip/src/include \
+	components/lwip/port/esp8266/include \
+	components/newlib/newlib/port/include \
+	components/nvs_flash/include \
+	components/spi_flash/include \
+	components/tcpip_adapter/include \
+	components/util/include \
+	components/wpa_supplicant/include \
+	components/wpa_supplicant/port/include
 
-INC := .\
-	./extra_include \
-	./include \
-	./include/espressif \
-	./include/freertos
+DEF := ESP_PLATFORM \
+	IDF_VER=\"3.1\" \
+	__ESP_FILE__=__FILE__ \
+	PARTITION_QUEUE_HEADER=\"sys/queue.h\" \
+	NVS_CRC_HEADER_FILE=\"crc.h\"
 
-# for compilation sdk v2
-DEF := ICACHE_FLASH \
-	MEMLEAK_DEBUG
+C_CPP_FLAGS := -Wno-error=unused-function \
+	-Wno-error=unused-but-set-variable \
+	-Wno-error=unused-variable \
+	-Wno-error=deprecated-declarations \
+	-Wno-unused-parameter \
+	-Wno-sign-compare \
+	\
+	-ffunction-sections \
+	-fdata-sections \
+	-fstrict-volatile-bitfields \
+	\
+	-mtext-section-literals \
+	-mlongcalls \
+	-nostdlib
 
-# for lwip
-#DEF += _POSIX_SOURCE \
-	LWIP_OPEN_SRC \
-	PBUF_RSV_FOR_WLAN \
-	EBUF_LWIP
-
-C_CPP_FLAGS :=
-
-# for lwip
-#CFLAGS := -fno-aggressive-loop-optimizations \
-	-Wno-implicit-function-declaration
+CFLAGS := -std=gnu99
 
 CPPFLAGS :=
 AFLAGS :=
 
-LIBDIR := lib
+LIBDIR := components/esp8266/lib \
+	components/newlib/newlib/lib
 
-LIB := airkiss \
-	cirom \
-	coap \
-	crypto \
-	driver \
-	espconn \
+LIB := stdc++ \
+	gcov \
+	c_nano \
+	m \
+	\
+	core \
 	espnow \
-	freertos \
 	gcc \
 	hal \
-	json \
-	lwip \
-	main \
-	mbedtls \
-	mirom \
-	mqtt \
 	net80211 \
-	nopoll \
-	openssl \
 	phy \
 	pp \
-	pwm \
 	smartconfig \
-	spiffs \
 	ssc \
-	ssl \
-	wolfssl \
 	wpa \
 	wps
 
