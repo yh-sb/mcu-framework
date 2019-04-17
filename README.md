@@ -24,6 +24,8 @@ To clone the repository you should have Git installed. Just run:
 git clone https://github.com/r44083/omef
 cd omef
 make
+make flash
+make debug (optionaly)
 ```
 There is a simple project with some demo for each HW platform. Edit makefile if necessary.
 
