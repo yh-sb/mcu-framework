@@ -87,8 +87,6 @@ SRC := components\freertos\freertos\event_groups.c \
 
 INC := . \
 	components/bootloader_support/include \
-	components/bootloader_support/include_priv \
-	\
 	components/freertos/include \
 	components/log/include \
 	components/lwip/include/lwip/apps \
