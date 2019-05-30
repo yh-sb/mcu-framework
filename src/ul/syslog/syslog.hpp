@@ -28,10 +28,21 @@ class syslog
 		void add_output(cb_t cb, void *ctx = NULL);
 		void del_output(cb_t cb, void *ctx = NULL);
 		
-		// Do not call these APIs from ISR
+		// Do not call APIs below from ISR
+		
+		// Debug messages that we only rarely turn on
 		void dbg(const char *format, ...);
+		
+		/* Anything that we want to know when looking at the log files, e.g.
+		when a scheduled job started/ended */
 		void inf(const char *format, ...);
+		
+		/* Any messages that might warn us of potential problems, e.g. when a
+		user tried to log in with wrong credentials - which might indicate an
+		attack if that happens often or in short period of time */
 		void wrn(const char *format, ...);
+		
+		// Any error that is or might be critical
 		void err(const char *format, ...);
 		
 		syslog(syslog const &) = delete;
