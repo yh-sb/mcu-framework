@@ -41,7 +41,7 @@ GLOBAL_CPPFLAGS := -std=c++11 \
 	-fno-exceptions -fno-rtti \
 	-fno-threadsafe-statics -fno-use-cxa-atexit
 
-GLOBAL_AFLAGS :=
+GLOBAL_AFLAGS := -g3
 
 LDFLAGS := -Tsrc/hal/STM32F0/STM32F072RBTx_FLASH.ld \
 	-mcpu=cortex-m0 -mthumb \

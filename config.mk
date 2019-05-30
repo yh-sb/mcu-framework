@@ -46,7 +46,7 @@ GLOBAL_CPPFLAGS := -std=c++11 \
 	-fno-exceptions -fno-rtti \
 	-fno-threadsafe-statics -fno-use-cxa-atexit
 
-GLOBAL_AFLAGS :=
+GLOBAL_AFLAGS := -g3
 
 LDFLAGS := -Tsrc/hal/STM32F4/STM32F40_41xxx.ld \
 	-mcpu=cortex-m4 -mthumb \
