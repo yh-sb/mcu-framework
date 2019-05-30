@@ -597,7 +597,7 @@ int8_t spi::exch(void *buff_tx, void *buff_rx, uint16_t size, gpio *cs)
 		_cs->set(0);
 	
 	rx_buff = buff_rx;
-	rx_dma.src((uint8_t*)rx_buff);
+	rx_dma.dst((uint8_t*)rx_buff);
 	rx_dma.size(size);
 	rx_dma.start_once(on_dma_rx, this);
 	spi_list[_spi]->DR;
