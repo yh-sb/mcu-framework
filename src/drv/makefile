@@ -1,6 +1,7 @@
 -include ../../config.mk
 
-SRC := dht11/dht11.cpp \
+SRC := dataflash/dataflash.cpp \
+	dht11/dht11.cpp \
 	dht22/dht22.cpp \
 	di/di.cpp \
 	ds18b20/ds18b20.cpp \
