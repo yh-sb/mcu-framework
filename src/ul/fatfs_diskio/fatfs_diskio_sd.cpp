@@ -31,11 +31,9 @@ static DSTATUS status(void *ctx)
 	
 	switch(_sd->read_csd(&csd))
 	{
-		case sd::RES_OK: return RES_OK;
-		case sd::RES_LOCKED: return RES_WRPRT;
-		case sd::RES_PARAM_ERR: return RES_PARERR;
-		case sd::RES_NO_RESPONSE: return RES_NOTRDY;
-		default: return RES_ERROR;
+		case sd::RES_OK: return 0;
+		case sd::RES_LOCKED: return STA_PROTECT | STA_NOINIT;
+		default: return STA_NOINIT;
 	}
 }
 
@@ -45,11 +43,9 @@ static DSTATUS initialize(void *ctx)
 	
 	switch(_sd->init())
 	{
-		case sd::RES_OK: return RES_OK;
-		case sd::RES_LOCKED: return RES_WRPRT;
-		case sd::RES_PARAM_ERR: return RES_PARERR;
-		case sd::RES_NO_RESPONSE: return RES_NOTRDY;
-		default: return RES_ERROR;
+		case sd::RES_OK: return 0;
+		case sd::RES_LOCKED: return STA_PROTECT | STA_NOINIT;
+		default: return STA_NOINIT;
 	}
 }
 
@@ -104,8 +100,7 @@ static DRESULT write(void *ctx, const BYTE *buff, DWORD sector, UINT count)
 static DRESULT ioctl(void *ctx, BYTE cmd, void *buff)
 {
 	sd *_sd = (sd *)ctx;
-	int8_t res = sd::RES_OK;
-	DWORD start, end;
+	DRESULT res = RES_OK;
 	
 	switch(cmd)
 	{
@@ -125,12 +120,9 @@ static DRESULT ioctl(void *ctx, BYTE cmd, void *buff)
 			break;
 		
 		case CTRL_TRIM:
-			// TRIM capability is enabled only when FF_USE_TRIM = 1
-			
-			start = ((DWORD *)buff)[0];
-			//start = *(DWORD *)buff;
-			end = ((DWORD *)buff)[1];
-			//end = *(((DWORD *)buff) + 1);
+		{
+			DWORD start = ((DWORD *)buff)[0];
+			DWORD end = ((DWORD *)buff)[1];
 			
 			if(_sd->type() == sd::TYPE_SD_V2_HI_CAPACITY)
 			{
@@ -138,20 +130,19 @@ static DRESULT ioctl(void *ctx, BYTE cmd, void *buff)
 				end *= SD_BLOCK_SIZE;
 			}
 			
-			res = _sd->erase(start, end);
+			switch(_sd->erase(start, end))
+			{
+				case sd::RES_PARAM_ERR: res =  RES_PARERR;
+				case sd::RES_LOCKED: res =  RES_WRPRT;
+				case sd::RES_NO_RESPONSE: res =  RES_NOTRDY;
+				default: res =  RES_ERROR;
+			}
+		}
 			break;
 		
 		default:
 			ASSERT(0);
-			res = sd::RES_PARAM_ERR;
 	}
 	
-	switch(res)
-	{
-		case sd::RES_OK: return RES_OK;
-		case sd::RES_PARAM_ERR: return RES_PARERR;
-		case sd::RES_LOCKED: return RES_WRPRT;
-		case sd::RES_NO_RESPONSE: return RES_NOTRDY;
-		default: return RES_ERROR;
-	}
+	return res;
 }
