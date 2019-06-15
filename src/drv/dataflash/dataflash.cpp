@@ -592,6 +592,12 @@ int8_t dataflash::wait_ready(uint32_t timeout_ms, status_t *status)
 			return res;
 		}
 		
+		if(_status.erase_program_error)
+		{
+			res = RES_ERASE_PORGRAM_ERR;
+			break;
+		}
+		
 		if(_status.ready)
 			break;
 		
