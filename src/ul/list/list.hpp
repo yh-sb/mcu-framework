@@ -6,7 +6,8 @@
 
 namespace ul
 {
-template <typename T> class list_elem
+template <typename T>
+class list_elem
 {
 	public:
 		list_elem(T data) : _data(data), _next(NULL) {}
