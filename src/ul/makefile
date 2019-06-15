@@ -1,6 +1,7 @@
 -include ../../config.mk
 
 SRC := fatfs_diskio/fatfs_diskio.cpp \
+	fatfs_diskio/fatfs_diskio_dataflash.cpp \
 	fatfs_diskio/fatfs_diskio_sd.cpp \
 	syslog/syslog.cpp
 

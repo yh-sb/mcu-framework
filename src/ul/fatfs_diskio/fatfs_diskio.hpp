@@ -3,6 +3,7 @@
 #include <stdint.h>
 
 #include "third_party/FatFs/diskio.h"
+#include "drv/dataflash/dataflash.hpp"
 #include "drv/sd/sd.hpp"
 
 namespace ul
@@ -16,5 +17,6 @@ struct fatfs_diskio_t
 	DRESULT (*ioctl)(void *ctx, BYTE cmd, void *buff);
 };
 
+void fatfs_diskio_add(uint8_t pdrv, drv::dataflash &df);
 void fatfs_diskio_add(uint8_t pdrv, drv::sd &sd);
 }

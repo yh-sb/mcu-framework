@@ -10,6 +10,14 @@ using namespace ul;
 static void *ctxs[FF_VOLUMES];
 static fatfs_diskio_t *diskios[FF_VOLUMES];
 
+void fatfs_diskio_add(uint8_t pdrv, drv::dataflash *df)
+{
+	ASSERT(pdrv < FF_VOLUMES);
+	
+	diskios[pdrv] = fatfs_diskio_dataflash();
+	ctxs[pdrv] = (void *)&df;
+}
+
 void fatfs_diskio_add(uint8_t pdrv, drv::sd *sd)
 {
 	ASSERT(pdrv < FF_VOLUMES);
