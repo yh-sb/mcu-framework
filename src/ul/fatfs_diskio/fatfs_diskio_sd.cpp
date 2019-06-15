@@ -14,14 +14,15 @@ static DRESULT read(void *ctx, BYTE *buff, DWORD sector, UINT count);
 static DRESULT write(void *ctx, const BYTE *buff, DWORD sector, UINT count);
 static DRESULT ioctl(void *ctx, BYTE cmd, void *buff);
 
-fatfs_diskio_hndlrs_t &ul::fatfs_diskio_get()
+fatfs_diskio_t *fatfs_diskio_sd()
 {
-	static fatfs_diskio_hndlrs_t fatfs_diskio_sd =
+	static fatfs_diskio_t diskio =
 	{
-		status, initialize, read, write, ioctl
+		.status = status, .initialize = initialize, .read = read,
+		.write = write, .ioctl = ioctl
 	};
 	
-	return fatfs_diskio_sd;
+	return &diskio;
 }
 
 static DSTATUS status(void *ctx)

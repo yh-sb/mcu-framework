@@ -7,7 +7,7 @@
 
 namespace ul
 {
-struct fatfs_diskio_hndlrs_t
+struct fatfs_diskio_t
 {
 	DSTATUS (*status)(void *ctx);
 	DSTATUS (*initialize)(void *ctx);
