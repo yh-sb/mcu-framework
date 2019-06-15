@@ -18,7 +18,7 @@ class dataflash
 			RES_SPI_ERR = -1,
 			RES_ERASE_PORGRAM_ERR = -2,
 			RES_UNSUPPORTED_CHIP_ERR = -3,
-			RES_NO_RESPONCE_ERR = -4 // Reached timeout for some command
+			RES_NO_RESPONSE_ERR = -4 // Reached timeout for some command
 		};
 		
 		enum page_size_t

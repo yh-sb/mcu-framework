@@ -605,7 +605,7 @@ int8_t dataflash::wait_ready(uint32_t timeout_ms, status_t *status)
 	} while(timeout_ms--);
 	
 	if(!timeout_ms)
-		res = RES_NO_RESPONCE_ERR;
+		res = RES_NO_RESPONSE_ERR;
 	
 	if(status)
 		*status = _status;
