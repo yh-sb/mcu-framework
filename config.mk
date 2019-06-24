@@ -6,7 +6,6 @@ MODULES := src \
 	src/third_party/FatFs \
 	src/third_party/FreeRTOS \
 	src/third_party/printf \
-	src/third_party/simplelink \
 	src/third_party/TraceRecorder \
 	src/ul
 
