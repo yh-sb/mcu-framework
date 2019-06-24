@@ -14,7 +14,7 @@ static DRESULT read(void *ctx, BYTE *buff, DWORD sector, UINT count);
 static DRESULT write(void *ctx, const BYTE *buff, DWORD sector, UINT count);
 static DRESULT ioctl(void *ctx, BYTE cmd, void *buff);
 
-fatfs_diskio_t *fatfs_diskio_dataflash()
+fatfs_diskio_t *ul::fatfs_diskio_dataflash()
 {
 	static fatfs_diskio_t diskio =
 	{
