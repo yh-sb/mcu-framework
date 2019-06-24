@@ -43,14 +43,14 @@ int main(void)
 		spi::BIT_ORDER_MSB, spi1_tx_dma, spi1_rx_dma, spi1_mosi, spi1_miso,
 		spi1_clk);
 	
-	static sd_spi sd1(spi1, sd_cs, &sd_cd);
+	static drv::sd_spi sd1(spi1, sd_cs, &sd_cd);
 	
-	static di cd_di(sd_cd, 50, 1);
-	cd_di.cb(cd_cb, &sd1);
+	static di cd_di(sd_cd, 100, 1);
+	cd_di.cb(cd_cb, NULL);
 	
 	ul::fatfs_diskio_add(0, sd1);
 	
-	xTaskCreate(di_task, "di", configMINIMAL_STACK_SIZE * 3, &cd_di,
+	xTaskCreate(di_task, "di", configMINIMAL_STACK_SIZE * 10, &cd_di,
 		tskIDLE_PRIORITY + 2, NULL);
 	
 	vTaskStartScheduler();
@@ -58,22 +58,21 @@ int main(void)
 
 static void cd_cb(di *di, bool state, void *ctx)
 {
-	if(!state)
+	if(state)
+	{
+		f_unmount("SD");
 		return;
-	
-	sd *sd1 = (sd *)ctx;
+	}
 	
 	FATFS fs;
 	FRESULT ff_res = f_mount(&fs, "SD", 1);
 	if(ff_res)
 	{
-		ff_res = f_mkfs("SD", FM_FAT32, 0, NULL, 0);
+		BYTE work_area[FF_MAX_SS] = {};
+		ff_res = f_mkfs("SD", FM_FAT32, 0, work_area, sizeof(work_area));
 		if(ff_res)
 			return;
 		ff_res = f_mount(&fs, "SD", 1);
-		if(ff_res)
-			return;
-		ff_res = f_unmount("SD");
 		if(ff_res)
 			return;
 	}
@@ -82,13 +81,13 @@ static void cd_cb(di *di, bool state, void *ctx)
 	ff_res = f_open(&file, "SD:test.txt", FA_WRITE | FA_CREATE_ALWAYS);
 	if(ff_res)
 		return;
+	
 	UINT size = strlen("abcdefgh-1234567890");
 	ff_res = f_write(&file, "abcdefgh-1234567890", size, &size);
+	f_close(&file);
 	if(ff_res)
 		return;
-	ff_res = f_close(&file);
-	if(ff_res)
-		return;
+	
 	ff_res = f_open(&file, "SD:test.txt", FA_READ);
 	if(ff_res)
 		return;
@@ -97,6 +96,5 @@ static void cd_cb(di *di, bool state, void *ctx)
 	uint8_t buff[64];
 	memset(buff, 0, sizeof(buff));
 	ff_res = f_read(&file, buff, sizeof(buff), &size);
-	
 	f_close(&file);
 }
