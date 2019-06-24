@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include <stdarg.h>
 
 #include "ul/list/list.hpp"
 #include "FreeRTOS.h"
