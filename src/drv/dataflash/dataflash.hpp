@@ -205,7 +205,7 @@ class dataflash
 		hal::gpio &_cs;
 		hal::gpio *_wp;
 		hal::gpio *_rst;
-		SemaphoreHandle_t lock;
+		SemaphoreHandle_t api_lock;
 		info_t _info;
 		
 		int8_t read_status(status_t *status);

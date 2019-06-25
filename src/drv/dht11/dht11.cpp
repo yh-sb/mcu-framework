@@ -17,8 +17,7 @@ enum
 dht11::dht11(singlewire &singlewire):
 	_singlewire(singlewire)
 {
-	api_lock = xSemaphoreCreateMutex();
-	ASSERT(api_lock);
+	ASSERT(api_lock = xSemaphoreCreateMutex());
 }
 
 dht11::~dht11()

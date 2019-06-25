@@ -71,8 +71,7 @@ ds18b20::ds18b20(onewire &onewire):
 	_onewire(onewire),
 	_resol(RESOL_12_BIT)
 {
-	api_lock = xSemaphoreCreateMutex();
-	ASSERT(api_lock);
+	ASSERT(api_lock = xSemaphoreCreateMutex());
 }
 
 ds18b20::~ds18b20()

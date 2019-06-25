@@ -55,8 +55,7 @@ static size_t add_eol(char *str)
 
 syslog::syslog()
 {
-	api_lock = xSemaphoreCreateMutex();
-	ASSERT(api_lock);
+	ASSERT(api_lock = xSemaphoreCreateMutex());
 }
 
 void syslog::add_output(cb_t cb, void *ctx)

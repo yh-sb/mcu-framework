@@ -52,8 +52,7 @@ sd::sd(gpio *cd):
 	
 	memset(&_info, 0, sizeof(_info));
 	
-	api_lock = xSemaphoreCreateMutex();
-	ASSERT(api_lock);
+	ASSERT(api_lock = xSemaphoreCreateMutex());
 }
 
 sd::~sd()

@@ -22,8 +22,7 @@ enum cmd_t
 onewire::onewire(uart &uart):
 	_uart(uart)
 {
-	api_lock = xSemaphoreCreateMutex();
-	ASSERT(api_lock);
+	ASSERT(api_lock = xSemaphoreCreateMutex());
 }
 
 onewire::~onewire()

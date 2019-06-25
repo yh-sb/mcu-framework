@@ -153,12 +153,12 @@ dataflash::dataflash(hal::spi &spi, hal::gpio &cs, hal::gpio *wp,
 	ASSERT(!_wp || _wp->mode() == hal::gpio::MODE_DO);
 	ASSERT(!_rst || _rst->mode() == hal::gpio::MODE_DO);
 	
-	ASSERT((lock = xSemaphoreCreateMutex()));
+	ASSERT((api_lock = xSemaphoreCreateMutex()));
 }
 
 dataflash::~dataflash()
 {
-	vSemaphoreDelete(lock);
+	vSemaphoreDelete(api_lock);
 }
 
 int8_t dataflash::init(page_size_t page_size)
@@ -184,14 +184,14 @@ int8_t dataflash::read(void *buff, uint16_t page, uint16_t pages)
 	ASSERT(page + pages < _info.pages); // Not enough memory
 	ASSERT(pages > 0);
 	
-	xSemaphoreTake(lock, portMAX_DELAY);
+	xSemaphoreTake(api_lock, portMAX_DELAY);
 	
 	args_t args(page, 0, _info);
 	
 	int8_t res = cmd_with_read(CMD_CONTINUOUS_ARRAY_READ_HI_FREQ, args, buff,
 		_info.page_size * pages, 1);
 	
-	xSemaphoreGive(lock);
+	xSemaphoreGive(api_lock);
 	
 	return res;
 }
@@ -202,7 +202,7 @@ int8_t dataflash::write(void *buff, uint16_t page, uint16_t pages)
 	ASSERT(page + pages < _info.pages); // Not enough memory
 	ASSERT(pages > 0);
 	
-	xSemaphoreTake(lock, portMAX_DELAY);
+	xSemaphoreTake(api_lock, portMAX_DELAY);
 	
 	int res = RES_OK;
 	uint8_t cmd = CMD_MAIN_MEMORY_PAGE_PROGRAM_THROUGH_BUFFER1;
@@ -218,7 +218,7 @@ int8_t dataflash::write(void *buff, uint16_t page, uint16_t pages)
 			break;
 	}
 	
-	xSemaphoreGive(lock);
+	xSemaphoreGive(api_lock);
 	
 	return res;
 }
@@ -228,7 +228,7 @@ int8_t dataflash::erase(uint16_t page, uint16_t pages)
 	ASSERT(page + pages < _info.pages); // Not enough memory
 	ASSERT(pages > 0);
 	
-	xSemaphoreTake(lock, portMAX_DELAY);
+	xSemaphoreTake(api_lock, portMAX_DELAY);
 	
 	int8_t res;
 	
@@ -250,7 +250,7 @@ int8_t dataflash::erase(uint16_t page, uint16_t pages)
 		}
 	}
 	
-	xSemaphoreGive(lock);
+	xSemaphoreGive(api_lock);
 	
 	return res;
 }
@@ -259,7 +259,7 @@ int8_t dataflash::jedec(jedec_t *jedec)
 {
 	ASSERT(jedec);
 	
-	xSemaphoreTake(lock, portMAX_DELAY);
+	xSemaphoreTake(api_lock, portMAX_DELAY);
 	
 	_cs.set(0);
 	
@@ -289,7 +289,7 @@ int8_t dataflash::jedec(jedec_t *jedec)
 	
 Exit:
 	_cs.set(1);
-	xSemaphoreGive(lock);
+	xSemaphoreGive(api_lock);
 	return res;
 }
 
