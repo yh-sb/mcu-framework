@@ -5,12 +5,8 @@
 #include "common/assert.h"
 #include "i2c.hpp"
 #include "rcc/rcc.hpp"
-#include "dma/dma.hpp"
-#include "gpio/gpio.hpp"
 #include "CMSIS/device-support/include/stm32f4xx.h"
 #include "CMSIS/core-support/core_cm4.h"
-#include "FreeRTOS.h"
-#include "semphr.h"
 
 using namespace hal;
 
@@ -189,14 +185,10 @@ i2c::i2c(i2c_t i2c, uint32_t baud, dma &dma_tx, dma &dma_rx, gpio &sda,
 	ASSERT(_sda.mode() == gpio::MODE_AF);
 	ASSERT(_scl.mode() == gpio::MODE_AF);
 	
-	api_lock = xSemaphoreCreateMutex();
-	ASSERT(api_lock);
-	irq_lock = xSemaphoreCreateBinary();
-	ASSERT(irq_lock);
+	ASSERT(api_lock = xSemaphoreCreateMutex());
 	
 #if configUSE_TRACE_FACILITY
 	vTraceSetMutexName((void *)api_lock, "i2c_api_lock");
-	vTraceSetSemaphoreName((void *)irq_lock, "i2c_irq_lock");
 	isr_dma_tx = xTraceSetISRProperties("ISR_dma_i2c_tx", 1);
 	isr_dma_rx = xTraceSetISRProperties("ISR_dma_i2c_rx", 1);
 	isr_i2c_event = xTraceSetISRProperties("ISR_i2c_event", 1);
@@ -369,11 +361,11 @@ int8_t i2c::exch(uint16_t addr, void *buff_tx, uint16_t size_tx, void *buff_rx,
 	rx_buff = buff_rx;
 	rx_size = size_rx;
 	
+	task = xTaskGetCurrentTaskHandle();
 	i2c_list[_i2c]->CR1 |= I2C_CR1_START;
 	
-	/* Task will be blocked during spi exch operation */
-	/* irq_lock will be given later from irq handler */
-	xSemaphoreTake(irq_lock, portMAX_DELAY);
+	// Task will be unlocked later from isr
+	ulTaskNotifyTake(true, portMAX_DELAY);
 	
 	xSemaphoreGive(api_lock);
 	
@@ -513,7 +505,7 @@ extern "C" void tx_hndlr(i2c *obj, BaseType_t *hi_task_woken)
 	
 	obj->irq_res = i2c::RES_OK;
 	
-	xSemaphoreGiveFromISR(obj->irq_lock, hi_task_woken);
+	vTaskNotifyGiveFromISR(obj->task, hi_task_woken);
 	portYIELD_FROM_ISR(*hi_task_woken);
 }
 
@@ -528,7 +520,7 @@ extern "C" void rx_hndlr(i2c *obj, BaseType_t *hi_task_woken)
 	
 	obj->irq_res = i2c::RES_OK;
 	
-	xSemaphoreGiveFromISR(obj->irq_lock, hi_task_woken);
+	vTaskNotifyGiveFromISR(obj->task, hi_task_woken);
 	portYIELD_FROM_ISR(*hi_task_woken);
 }
 
@@ -549,7 +541,7 @@ extern "C" void err_hndlr(i2c *obj, int8_t err, BaseType_t *hi_task_woken)
 	
 	obj->irq_res = (i2c::res_t)err;
 	
-	xSemaphoreGiveFromISR(obj->irq_lock, hi_task_woken);
+	vTaskNotifyGiveFromISR(obj->task, hi_task_woken);
 	portYIELD_FROM_ISR(*hi_task_woken);
 }
 

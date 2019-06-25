@@ -6,7 +6,7 @@
 #include "gpio/gpio.hpp"
 #include "tim/tim.hpp"
 #include "FreeRTOS.h"
-#include "semphr.h"
+#include "task.h"
 
 namespace drv
 {
@@ -37,8 +37,7 @@ class hd44780
 		hal::gpio &_e;
 		hal::gpio *_db[4];
 		hal::tim &_tim;
-		
-		SemaphoreHandle_t _lock;
+		TaskHandle_t task;
 		
 		enum write_t
 		{

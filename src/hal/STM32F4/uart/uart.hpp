@@ -6,6 +6,7 @@
 #include "gpio/gpio.hpp"
 #include "dma/dma.hpp"
 #include "FreeRTOS.h"
+#include "task.h"
 #include "semphr.h"
 
 namespace hal { class uart; }
@@ -70,16 +71,15 @@ class uart
 		
 		dma &tx_dma;
 		gpio &tx_gpio;
-		SemaphoreHandle_t tx_api_lock;
-		SemaphoreHandle_t tx_irq_lock;
 		int8_t tx_irq_res;
 		
 		dma &rx_dma;
 		gpio &rx_gpio;
 		uint16_t *rx_cnt;
-		SemaphoreHandle_t rx_api_lock;
-		SemaphoreHandle_t rx_irq_lock;
 		int8_t rx_irq_res;
+		
+		SemaphoreHandle_t api_lock;
+		TaskHandle_t task;
 		
 		static void on_dma_tx(dma *dma, dma::event_t event, void *ctx);
 		static void on_dma_rx(dma *dma, dma::event_t event, void *ctx);

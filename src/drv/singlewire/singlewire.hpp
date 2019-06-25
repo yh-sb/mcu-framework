@@ -6,7 +6,7 @@
 #include "tim/tim.hpp"
 #include "exti/exti.hpp"
 #include "FreeRTOS.h"
-#include "semphr.h"
+#include "task.h"
 
 namespace drv
 {
@@ -31,7 +31,7 @@ class singlewire
 		hal::gpio &_gpio;
 		hal::tim &_tim;
 		hal::exti &_exti;
-		SemaphoreHandle_t lock;
+		TaskHandle_t task;
 		int8_t res;
 		
 		struct

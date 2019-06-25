@@ -83,15 +83,11 @@ hd44780::hd44780(gpio &rs, gpio &rw, gpio &e, gpio &db4, gpio &db5, gpio &db6,
 		_db[i]->set(1);
 	}
 	
-	_lock = xSemaphoreCreateMutex();
-	ASSERT(_lock);
-	
-	_tim.cb(tim_cb, _lock);
+	_tim.cb(tim_cb, &task);
 }
 
 hd44780::~hd44780()
 {
-	vSemaphoreDelete(_lock);
 }
 
 void hd44780::init()
@@ -247,19 +243,20 @@ uint8_t hd44780::read_4bit()
 	return half_byte;
 }
 
-void tim_cb(tim *tim, void *ctx)
+void hd44780::tim_cb(tim *tim, void *ctx)
 {
-	SemaphoreHandle_t _lock = (SemaphoreHandle_t)ctx;
+	TaskHandle_t *_task = (TaskHandle_t *)ctx;
 	
 	BaseType_t hi_task_woken = 0;
-	xSemaphoreGiveFromISR(_lock, &hi_task_woken);
+	vTaskNotifyGiveFromISR(*_task, &hi_task_woken);
 	portYIELD_FROM_ISR(hi_task_woken);
 }
 
 void hd44780::delay(uint32_t us)
 {
+	task = xTaskGetCurrentTaskHandle();
 	_tim.us(us);
 	_tim.start();
 	
-	xSemaphoreTake(_lock, portMAX_DELAY);
+	ulTaskNotifyTake(true, portMAX_DELAY);
 }

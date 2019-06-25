@@ -5,12 +5,8 @@
 #include "common/assert.h"
 #include "uart.hpp"
 #include "rcc/rcc.hpp"
-#include "dma/dma.hpp"
-#include "gpio/gpio.hpp"
 #include "CMSIS/device-support/include/stm32f1xx.h"
 #include "CMSIS/core-support/core_cm3.h"
-#include "FreeRTOS.h"
-#include "semphr.h"
 
 using namespace hal;
 
@@ -136,14 +132,10 @@ uart::uart(uart_t uart, uint32_t baud, stopbit_t stopbit, parity_t parity,
 	_parity(parity),
 	tx_dma(dma_tx),
 	tx_gpio(gpio_tx),
-	tx_api_lock(NULL),
-	tx_irq_lock(NULL),
 	tx_irq_res(RES_OK),
 	rx_dma(dma_rx),
 	rx_gpio(gpio_rx),
 	rx_cnt(NULL),
-	rx_api_lock(NULL),
-	rx_irq_lock(NULL),
 	rx_irq_res(RES_OK)
 {
 	ASSERT(_uart < UART_END && uart_list[_uart]);
@@ -157,20 +149,10 @@ uart::uart(uart_t uart, uint32_t baud, stopbit_t stopbit, parity_t parity,
 	ASSERT(tx_gpio.mode() == gpio::MODE_AF);
 	ASSERT(rx_gpio.mode() == gpio::MODE_AF);
 	
-	tx_api_lock = xSemaphoreCreateMutex();
-	ASSERT(tx_api_lock);
-	tx_irq_lock = xSemaphoreCreateBinary();
-	ASSERT(tx_irq_lock);
-	rx_api_lock = xSemaphoreCreateMutex();
-	ASSERT(rx_api_lock);
-	rx_irq_lock = xSemaphoreCreateBinary();
-	ASSERT(rx_irq_lock);
+	ASSERT(api_lock = xSemaphoreCreateMutex());
 	
 #if configUSE_TRACE_FACILITY
-	vTraceSetMutexName((void *)tx_api_lock, "uart_tx_api_lock");
-	vTraceSetSemaphoreName((void *)tx_irq_lock, "uart_tx_irq_lock");
-	vTraceSetMutexName((void *)rx_api_lock, "uart_rx_api_lock");
-	vTraceSetSemaphoreName((void *)rx_irq_lock, "uart_rx_irq_lock");
+	vTraceSetMutexName((void *)api_lock, "uart_api_lock");
 	isr_dma_tx = xTraceSetISRProperties("ISR_dma_uart_tx", 1);
 	isr_dma_rx = xTraceSetISRProperties("ISR_dma_uart_rx", 1);
 	isr_uart = xTraceSetISRProperties("ISR_uart", 1);
@@ -232,8 +214,7 @@ void uart::baud(uint32_t baud)
 {
 	ASSERT(baud > 0);
 	
-	xSemaphoreTake(tx_api_lock, portMAX_DELAY);
-	xSemaphoreTake(rx_api_lock, portMAX_DELAY);
+	xSemaphoreTake(api_lock, portMAX_DELAY);
 	
 	_baud = baud;
 	USART_TypeDef *uart = uart_list[_uart];
@@ -245,8 +226,7 @@ void uart::baud(uint32_t baud)
 	uart->BRR = (uint16_t)div;
 	uart->CR1 |= USART_CR1_UE;
 	
-	xSemaphoreGive(rx_api_lock);
-	xSemaphoreGive(tx_api_lock);
+	xSemaphoreGive(api_lock);
 }
 
 int8_t uart::write(const uint8_t *buff, uint16_t size)
@@ -254,17 +234,17 @@ int8_t uart::write(const uint8_t *buff, uint16_t size)
 	ASSERT(buff);
 	ASSERT(size > 0);
 	
-	xSemaphoreTake(tx_api_lock, portMAX_DELAY);
+	xSemaphoreTake(api_lock, portMAX_DELAY);
 	
+	task = xTaskGetCurrentTaskHandle();
 	tx_dma.src((uint8_t*)buff);
 	tx_dma.size(size);
 	tx_dma.start_once(on_dma_tx, this);
 	
-	/* Task will be blocked during uart tx operation */
-	/* irq_lock will be given later from irq handler */
-	xSemaphoreTake(tx_irq_lock, portMAX_DELAY);
+	// Task will be unlocked later from isr
+	ulTaskNotifyTake(true, portMAX_DELAY);
 	
-	xSemaphoreGive(tx_api_lock);
+	xSemaphoreGive(api_lock);
 	
 	return tx_irq_res;
 }
@@ -275,20 +255,20 @@ int8_t uart::read(uint8_t *buff, uint16_t *size, uint32_t timeout)
 	ASSERT(size);
 	ASSERT(*size > 0);
 	
-	xSemaphoreTake(rx_api_lock, portMAX_DELAY);
+	xSemaphoreTake(api_lock, portMAX_DELAY);
 	
 	rx_dma.dst(buff);
 	rx_dma.size(*size);
 	*size = 0;
 	rx_cnt = size;
 	
+	task = xTaskGetCurrentTaskHandle();
 	USART_TypeDef *uart = uart_list[_uart];
 	uart->CR1 |= USART_CR1_RE;
 	rx_dma.start_once(on_dma_rx, this);
 	
-	/* Task will be blocked during uart rx operation */
-	/* irq_lock will be given later from irq handler */
-	if(xSemaphoreTake(rx_irq_lock, timeout) != pdTRUE)
+	// Task will be unlocked later from isr
+	if(!ulTaskNotifyTake(true, timeout))
 	{
 		vPortEnterCritical();
 		/* Prevent common (non-DMA) UART IRQ */
@@ -301,7 +281,7 @@ int8_t uart::read(uint8_t *buff, uint16_t *size, uint32_t timeout)
 		rx_irq_res = RES_RX_TIMEOUT;
 		vPortExitCritical();
 	}
-	xSemaphoreGive(rx_api_lock);
+	xSemaphoreGive(api_lock);
 	
 	return rx_irq_res;
 }
@@ -315,8 +295,7 @@ int8_t uart::exch(uint8_t *tx_buff, uint16_t tx_size, uint8_t *rx_buff,
 	ASSERT(rx_size);
 	ASSERT(*rx_size > 0);
 	
-	xSemaphoreTake(tx_api_lock, portMAX_DELAY);
-	xSemaphoreTake(rx_api_lock, portMAX_DELAY);
+	xSemaphoreTake(api_lock, portMAX_DELAY);
 	
 	/* Prepare tx */
 	tx_dma.src((uint8_t *)tx_buff);
@@ -328,6 +307,7 @@ int8_t uart::exch(uint8_t *tx_buff, uint16_t tx_size, uint8_t *rx_buff,
 	*rx_size = 0;
 	rx_cnt = rx_size;
 	
+	task = xTaskGetCurrentTaskHandle();
 	/* Start rx */
 	USART_TypeDef *uart = uart_list[_uart];
 	uart->CR1 |= USART_CR1_RE;
@@ -335,13 +315,8 @@ int8_t uart::exch(uint8_t *tx_buff, uint16_t tx_size, uint8_t *rx_buff,
 	/* Start tx */
 	tx_dma.start_once(on_dma_tx, this);
 	
-	/* Task will be blocked during uart tx operation */
-	/* irq_lock will be given later from irq handler */
-	xSemaphoreTake(tx_irq_lock, portMAX_DELAY);
-	
-	/* Task will be blocked during uart rx operation */
-	/* irq_lock will be given later from irq handler */
-	if(xSemaphoreTake(rx_irq_lock, timeout) != pdTRUE)
+	// Task will be unlocked later from isr
+	if(!ulTaskNotifyTake(true, timeout))
 	{
 		vPortEnterCritical();
 		/* Prevent common (non-DMA) UART IRQ */
@@ -355,13 +330,9 @@ int8_t uart::exch(uint8_t *tx_buff, uint16_t tx_size, uint8_t *rx_buff,
 		vPortExitCritical();
 	}
 	
-	xSemaphoreGive(rx_api_lock);
-	xSemaphoreGive(tx_api_lock);
+	xSemaphoreGive(api_lock);
 	
-	if(tx_irq_res != RES_OK)
-		return tx_irq_res;
-	
-	return rx_irq_res;
+	return tx_irq_res != RES_OK ? tx_irq_res : rx_irq_res;
 }
 
 void uart::on_dma_tx(dma *dma, dma::event_t event, void *ctx)
@@ -378,8 +349,17 @@ void uart::on_dma_tx(dma *dma, dma::event_t event, void *ctx)
 	else if(event == dma::EVENT_ERROR)
 		obj->tx_irq_res = RES_TX_FAIL;
 	
+	if(obj->rx_dma.busy())
+	{
+		// Wait for rx operation
+#if configUSE_TRACE_FACILITY
+		vTraceStoreISREnd(0);
+#endif
+		return;
+	}
+	
 	BaseType_t hi_task_woken = 0;
-	xSemaphoreGiveFromISR(obj->tx_irq_lock, &hi_task_woken);
+	vTaskNotifyGiveFromISR(obj->task, &hi_task_woken);
 #if configUSE_TRACE_FACILITY
 	vTraceStoreISREnd(hi_task_woken);
 #endif
@@ -411,8 +391,17 @@ void uart::on_dma_rx(dma *dma, dma::event_t event, void *ctx)
 	if(obj->rx_cnt)
 		*obj->rx_cnt = obj->rx_dma.transfered();
 	
+	if(obj->tx_dma.busy())
+	{
+		// Wait for tx operation
+#if configUSE_TRACE_FACILITY
+		vTraceStoreISREnd(0);
+#endif
+		return;
+	}
+	
 	BaseType_t hi_task_woken = 0;
-	xSemaphoreGiveFromISR(obj->rx_irq_lock, &hi_task_woken);
+	vTaskNotifyGiveFromISR(obj->task, &hi_task_woken);
 #if configUSE_TRACE_FACILITY
 	vTraceStoreISREnd(hi_task_woken);
 #endif
@@ -452,8 +441,18 @@ extern "C" void uart_irq_hndlr(hal::uart *obj)
 	uart->CR1 &= ~USART_CR1_RE;
 	if(obj->rx_cnt)
 		*obj->rx_cnt = obj->rx_dma.transfered();
+	
+	if(obj->tx_dma.busy())
+	{
+		// Wait for tx operation
+#if configUSE_TRACE_FACILITY
+		vTraceStoreISREnd(0);
+#endif
+		return;
+	}
+	
 	BaseType_t hi_task_woken = 0;
-	xSemaphoreGiveFromISR(obj->rx_irq_lock, &hi_task_woken);
+	vTaskNotifyGiveFromISR(obj->task, &hi_task_woken);
 #if configUSE_TRACE_FACILITY
 	vTraceStoreISREnd(hi_task_woken);
 #endif

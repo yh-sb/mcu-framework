@@ -6,6 +6,7 @@
 #include "gpio/gpio.hpp"
 #include "dma/dma.hpp"
 #include "FreeRTOS.h"
+#include "task.h"
 #include "semphr.h"
 
 namespace hal { class spi; }
@@ -80,7 +81,7 @@ class spi
 		bit_order_t _bit_order;
 		
 		SemaphoreHandle_t api_lock;
-		SemaphoreHandle_t irq_lock;
+		TaskHandle_t task;
 		res_t irq_res;
 		
 		gpio &_mosi;

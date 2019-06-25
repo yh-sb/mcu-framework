@@ -5,12 +5,8 @@
 #include "common/assert.h"
 #include "spi.hpp"
 #include "rcc/rcc.hpp"
-#include "dma/dma.hpp"
-#include "gpio/gpio.hpp"
 #include "CMSIS/device-support/include/stm32f4xx.h"
 #include "CMSIS/core-support/core_cm4.h"
-#include "FreeRTOS.h"
-#include "semphr.h"
 
 using namespace hal;
 
@@ -327,7 +323,6 @@ spi::spi(spi_t spi, uint32_t baud, cpol_t cpol, cpha_t cpha,
 	_cpha(cpha),
 	_bit_order(bit_order),
 	api_lock(NULL),
-	irq_lock(NULL),
 	irq_res(RES_OK),
 	_mosi(mosi),
 	_miso(miso),
@@ -351,14 +346,10 @@ spi::spi(spi_t spi, uint32_t baud, cpol_t cpol, cpha_t cpha,
 	ASSERT(_miso.mode() == gpio::MODE_AF);
 	ASSERT(_clk.mode() == gpio::MODE_AF);
 	
-	api_lock = xSemaphoreCreateMutex();
-	ASSERT(api_lock);
-	irq_lock = xSemaphoreCreateBinary();
-	ASSERT(irq_lock);
+	ASSERT(api_lock = xSemaphoreCreateMutex());
 	
 #if configUSE_TRACE_FACILITY
 	vTraceSetMutexName((void *)api_lock, "spi_api_lock");
-	vTraceSetSemaphoreName((void *)irq_lock, "spi_irq_lock");
 	isr_dma_tx = xTraceSetISRProperties("ISR_dma_spi_tx", 1);
 	isr_dma_rx = xTraceSetISRProperties("ISR_dma_spi_rx", 1);
 	isr_spi = xTraceSetISRProperties("ISR_spi", 1);
@@ -513,15 +504,15 @@ int8_t spi::write(void *buff, uint16_t size, gpio *cs)
 	if(_cs)
 		_cs->set(0);
 	
+	task = xTaskGetCurrentTaskHandle();
 	tx_buff = buff;
 	tx_dma.src((uint8_t*)tx_buff);
 	tx_dma.size(size);
 	tx_dma.start_once(on_dma_tx, this);
 	spi_list[_spi]->CR2 |= SPI_CR2_TXDMAEN;
 	
-	/* Task will be blocked during spi tx operation */
-	/* irq_lock will be given later from irq handler */
-	xSemaphoreTake(irq_lock, portMAX_DELAY);
+	// Task will be unlocked later from isr
+	ulTaskNotifyTake(true, portMAX_DELAY);
 	
 	xSemaphoreGive(api_lock);
 	
@@ -536,15 +527,15 @@ int8_t spi::write(uint8_t byte, gpio *cs)
 	if(_cs)
 		_cs->set(0);
 	
+	task = xTaskGetCurrentTaskHandle();
 	tx_buff = &byte;
 	tx_dma.src((uint8_t*)tx_buff);
 	tx_dma.size(1);
 	tx_dma.start_once(on_dma_tx, this);
 	spi_list[_spi]->CR2 |= SPI_CR2_TXDMAEN;
 	
-	/* Task will be blocked during spi tx operation */
-	/* irq_lock will be given later from irq handler */
-	xSemaphoreTake(irq_lock, portMAX_DELAY);
+	// Task will be unlocked later from isr
+	ulTaskNotifyTake(true, portMAX_DELAY);
 	
 	xSemaphoreGive(api_lock);
 	
@@ -567,6 +558,7 @@ int8_t spi::read(void *buff, uint16_t size, gpio *cs)
 	rx_dma.size(size);
 	rx_dma.start_once(on_dma_rx, this);
 	
+	task = xTaskGetCurrentTaskHandle();
 	/* Setup tx for reception */
 	tx_buff = rx_buff;
 	tx_dma.src((uint8_t*)tx_buff);
@@ -575,9 +567,8 @@ int8_t spi::read(void *buff, uint16_t size, gpio *cs)
 	spi_list[_spi]->DR;
 	spi_list[_spi]->CR2 |= SPI_CR2_TXDMAEN | SPI_CR2_RXDMAEN;
 	
-	/* Task will be blocked during spi rx operation */
-	/* irq_lock will be given later from irq handler */
-	xSemaphoreTake(irq_lock, portMAX_DELAY);
+	// Task will be unlocked later from isr
+	ulTaskNotifyTake(true, portMAX_DELAY);
 	
 	xSemaphoreGive(api_lock);
 	
@@ -599,19 +590,19 @@ int8_t spi::exch(void *buff_tx, void *buff_rx, uint16_t size, gpio *cs)
 	rx_buff = buff_rx;
 	rx_dma.dst((uint8_t*)rx_buff);
 	rx_dma.size(size);
-	rx_dma.start_once(on_dma_rx, this);
 	spi_list[_spi]->DR;
 	
+	task = xTaskGetCurrentTaskHandle();
 	tx_buff = buff_tx;
 	tx_dma.src((uint8_t*)tx_buff);
 	tx_dma.size(size);
+	rx_dma.start_once(on_dma_rx, this);
 	tx_dma.start_once(on_dma_tx, this);
 	
 	spi_list[_spi]->CR2 |= SPI_CR2_TXDMAEN | SPI_CR2_RXDMAEN;
 	
-	/* Task will be blocked during spi exch operation */
-	/* irq_lock will be given later from irq handler */
-	xSemaphoreTake(irq_lock, portMAX_DELAY);
+	// Task will be unlocked later from isr
+	ulTaskNotifyTake(true, portMAX_DELAY);
 	
 	xSemaphoreGive(api_lock);
 	
@@ -695,7 +686,7 @@ void spi::on_dma_tx(dma *dma, dma::event_t event, void *ctx)
 		}
 		
 		obj->irq_res = RES_FAIL;
-		xSemaphoreGiveFromISR(obj->irq_lock, &hi_task_woken);
+		vTaskNotifyGiveFromISR(obj->task, &hi_task_woken);
 		portYIELD_FROM_ISR(hi_task_woken);
 	}
 	
@@ -728,7 +719,7 @@ void spi::on_dma_rx(dma *dma, dma::event_t event, void *ctx)
 	}
 	
 	BaseType_t hi_task_woken = 0;
-	xSemaphoreGiveFromISR(obj->irq_lock, &hi_task_woken);
+	vTaskNotifyGiveFromISR(obj->task, &hi_task_woken);
 	portYIELD_FROM_ISR(hi_task_woken);
 #if configUSE_TRACE_FACILITY
 	vTraceStoreISREnd(hi_task_woken);
@@ -775,7 +766,7 @@ extern "C" void spi_irq_hndlr(hal::spi *obj)
 	}
 	
 	BaseType_t hi_task_woken = 0;
-	xSemaphoreGiveFromISR(obj->irq_lock, &hi_task_woken);
+	vTaskNotifyGiveFromISR(obj->task, &hi_task_woken);
 #if configUSE_TRACE_FACILITY
 	vTraceStoreISREnd(hi_task_woken);
 #endif

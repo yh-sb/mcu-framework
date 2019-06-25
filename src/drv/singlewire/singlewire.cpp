@@ -2,7 +2,6 @@
 
 #include "common/assert.h"
 #include "singlewire.hpp"
-#include "exti/exti.hpp"
 
 using namespace hal;
 using namespace drv;
@@ -34,16 +33,12 @@ singlewire::singlewire(hal::gpio &gpio, hal::tim &tim, hal::exti &exti):
 {
 	ASSERT(_gpio.mode() == gpio::MODE_OD);
 	
-	lock = xSemaphoreCreateMutex();
-	ASSERT(lock);
-	
 	_tim.cb(tim_cb, this);
 	_exti.cb(exti_cb, this);
 }
 
 singlewire::~singlewire()
 {
-	vSemaphoreDelete(lock);
 }
 
 int8_t singlewire::read(uint8_t *buff, uint16_t size)
@@ -51,10 +46,11 @@ int8_t singlewire::read(uint8_t *buff, uint16_t size)
 	if(!_gpio.get())
 		return BUSY;
 	
+	task = xTaskGetCurrentTaskHandle();
 	fsm_start(buff, size);
 	
-	// Semaphore will be given from fsm when data reception will be finished
-	xSemaphoreTake(lock, portMAX_DELAY);
+	// Task will be unlocked from fsm when data reception will be finished
+	ulTaskNotifyTake(true, portMAX_DELAY);
 	
 	return res;
 }
@@ -189,7 +185,7 @@ void singlewire::fsm_run(bool is_tim_expired)
 	
 Exit:
 	BaseType_t hi_task_woken = 0;
-	xSemaphoreGiveFromISR(lock, &hi_task_woken);
+	vTaskNotifyGiveFromISR(task, &hi_task_woken);
 	portYIELD_FROM_ISR(hi_task_woken);
 }
 

@@ -6,6 +6,7 @@
 #include "gpio/gpio.hpp"
 #include "dma/dma.hpp"
 #include "FreeRTOS.h"
+#include "task.h"
 #include "semphr.h"
 
 namespace hal { class i2c; }
@@ -53,7 +54,7 @@ class i2c
 		uint32_t _baud;
 		
 		SemaphoreHandle_t api_lock;
-		SemaphoreHandle_t irq_lock;
+		TaskHandle_t task;
 		res_t irq_res;
 		
 		gpio &_sda;
