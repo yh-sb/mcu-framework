@@ -82,7 +82,7 @@ static void cd_cb(di *di, bool state, void *ctx)
 	if(ff_res)
 		return;
 	
-	UINT size = strlen("abcdefgh-1234567890");
+	size_t size = strlen("abcdefgh-1234567890");
 	ff_res = f_write(&file, "abcdefgh-1234567890", size, &size);
 	f_close(&file);
 	if(ff_res)
@@ -92,9 +92,8 @@ static void cd_cb(di *di, bool state, void *ctx)
 	if(ff_res)
 		return;
 	
+	char buff[64] = {};
 	size = 0;
-	uint8_t buff[64];
-	memset(buff, 0, sizeof(buff));
 	ff_res = f_read(&file, buff, sizeof(buff), &size);
 	f_close(&file);
 }
