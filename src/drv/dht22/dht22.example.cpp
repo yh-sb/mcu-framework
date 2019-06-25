@@ -51,7 +51,8 @@ static void b1_cb(drv::di *di, bool state, void *ctx)
 	
 	drv::dht22 *_dht22 = (drv::dht22 *)ctx;
 	
-	uint16_t rh;
-	int16_t t;
-	int8_t res = _dht22->get(&rh, &t);
+	drv::dht22::val_t val;
+	int8_t res = _dht22->get(&val);
+	// val.rh_x10;
+	// val.t_x10;
 }

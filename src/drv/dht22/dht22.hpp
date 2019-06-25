@@ -17,11 +17,17 @@ class dht22
 			RES_BUSY    = -3,
 			RES_CRC_ERR = -4
 		};
-
+		
+		struct val_t
+		{
+			uint16_t rh_x10;
+			int16_t t_x10;
+		};
+		
 		dht22(singlewire &singlewire);
 		~dht22();
 		
-		int8_t get(uint16_t *rh_x10, int16_t *t_x10 = NULL);
+		int8_t get(val_t *val);
 	
 	private:
 		singlewire &_singlewire;

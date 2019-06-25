@@ -25,9 +25,9 @@ dht22::~dht22()
 	vSemaphoreDelete(api_lock);
 }
 
-int8_t dht22::get(uint16_t *rh_x10, int16_t *t_x10)
+int8_t dht22::get(val_t *val)
 {
-	ASSERT(rh_x10 || t_x10);
+	ASSERT(val);
 	
 	xSemaphoreTake(api_lock, portMAX_DELAY);
 	
@@ -49,18 +49,14 @@ int8_t dht22::get(uint16_t *rh_x10, int16_t *t_x10)
 		goto Exit;
 	}
 	
-	if(rh_x10)
-		*rh_x10 = (buff[RH_INT] << 8) | buff[RH_DEC];
+	val->rh_x10 = (buff[RH_INT] << 8) | buff[RH_DEC];
 	
-	if(t_x10)
+	val->t_x10 = (buff[T_INT] << 8) | buff[T_DEC];
+	
+	if(buff[T_INT] >> 7) // Determine the sign
 	{
-		*t_x10 = (buff[T_INT] << 8) | buff[T_DEC];
-		
-		if(buff[T_INT] >> 7) // Determine the sign
-		{
-			*t_x10 &= ~(1 << 15); // Remove sign bit from the DHT22 response
-			*t_x10 *= -1;
-		}
+		val->t_x10 &= ~(1 << 15); // Remove sign bit from the DHT22 response
+		val->t_x10 *= -1;
 	}
 	
 Exit:

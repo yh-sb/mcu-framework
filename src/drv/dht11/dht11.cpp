@@ -25,9 +25,9 @@ dht11::~dht11()
 	vSemaphoreDelete(api_lock);
 }
 
-int8_t dht11::get(uint8_t *rh, uint8_t *t)
+int8_t dht11::get(val_t *val)
 {
-	ASSERT(rh || t);
+	ASSERT(val);
 	
 	xSemaphoreTake(api_lock, portMAX_DELAY);
 	
@@ -53,15 +53,13 @@ int8_t dht11::get(uint8_t *rh, uint8_t *t)
 	   It means that decimal part of measurement always equal to 0.
 	   So ignore it and use only integral part.
 	*/
-	if(rh)
-		*rh = buff[RH_INT];
+	val->rh = buff[RH_INT];
 	
 	/* Temperature range of DHT11 is 0-50 °C and accuracy is ±1 or ±2 °C.
 	   It means that decimal part of measurement always equal to 0.
 	   So ignore it and use only integral part.
 	*/
-	if(t)
-		*t = buff[T_INT];
+	val->t = buff[T_INT];
 	
 Exit:
 	xSemaphoreGive(api_lock);
