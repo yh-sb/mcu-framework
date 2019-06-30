@@ -15,11 +15,11 @@ class singlewire
 	public:
 		enum res_t
 		{
-			OK      =  0,
-			NODEV   = -1,
-			DEVERR  = -2,
-			READERR = -3,
-			BUSY    = -4
+			RES_OK      =  0,
+			RES_NODEV   = -1,
+			RES_DEVERR  = -2,
+			RES_READERR = -3,
+			RES_BUSY    = -4
 		};
 		
 		singlewire(hal::gpio &gpio, hal::tim &tim, hal::exti &exti);

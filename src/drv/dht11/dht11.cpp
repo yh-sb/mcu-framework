@@ -36,9 +36,9 @@ int8_t dht11::get(val_t *val)
 	
 	switch(_singlewire.read(buff, sizeof(buff)))
 	{
-		case singlewire::OK: break;
-		case singlewire::NODEV: res = RES_NODEV; goto Exit;
-		case singlewire::BUSY: res = RES_BUSY; goto Exit;
+		case singlewire::RES_OK: break;
+		case singlewire::RES_NODEV: res = RES_NODEV; goto Exit;
+		case singlewire::RES_BUSY: res = RES_BUSY; goto Exit;
 		default: res = RES_DEVERR; goto Exit;
 	}
 	
