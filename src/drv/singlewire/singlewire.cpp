@@ -22,7 +22,12 @@ const static uint16_t timeout[WAIT_BIT_CHECK + 1] =
 	40,    // WAIT_RESP_START
 	90,    // WAIT_RESP_END
 	90,    // WAIT_BIT_START_LOW
-	54,    // WAIT_BIT_START_HI
+	
+	/* Normally this timeout should be 50 us, but DHT22 keeps the data line low
+	   for 67 us after each byte. Therefore, increase this timeout to avoid
+	   RES_READERR error */
+	67,    // WAIT_BIT_START_HI
+	
 	35     // WAIT_BIT_CHECK
 };
 
