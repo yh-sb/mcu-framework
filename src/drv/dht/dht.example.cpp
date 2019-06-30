@@ -38,7 +38,7 @@ int main(void)
 	static exti dht11_exti(dht11_exti_gpio);
 	
 	static drv::singlewire dht11_singlewire(dht11_gpio, dht11_tim, dht11_exti);
-	static drv::dht dht11(dht11_singlewire);
+	static drv::dht dht11(dht11_singlewire, drv::dht::DHT11);
 	
 	xTaskCreate(dht11_task, "dht11", configMINIMAL_STACK_SIZE * 1, &dht11,
 		tskIDLE_PRIORITY + 1, NULL);
