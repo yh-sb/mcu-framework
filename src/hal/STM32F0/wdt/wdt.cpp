@@ -1,7 +1,7 @@
 #include "common/assert.h"
 #include "wdt.hpp"
 #include "rcc/rcc.hpp"
-#include "CMSIS/device-support/include/stm32f0xx.h"
+#include "CMSIS/Device/STM32F0xx/Include/stm32f0xx.h"
 
 using namespace hal;
 

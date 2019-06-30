@@ -1,6 +1,6 @@
 #include "systick.hpp"
 #include "rcc/rcc.hpp"
-#include "CMSIS/device-support/include/stm32f0xx.h"
+#include "CMSIS/Device/STM32F0xx/Include/stm32f0xx.h"
 #include "FreeRTOS.h"
 #include "task.h"
 

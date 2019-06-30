@@ -3,8 +3,8 @@
 #include "common/assert.h"
 #include "exti.hpp"
 #include "gpio/gpio.hpp"
-#include "CMSIS/device-support/include/stm32f4xx.h"
-#include "CMSIS/core-support/core_cm4.h"
+#include "CMSIS/Device/STM32F4xx/Include/stm32f4xx.h"
+#include "CMSIS/Include/core_cm4.h"
 
 using namespace hal;
 

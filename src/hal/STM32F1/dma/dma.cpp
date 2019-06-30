@@ -2,8 +2,8 @@
 
 #include "common/assert.h"
 #include "dma.hpp"
-#include "CMSIS/device-support/include/stm32f1xx.h"
-#include "CMSIS/core-support/core_cm3.h"
+#include "CMSIS/Device/STM32F1xx/Include/stm32f1xx.h"
+#include "CMSIS/Include/core_cm3.h"
 
 using namespace hal;
 

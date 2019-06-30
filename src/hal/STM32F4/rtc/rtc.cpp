@@ -3,7 +3,7 @@
 #include "common/assert.h"
 #include "rtc.hpp"
 #include "systick/systick.hpp"
-#include "CMSIS/device-support/include/stm32f4xx.h"
+#include "CMSIS/Device/STM32F4xx/Include/stm32f4xx.h"
 
 using namespace hal;
 

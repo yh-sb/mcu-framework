@@ -3,7 +3,7 @@
 #include "common/assert.h"
 #include "dac.hpp"
 #include "gpio/gpio.hpp"
-#include "CMSIS/device-support/include/stm32f1xx.h"
+#include "CMSIS/Device/STM32F1xx/Include/stm32f1xx.h"
 
 /* Only MCU listed below have the DAC periphery*/
 #if !defined(STM32F100xB) && !defined(STM32F100xE) && !defined(STM32F101xE) && \

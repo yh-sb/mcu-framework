@@ -1,24 +1,21 @@
 -include ../../../../config.mk
 
-SRC := device-support/startup_stm32f072xb.s \
-	device-support/system_stm32f0xx.c \
-	syscalls.c \
-	sys.c
+SRC := Device/STM32F0xx/Source/startup_stm32f072xb.s \
+	Device/STM32F0xx/Source/system_stm32f0xx.c \
+	syscalls.c
 
-INC := device-support/include
+INC := Device/STM32F0xx/Include
 
-DEF := HSE_VALUE=8000000 \
-	ARM_MATH_CM0
+DEF := HSE_VALUE=8000000
 
 C_CPP_FLAGS :=
 
-# Use -std=gnu99 standard to compile syscalls.c without errors
-CFLAGS := -std=gnu99
+CFLAGS :=
 CPPFLAGS :=
 AFLAGS :=
 
-LIBDIR := lib
-LIB := arm_cortexM0l_math
+LIBDIR :=
+LIB :=
 LINKED_OBJ :=
 
 # -------------------------

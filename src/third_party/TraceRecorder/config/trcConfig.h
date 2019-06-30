@@ -62,7 +62,7 @@ extern "C" {
  * Try that in case of build problems. Otherwise, remove the #error line below.
  *****************************************************************************/
 //#error "Trace Recorder: Please include your processor's header file here and remove this line."
-#include "CMSIS/device-support/include/stm32f4xx.h"
+#include "CMSIS/Device/STM32F4xx/Include/stm32f4xx.h"
 
 /*******************************************************************************
  * Configuration Macro: TRC_CFG_HARDWARE_PORT

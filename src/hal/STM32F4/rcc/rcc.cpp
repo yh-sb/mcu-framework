@@ -1,8 +1,8 @@
 #include <stdint.h>
 
 #include "rcc.hpp"
-#include "CMSIS/device-support/include/stm32f4xx.h"
-#include "CMSIS/device-support/include/system_stm32f4xx.h"
+#include "CMSIS/Device/STM32F4xx/Include/stm32f4xx.h"
+#include "CMSIS/Device/STM32F4xx/Include/system_stm32f4xx.h"
 
 extern uint32_t SystemCoreClock;
 
