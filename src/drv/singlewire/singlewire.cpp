@@ -20,8 +20,8 @@ const static uint16_t timeout[WAIT_BIT_CHECK + 1] =
 {
 	18000, // REQ
 	40,    // WAIT_RESP_START
-	90,    // WAIT_RESP_END
-	90,    // WAIT_BIT_START_LOW
+	95,    // WAIT_RESP_END
+	95,    // WAIT_BIT_START_LOW
 	
 	/* Normally this timeout should be 50 us, but DHT22 keeps the data line low
 	   for 67 us after each byte. Therefore, increase this timeout to avoid
