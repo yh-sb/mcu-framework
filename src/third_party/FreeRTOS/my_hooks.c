@@ -25,10 +25,12 @@ void vApplicationTickHook(void)
 
 void vApplicationStackOverflowHook(TaskHandle_t pxTask, char *pcTaskName)
 {
+	portDISABLE_INTERRUPTS();
 	while(1);
 }
 
 void vApplicationMallocFailedHook(void)
 {
+	portDISABLE_INTERRUPTS();
 	while(1);
 }
