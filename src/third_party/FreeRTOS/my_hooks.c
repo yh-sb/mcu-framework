@@ -1,3 +1,4 @@
+#include "common/assert.h"
 #include "include/FreeRTOS.h"
 #include "include/task.h"
 
@@ -25,12 +26,10 @@ void vApplicationTickHook(void)
 
 void vApplicationStackOverflowHook(TaskHandle_t pxTask, char *pcTaskName)
 {
-	portDISABLE_INTERRUPTS();
-	while(1);
+	ASSERT(0);
 }
 
 void vApplicationMallocFailedHook(void)
 {
-	portDISABLE_INTERRUPTS();
-	while(1);
+	ASSERT(0);
 }
