@@ -76,7 +76,7 @@ ds18b20::ds18b20(onewire &onewire):
 
 ds18b20::~ds18b20()
 {
-	
+	vSemaphoreDelete(api_lock);
 }
 
 int8_t ds18b20::get_temp(uint64_t rom, float *temp)
