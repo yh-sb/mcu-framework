@@ -5,6 +5,7 @@ MODULES := src \
 	src/hal/STM32F4/CMSIS \
 	src/third_party/FatFs \
 	src/third_party/FreeRTOS \
+	src/third_party/libnmea \
 	src/third_party/printf \
 	src/third_party/TraceRecorder \
 	src/ul
@@ -25,6 +26,7 @@ GLOBAL_INC := $(ROOT)/src \
 	$(ROOT)/src/hal/STM32F4/CMSIS/Include \
 	$(ROOT)/src/third_party/FreeRTOS/include \
 	$(ROOT)/src/third_party/FreeRTOS/portable/ARM_CM4 \
+	$(ROOT)/src/third_party/libnmea/src/nmea \
 	$(ROOT)/src/third_party/TraceRecorder/include \
 	$(ROOT)/src/third_party/TraceRecorder/streamports/Jlink_RTT/include \
 	$(ROOT)/src/third_party/TraceRecorder/config \
