@@ -13,8 +13,7 @@ static void main_task(void *pvParameters)
 	{
 		green_led->toggle();
 		
-		rtc::time_t time;
-		rtc::get(&time);
+		struct tm time = rtc::get();
 		
 		vTaskDelay(500);
 	}
@@ -25,12 +24,10 @@ int main(void)
 	static gpio green_led(3, 12, gpio::MODE_DO, 0);
 	
 	rtc::init(rtc::CLK_LSI);
-	rtc::time_t time =
-	{
-		.year = 19, .month = 1, .day = 1, .wday = 1,
-		.h = 10, .m = 31, .s = 7
-	};
-	rtc::set(&time);
+	struct tm time = {};
+	time.tm_year = 119;
+	time.tm_mday = 1;
+	rtc::set(time);
 	
 	ASSERT(xTaskCreate(main_task, "main", configMINIMAL_STACK_SIZE * 1, &green_led,
 		tskIDLE_PRIORITY + 1, NULL) == pdPASS);

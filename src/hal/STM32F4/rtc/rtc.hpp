@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include <time.h>
 
 namespace hal
 {
@@ -14,17 +15,6 @@ class rtc
 			CLK_LSE
 		};
 		
-		struct time_t
-		{
-			uint8_t year;
-			uint8_t month;
-			uint8_t day;
-			uint8_t wday;
-			uint8_t h;
-			uint8_t m;
-			uint8_t s;
-		};
-		
 		/**
 		 * @brief      RTC initialization
 		 *
@@ -35,20 +25,19 @@ class rtc
 		static int8_t init(clk_t clk);
 		
 		/**
-		 * @brief         Get RTC time
-		 *
-		 * @param[in,out] time  Pointer to the time_t struct
+		 * @brief            Get RTC time
+		 * 
+		 * @return struct tm struct with current time
 		 */
-		static void get(time_t *time);
+		static struct tm get();
 		
 		/**
-		 * @brief      Set RTC time
-		 *
-		 * @param[in]  time  Pointer to the time_t struct
-		 *
-		 * @return     0 in case of success, otherwise - negative value
+		 * @brief         Set RTC time
+		 * 
+		 * @param time    struct with time
+		 * @return int8_t 0 in case of success, otherwise - negative value
 		 */
-		static int8_t set(time_t *time);
+		static int8_t set(struct tm time);
 		
 		/**
 		 * @brief      Write the array into the backup registers
@@ -69,6 +58,7 @@ class rtc
 		static void bckp_read(uint8_t addr, void *buff, size_t size);
 	
 	private:
+		static bool is_valid(struct tm &time);
 		rtc() {}
 };
 };

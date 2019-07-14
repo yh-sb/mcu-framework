@@ -44,77 +44,73 @@ int8_t rtc::init(clk_t clk)
 	return 0;
 }
 
-void rtc::get(time_t *time)
+struct tm rtc::get()
 {
-	ASSERT(time);
+	struct tm time = {};
 	
 	uint32_t tmp_time = RTC->TR;
 	uint32_t tmp_date = RTC->DR;
 	
-	time->year = ((tmp_date >> 20) & 0x0F) * 10;
-	time->year += (tmp_date >> 16) & 0x0F;
+	time.tm_year = ((tmp_date & RTC_DR_YT_Msk) >> RTC_DR_YT_Pos) * 10;
+	time.tm_year += (tmp_date & RTC_DR_YU_Msk) >> RTC_DR_YU_Pos;
 	
-	time->wday = (tmp_date >> 13) & 0x07;
+	time.tm_wday = (tmp_date & RTC_DR_WDU_Msk) >> RTC_DR_WDU_Pos;
 	
-	time->month = ((tmp_date >> 12) & 0x01) * 10;
-	time->month += (tmp_date >> 8) & 0x0F;
+	time.tm_mon = ((tmp_date & RTC_DR_MT_Msk) >> RTC_DR_MT_Pos) * 10;
+	time.tm_mon += (tmp_date & RTC_DR_MU_Msk) >> RTC_DR_MU_Pos;
 	
-	time->day = ((tmp_date >> 4) & 0x03) * 10;
-	time->day += (tmp_date >> 0) & 0x0F;
+	time.tm_mday = ((tmp_date & RTC_DR_DT_Msk) >> RTC_DR_DT_Pos) * 10;
+	time.tm_mday += (tmp_date & RTC_DR_DU_Msk) >> RTC_DR_DU_Pos;
 	
-	time->h = ((tmp_time >> 20) & 0x03) * 10;
-	time->h += (tmp_time >> 16) & 0x0F;
+	time.tm_hour = ((tmp_time & RTC_TR_HT_Msk) >> RTC_TR_HT_Pos) * 10;
+	time.tm_hour += (tmp_time & RTC_TR_HU_Msk) >> RTC_TR_HU_Pos;
 	
-	time->m = ((tmp_time >> 12) & 0x07) * 10;
-	time->m += (tmp_time >> 8) & 0x0F;
+	time.tm_min = ((tmp_time & RTC_TR_MNT_Msk) >> RTC_TR_MNT_Pos) * 10;
+	time.tm_min += (tmp_time & RTC_TR_MNU_Msk) >> RTC_TR_MNU_Pos;
 	
-	time->s = ((tmp_time >> 4) & 0x07) * 10;
-	time->s += (tmp_time >> 0) & 0x0F;
+	time.tm_sec = ((tmp_time & RTC_TR_ST_Msk) >> RTC_TR_ST_Pos) * 10;
+	time.tm_sec += (tmp_time & RTC_TR_SU_Msk) >> RTC_TR_SU_Pos;
+	
+	// Normalize time to comply struct tm format
+	time.tm_mon--;
+	time.tm_wday--;
+	time.tm_year += 100;
+	
+	return time;
 }
 
-int8_t rtc::set(time_t *time)
+int8_t rtc::set(struct tm time)
 {
-	ASSERT(time);
-	ASSERT(time->year <= 99);
-	ASSERT(time->month > 0 && time->month <= 12);
-	ASSERT(time->day > 0 && time->day <= 31);
-	ASSERT(time->wday > 0 && time->wday <= 7);
-	ASSERT(time->h <= 23);
-	ASSERT(time->m <= 59);
-	ASSERT(time->s <= 59);
+	ASSERT(is_valid(time));
+	
+	// Normalize time for STM32 RTC periphery
+	time.tm_mon++;
+	time.tm_wday++;
+	time.tm_year %= 100;
 		
 	/* Disable write protection */
 	RTC->WPR = 0xCA;
 	RTC->WPR = 0x53;
 	
-	int8_t res = 0;
-	uint32_t tmp_date, tmp_time;
+	uint32_t tmp_date = (time.tm_year / 10) << RTC_DR_YT_Pos;
+	tmp_date |= (time.tm_year % 10) << RTC_DR_YU_Pos;
+	tmp_date |= time.tm_wday << RTC_DR_WDU_Pos;
+	tmp_date |= (time.tm_mon / 10) << RTC_DR_MT_Pos;
+	tmp_date |= (time.tm_mon % 10) << RTC_DR_MU_Pos;
+	tmp_date |= (time.tm_mday / 10) << RTC_DR_DT_Pos;
+	tmp_date |= (time.tm_mday % 10) << RTC_DR_DU_Pos;
 	
-	tmp_date = (time->year / 10) << 20;
-	tmp_date |= (time->year % 10) << 16;
+	uint32_t tmp_time = (time.tm_hour / 10) << RTC_TR_HT_Pos;
+	tmp_time |= (time.tm_hour % 10) << RTC_TR_HU_Pos;
+	tmp_time |= (time.tm_min / 10) << RTC_TR_MNT_Pos;
+	tmp_time |= (time.tm_min % 10) << RTC_TR_MNU_Pos;
+	tmp_time |= (time.tm_sec / 10) << RTC_TR_ST_Pos;
+	tmp_time |= (time.tm_sec % 10) << RTC_TR_SU_Pos;
 	
-	tmp_date |= time->wday << 13;
-	
-	tmp_date |= (time->month / 10) << 12;
-	tmp_date |= (time->month % 10) << 8;
-	
-	tmp_date |= (time->day / 10) << 4;
-	tmp_date |= (time->day % 10) << 0;
-	
-	tmp_time = (time->h / 10) << 20;
-	tmp_time |= (time->h % 10) << 16;
-	
-	tmp_time |= (time->m / 10) << 12;
-	tmp_time |= (time->m % 10) << 8;
-	
-	tmp_time |= (time->s / 10) << 4;
-	tmp_time |= (time->s % 10) << 0;
-	
-	if(enter_init())
-	{
-		res = -1;
+	int8_t res = enter_init();
+	if(res)
 		goto Exit;
-	}
+	
 	RTC->TR = tmp_time;
 	RTC->DR = tmp_date;
 	/* Exit initialization mode */
@@ -134,6 +130,16 @@ void rtc::bckp_write(uint8_t addr, void *buff, size_t size)
 void rtc::bckp_read(uint8_t addr, void *buff, size_t size)
 {
 	
+}
+
+bool rtc::is_valid(struct tm &time)
+{
+	return time.tm_sec <= 59 && time.tm_min <= 59 && time.tm_hour <= 23 &&
+		time.tm_mday >= 1 && time.tm_mday <= 31 && time.tm_mon <= 11 &&
+		/* tm_year should be relative to 1900 year.
+		   Suppose it is at least 2000 year now */
+		time.tm_year > 100 &&
+		time.tm_wday <= 6 && time.tm_yday <= 365;
 }
 
 static int8_t first_setup(void)
