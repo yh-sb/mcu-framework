@@ -104,12 +104,13 @@ static void user_init_entry(void *param)
     vTaskDelete(NULL);
 }
 
+#include "../include/esp8266/rom_functions.h"
 __attribute__((section(".iram1"))) void call_user_start(size_t start_addr)
 {
     Cache_Read_Disable();
     Cache_Read_Enable(0, 0, 0);
     start_addr = 0;
-    
+
     int i;
     int *p;
 

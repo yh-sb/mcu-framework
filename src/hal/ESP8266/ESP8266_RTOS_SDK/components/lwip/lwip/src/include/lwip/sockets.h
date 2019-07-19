@@ -448,7 +448,9 @@ typedef struct fd_set
 } fd_set;
 
 #elif LWIP_SOCKET_OFFSET
+#ifndef CONFIG_USING_ESP_VFS
 #error LWIP_SOCKET_OFFSET does not work with external FD_SET!
+#endif
 #elif FD_SETSIZE < MEMP_NUM_NETCONN
 #error "external FD_SETSIZE too small for number of sockets"
 #endif /* FD_SET */
@@ -578,9 +580,15 @@ int lwip_fcntl(int s, int cmd, int val);
 /** @ingroup socket */
 #define close(s)                                  lwip_close(s)
 /** @ingroup socket */
-#define fcntl(s,cmd,val)                          lwip_fcntl(s,cmd,val)
+
+/* Disable here to use stand APIs */
+//#define fcntl(s,cmd,val)                          lwip_fcntl(s,cmd,val)
 /** @ingroup socket */
-#define ioctl(s,cmd,argp)                         lwip_ioctl(s,cmd,argp)
+//#define ioctl(s,cmd,argp)                         lwip_ioctl(s,cmd,argp)
+
+int ioctl(int fd, int request, ...);
+int fcntl(int fd, int request, ...);
+
 #endif /* LWIP_POSIX_SOCKETS_IO_NAMES */
 #endif /* LWIP_COMPAT_SOCKETS != 2 */
 

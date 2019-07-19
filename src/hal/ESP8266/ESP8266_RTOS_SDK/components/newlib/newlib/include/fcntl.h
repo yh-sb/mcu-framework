@@ -1,4 +1,4 @@
-#include <sys/socket.h>
-#undef fcntl
+
+#pragma once
 
 #include <sys/fcntl.h>

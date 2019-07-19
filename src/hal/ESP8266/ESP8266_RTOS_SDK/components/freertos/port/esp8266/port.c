@@ -50,10 +50,14 @@
 #define SET_STKREG(r,v)     sp[(r) >> 2] = (uint32_t)(v)
 #define PORT_ASSERT(x)      do { if (!(x)) {ets_printf("%s %u\n", "rtos_port", __LINE__); while(1){}; }} while (0)
 
-extern char NMIIrqIsOn;
+extern uint8_t NMIIrqIsOn;
 static int SWReq = 0;
 
-unsigned cpu_sr;
+uint32_t cpu_sr;
+
+uint32_t _xt_tick_divisor;
+
+int __g_is_task_overflow;
 
 /* Each task maintains its own interrupt status in the critical nesting
 variable. */
@@ -64,8 +68,6 @@ uint64_t g_os_ticks = 0;
 
 void vPortEnterCritical(void);
 void vPortExitCritical(void);
-
-void _xt_timer_int1(void);
 
 
 uint8_t *__cpu_init_stk(uint8_t *stack_top, void (*_entry)(void *), void *param, void (*_exit)(void))
@@ -121,7 +123,7 @@ void TASK_SW_ATTR SoftIsrHdl(void* arg)
     extern int MacIsrSigPostDefHdl(void);
 
     if (MacIsrSigPostDefHdl() || (SWReq == 1)) {
-        _xt_timer_int1();
+        vTaskSwitchContext();
         SWReq = 0;
     }
 }
@@ -138,8 +140,12 @@ void esp_increase_tick_cnt(const TickType_t ticks)
     soc_restore_local_irq(flag);
 }
 
-void TASK_SW_ATTR xPortSysTickHandle(void)
+void TASK_SW_ATTR xPortSysTickHandle(void *p)
 {
+    const uint32_t cpu_clk_cnt = soc_get_ccount() + _xt_tick_divisor;
+
+    soc_set_ccompare(cpu_clk_cnt);
+
     g_cpu_ticks = soc_get_ticks();
     g_os_ticks++;
 
@@ -175,8 +181,11 @@ portBASE_TYPE xPortStartScheduler(void)
     _xt_isr_attach(ETS_SOFT_INUM, SoftIsrHdl, NULL);
     _xt_isr_unmask(1 << ETS_SOFT_INUM);
 
+    _xt_isr_attach(ETS_MAX_INUM, xPortSysTickHandle, NULL);
+
     /* Initialize system tick timer interrupt and schedule the first tick. */
-    _xt_tick_divisor_init();
+    _xt_tick_divisor = xtbsp_clock_freq_hz() / XT_TICK_PER_SEC;
+
     _xt_tick_timer_init();
 
     vTaskSwitchContext();
@@ -239,14 +248,44 @@ void show_critical_info(void)
     ets_printf("SWReq:%u\n", SWReq);
 }
 
+#ifdef ESP_DPORT_CLOSE_NMI
+static int s_nmi_is_closed;
+
+void esp_dport_close_nmi(void)
+{
+    vPortEnterCritical();
+    REG_WRITE(PERIPHS_DPORT_BASEADDR, REG_READ(PERIPHS_DPORT_BASEADDR) & ~0x1);
+    s_nmi_is_closed = 1;
+    vPortExitCritical();
+}
+
+#define ESP_NMI_IS_CLOSED()     s_nmi_is_closed
+#else
+#define ESP_NMI_IS_CLOSED()     0
+#endif
+
 void IRAM_ATTR vPortETSIntrLock(void)
 {
-    ETS_INTR_LOCK();
+    if (NMIIrqIsOn == 0) {
+        vPortEnterCritical();
+        if (!ESP_NMI_IS_CLOSED()) {
+            do {
+                REG_WRITE(INT_ENA_WDEV, WDEV_TSF0_REACH_INT);
+            } while(REG_READ(INT_ENA_WDEV) != WDEV_TSF0_REACH_INT);
+        }
+    }
 }
 
 void IRAM_ATTR vPortETSIntrUnlock(void)
 {
-    ETS_INTR_UNLOCK();
+    if (NMIIrqIsOn == 0) {
+        if (!ESP_NMI_IS_CLOSED()) {
+            extern uint32_t WDEV_INTEREST_EVENT;
+
+            REG_WRITE(INT_ENA_WDEV, WDEV_INTEREST_EVENT);
+        }
+        vPortExitCritical();
+    }
 }
 
 /*
@@ -263,50 +302,46 @@ bool interrupt_is_disable(void)
     return tmp & 0xFUL ? true : false;
 }
 
-_xt_isr_entry isr[16];
-char _xt_isr_status = 0;
+static _xt_isr_entry s_isr[16];
+static uint8_t s_xt_isr_status = 0;
 
 void _xt_isr_attach(uint8_t i, _xt_isr func, void* arg)
 {
-    isr[i].handler = func;
-    isr[i].arg = arg;
+    s_isr[i].handler = func;
+    s_isr[i].arg = arg;
 }
 
-uint16_t TASK_SW_ATTR _xt_isr_handler(uint16_t i)
+void IRAM_ATTR _xt_isr_handler(void)
 {
-    uint8_t index;
+    do {
+        uint32_t mask = soc_get_int_mask();
 
-    if (i & (1 << ETS_WDT_INUM)) {
-        index = ETS_WDT_INUM;
-    } else if (i & (1 << ETS_GPIO_INUM)) {
-        index = ETS_GPIO_INUM;
-    } else {
-        index = __builtin_ffs(i) - 1;
+        for (int i = 0; i < ETS_INT_MAX && mask; i++) {
+            int bit = 1 << i;
 
-        if (index == ETS_MAX_INUM) {
-            i &= ~(1 << ETS_MAX_INUM);
-            index = __builtin_ffs(i) - 1;
+            if (!(bit & mask) || !s_isr[i].handler)
+                continue;
+
+            soc_clear_int_mask(bit);
+
+            s_xt_isr_status = 1;
+            s_isr[i].handler(s_isr[i].arg);
+            s_xt_isr_status = 0;
+
+            mask &= ~bit;
         }
-    }
-
-    _xt_clear_ints(1 << index);
-
-    _xt_isr_status = 1;
-    isr[index].handler(isr[index].arg);
-    _xt_isr_status = 0;
-
-    return i & ~(1 << index);
+    } while (soc_get_int_mask());
 }
 
 int xPortInIsrContext(void)
 {
-    return _xt_isr_status != 0;
+    return s_xt_isr_status != 0;
 }
 
 void __attribute__((weak, noreturn)) vApplicationStackOverflowHook(xTaskHandle xTask, const char *pcTaskName)
 {
     ets_printf("***ERROR*** A stack overflow in task %s has been detected.\r\n", pcTaskName);
-
+    __g_is_task_overflow = 1;
     abort();
 }
 
@@ -339,6 +374,8 @@ void esp_internal_idle_hook(void)
 
     esp_task_wdt_reset();
     pmIdleHook();
+
+    soc_wait_int();
 }
 
 #ifndef DISABLE_FREERTOS

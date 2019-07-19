@@ -1,4 +1,4 @@
-// ./Kconfig
+// Kconfig
 
 /*
 choice TARGET_PLATFORM
@@ -17,7 +17,7 @@ endchoice
 
 // -----------------------------------------------------------------------------
 
-// ./components/bootloader/Kconfig.projbuild
+// components/bootloader/Kconfig.projbuild
 
 /*
 config BOOTLOADER_INIT_SPI_FLASH
@@ -30,6 +30,7 @@ config BOOTLOADER_INIT_SPI_FLASH
         If your system bootloader is based on v3.0, the option must not be enable, because the v3.0 bootloader don't support
         this function.
 */
+// NOTE: disable this config since we don't use default bootloader
 //#define CONFIG_BOOTLOADER_INIT_SPI_FLASH
 
 /*
@@ -64,52 +65,9 @@ config LOG_BOOTLOADER_LEVEL
 */
 #define CONFIG_LOG_BOOTLOADER_LEVEL 0
 
-/*
-config BOOTLOADER_CHECK_APP_SUM
-    bool "Check APP binary data sum before loading"
-    default y
-    help
-        If enable this option, bootloader will check the sum of app binary data before load it to run.
-*/
-//#define CONFIG_ENABLE_BOOT_CHECK_SUM 1
-
-/*
-config BOOTLOADER_CHECK_APP_HASH
-    bool "Check APP binary data hash before loading"
-    default n
-    help
-        If enable this option, bootloader will check the hash of app binary data before load it to run.
-*/
-//#define CONFIG_ENABLE_BOOT_CHECK_SHA256 1
-
-/*
-config BOOTLOADER_APP_TEST
-    bool "GPIO triggers boot from test app partition"
-    default n
-    help
-        Allows to run the test app from "TEST" partition.
-        A boot from "test" partition will occur if there is a GPIO input pulled low while device starts up.
-        See settings below.
-*/
-//#define CONFIG_BOOTLOADER_APP_TEST
-
-/*
-config BOOTLOADER_APP_TEST_IN_OTA_1
-    depends on BOOTLOADER_APP_TEST && IDF_TARGET_ESP8266
-    bool "Put test app in the ota_1 partition"
-    default y
-    help
-        For the small SPI Flash solution, there maybe no enough space for the test app partition.
-        By enable this option, test app will locate in ota_1 partition by default.
-        After ota, the test app will be erased and re-write as new app.
-
-        If you disable this, make sure there has a test app partition in you partition table CVS.
-*/
-//#define CONFIG_BOOTLOADER_APP_TEST_IN_OTA_1
-
 // -----------------------------------------------------------------------------
 
-// ./components/esp8266/Kconfig
+// components/esp8266/Kconfig
 
 /*
 choice ESP8266_DEFAULT_CPU_FREQ_MHZ
@@ -242,7 +200,44 @@ config UART0_SWAP_IO
     help
         Enable this option, UART0's I/O pins are swaped: TXD <-> RTS, RTX <-> CTS.
 */
-#define UART0_SWAP_IO 0
+#define CONFIG_UART0_SWAP_IO 0
+
+/*
+config PANIC_FULL_STACK
+    bool "Output full stack data of task"
+    default n
+    help
+        Output full stack data of task although some stack space is not used.
+*/
+//#define CONFIG_PANIC_FULL_STACK
+
+/*
+choice ESP_PANIC
+    prompt "Panic handler behaviour"
+    default ESP_PANIC_PRINT_REBOOT
+    help
+        If an unhandled exception, the panic handler is invoked.
+        Configure the panic handlers action here.
+
+config ESP_PANIC_PRINT_HALT
+    bool "Print registers and halt"
+    help
+        Outputs the relevant registers over the serial port and halt the
+        processor. Needs a manual reset to restart.
+
+config ESP_PANIC_PRINT_REBOOT
+    bool "Print registers and reboot"
+    help
+        Outputs the relevant registers over the serial port and immediately
+        reset the processor.
+
+config ESP_PANIC_SILENT_REBOOT
+    bool "Silent reboot"
+    help
+        Just resets the processor without outputting anything
+endchoice
+*/
+#define CONFIG_ESP_PANIC_PRINT_HALT
 
 /*
 config MAIN_TASK_STACK_SIZE
@@ -358,6 +353,19 @@ config INIT_OS_BEFORE_START
         FreeRTOS need not do this.
 */
 //#define CONFIG_INIT_OS_BEFORE_START
+
+/*
+config ESP_ERR_TO_NAME_LOOKUP
+    bool "Enable lookup of error code strings"
+    default "y"
+    help
+        Functions esp_err_to_name() and esp_err_to_name_r() return string
+        representations of error codes from a pre-generated lookup table.
+        This option can be used to turn off the use of the look-up table in
+        order to save memory but this comes at the price of sacrificing
+        distinguishable (meaningful) output string representations.
+*/
+//#define CONFIG_ESP_ERR_TO_NAME_LOOKUP
 
 /*
 config SCAN_AP_MAX
@@ -585,9 +593,34 @@ config ESP_PHY_INIT_DATA_IN_PARTITION
 */
 #define CONFIG_ESP_PHY_INIT_DATA_IN_PARTITION 0
 
+/*
+config ESP_PHY_INIT_DATA_VDD33_CONST
+    int "vdd33_const value"
+    range 0 255
+    default 33
+    help
+        vdd33_const provides ADC mode settings, i.e. selecting system voltage or external voltage measurements. 
+        When measuring system voltage, it must be set to 255. 
+        To read the external voltage on TOUT(ADC) pin, vdd33_const need less than 255
+        When the ADC reference voltage is set to the actual VDD33 power supply voltage, the value range of vdd33_const is [18,36], the unit is 0.1V.
+        When the ADC reference voltage is set to the default value of 3.3V as the supply voltage, the range of vdd33_const is [0, 18] or (36, 255).
+*/
+#define CONFIG_ESP_PHY_INIT_DATA_VDD33_CONST 33
+
+/*
+config ESP8266_PHY_MAX_WIFI_TX_POWER
+    int "Max WiFi TX power (dBm)"
+    range 0 21
+    default 20
+    help
+        Set maximum transmit power for WiFi radio. Actual transmit power for high
+        data rates may be lower than this setting.
+*/
+#define CONFIG_ESP8266_PHY_MAX_WIFI_TX_POWER 20
+
 // -----------------------------------------------------------------------------
 
-// ./components/freertos/Kconfig
+// components/freertos/Kconfig
 
 /*
 config DISABLE_FREERTOS
@@ -632,6 +665,21 @@ config FREERTOS_MAX_HOOK
         configurate the max number of FreeRTOS hook function.
 */
 #define CONFIG_FREERTOS_MAX_HOOK 2
+
+/*
+config FREERTOS_IDLE_TASK_STACKSIZE
+    int "Idle Task stack size"
+    range 1024 32768
+    default 1024
+    help
+        The idle task has its own stack, sized in bytes. The default size is enough for most uses. Size can be reduced
+        to 1024 bytes if no (or simple) FreeRTOS idle hooks are used and pthread local storage or FreeRTOS local storage
+        cleanup callbacks are not used.
+
+        The stack size may need to be increased above the default if the app installs idle or thread local storage
+        cleanup hooks that use a lot of stack memory.
+*/
+#define CONFIG_FREERTOS_IDLE_TASK_STACKSIZE 1024
 
 /*
 config FREERTOS_ISR_STACKSIZE
@@ -780,7 +828,7 @@ endchoice
 
 // -----------------------------------------------------------------------------
 
-// ./components/log/Kconfig
+// components/log/Kconfig
 
 /*
 choice LOG_DEFAULT_LEVEL
@@ -819,7 +867,6 @@ config LOG_DEFAULT_LEVEL
     default 4 if LOG_DEFAULT_LEVEL_DEBUG
     default 5 if LOG_DEFAULT_LEVEL_VERBOSE
 */
-//#define CONFIG_LOG_DEFAULT_LEVEL 0
 #define CONFIG_LOG_DEFAULT_LEVEL 5
 
 /*
@@ -831,7 +878,7 @@ config LOG_COLORS
 
       In order to view these, your terminal program must support ANSI color codes.
 */
-#define CONFIG_LOG_COLORS
+#define CONFIG_LOG_COLORS 1
 
 /*
 config LOG_SET_LEVEL
@@ -844,7 +891,7 @@ config LOG_SET_LEVEL
 
 // -----------------------------------------------------------------------------
 
-// ./components/lwip/Kconfig
+// components/lwip/Kconfig
 
 /*
 config LWIP_USE_IRAM
@@ -1191,10 +1238,21 @@ config LWIP_IGMP
 #define CONFIG_LWIP_IGMP 1
 
 /*
+config ESP_DNS
+    bool "Enable espressif advansed DNS"
+    default y
+    help
+        Enable this option, espressif advansed DNS functions will be enable. User can set the
+        reserved DNS server(its index is DNS_FALLBACK_SERVER_INDEX) which will not be changed by DHCP.
+*/
+//#define CONFIG_ESP_DNS
+
+/*
 config DNS_MAX_SERVERS
     int "The maximum of DNS servers"
-    range 1 5
-    default 2
+    range 2 5
+    default 3 if ESP_DNS
+    default 2 if !ESP_DNS
 */
 #define CONFIG_DNS_MAX_SERVERS 2
 
@@ -1519,7 +1577,8 @@ config ESP_LWIP_MEM_DBG
         User can call "heap_trace_start(HEAP_TRACE_LEAKS)" to start tracing and call "heap_trace_dump()"
         to list the memory map.
 */
-//#define CONFIG_ESP_LWIP_MEM_DBG
+// NOTE: Enable this config to avoid crash in components/lwip/lwip/src/core/mem.c mem_malloc()
+#define CONFIG_ESP_LWIP_MEM_DBG
 
 /*
 menuconfig LWIP_DEBUG
@@ -1826,7 +1885,7 @@ config LWIP_PBUF_CACHE_DEBUG
 
 // -----------------------------------------------------------------------------
 
-// ./components/newlib/Kconfig
+// components/newlib/Kconfig
 
 /*
 choice NEWLIB_LIBRARY_LEVEL
@@ -1862,7 +1921,7 @@ endchoice
 
 // -----------------------------------------------------------------------------
 
-// ./components/partition_table/Kconfig.projbuild
+// components/partition_table/Kconfig.projbuild
 
 /*
 config PARTITION_TABLE_OFFSET
@@ -1875,7 +1934,7 @@ config PARTITION_TABLE_OFFSET
 
 // -----------------------------------------------------------------------------
 
-// ./components/tcpip_adapter/Kconfig
+// components/tcpip_adapter/Kconfig
 
 /*
 config IP_LOST_TIMER_INTERVAL
@@ -1895,12 +1954,13 @@ config IP_LOST_TIMER_INTERVAL
 
 // -----------------------------------------------------------------------------
 
-// ./components/wpa_supplicant/Kconfig
+// components/wpa_supplicant/Kconfig
 
 /*
 config LTM_FAST
     bool "Use faster div, esptmod, sqr, montgomery multiplication algorithm"
     default y
+    depends on !SSL_USING_WOLFSSL
     help
         Enable the option can enable faster div, faster exptmod, faster sqr, fast
         montgomery multiplication algorithm. Enable this option will cost about 
@@ -1910,7 +1970,7 @@ config LTM_FAST
 
 // -----------------------------------------------------------------------------
 
-// ./components/esptool_py/Kconfig.projbuild
+// components/esptool_py/Kconfig.projbuild
 
 /*
 choice FLASHMODE

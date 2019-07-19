@@ -25,7 +25,6 @@ GLOBAL_INC := $(ROOT)/src \
 	$(ROOT)/src/hal/ESP8266/ESP8266_RTOS_SDK/components/freertos/port/esp8266/include/freertos \
 	$(ROOT)/src/hal/ESP8266/ESP8266_RTOS_SDK/components/heap/include \
 	$(ROOT)/src/hal/ESP8266/ESP8266_RTOS_SDK/components/heap/port/esp8266/include \
-	\
 	$(ROOT)/src/hal/ESP8266/ESP8266_RTOS_SDK/components/lwip/lwip/src/include \
 	$(ROOT)/src/hal/ESP8266/ESP8266_RTOS_SDK/components/lwip/port/esp8266/include \
 	$(ROOT)/src/hal/ESP8266/ESP8266_RTOS_SDK/components/tcpip_adapter/include \

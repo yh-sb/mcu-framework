@@ -30,4 +30,6 @@
  *
  */
 
+#include "sdkconfig.h"
+
 #include "lwip/sockets.h"

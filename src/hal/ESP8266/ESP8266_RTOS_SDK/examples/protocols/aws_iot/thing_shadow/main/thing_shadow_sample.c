@@ -49,6 +49,9 @@
 #include "aws_iot_mqtt_client_interface.h"
 #include "aws_iot_shadow_interface.h"
 
+#if CONFIG_SSL_USING_WOLFSSL
+#include "lwip/apps/sntp.h"
+#endif
 /*!
  * The goal of this sample application is to demonstrate the capabilities of shadow.
  * This device(say Connected Window) will open the window of a room based on temperature
@@ -128,8 +131,48 @@ static const char * ROOT_CA_PATH = CONFIG_EXAMPLE_ROOT_CA_PATH;
 #error "Invalid method for loading certs"
 #endif
 
+#if CONFIG_SSL_USING_WOLFSSL
+static void get_time()
+{
+    struct timeval now;
+    int sntp_retry_cnt = 0;
+    int sntp_retry_time = 0;
+
+    sntp_setoperatingmode(0);
+    sntp_setservername(0, "pool.ntp.org");
+
+    sntp_setservername(1, "ntp1.aliyun.com");
+    sntp_setservername(2, "time.aisa.apple.com");
+    sntp_init();
+
+    while (1) {
+        for (int32_t i = 0; (i < (SNTP_RECV_TIMEOUT / 100)) && now.tv_sec < 1525952900; i++) {
+            vTaskDelay(100 / portTICK_RATE_MS);
+            gettimeofday(&now, NULL);
+        }
+
+        if (now.tv_sec < 1525952900) {
+            sntp_retry_time = SNTP_RECV_TIMEOUT << sntp_retry_cnt;
+
+            if (SNTP_RECV_TIMEOUT << (sntp_retry_cnt + 1) < SNTP_RETRY_TIMEOUT_MAX) {
+                sntp_retry_cnt ++;
+            }
+
+            ESP_LOGI(TAG,"SNTP get time failed, retry after %d ms\n", sntp_retry_time);
+            vTaskDelay(sntp_retry_time / portTICK_RATE_MS);
+        } else {
+            ESP_LOGI(TAG,"SNTP get time success\n");
+            break;
+        }
+    }
+}
+#endif
+
 static esp_err_t event_handler(void *ctx, system_event_t *event)
 {
+    /* For accessing reason codes in case of disconnection */
+    system_event_info_t *info = &event->event_info;
+
     switch(event->event_id) {
     case SYSTEM_EVENT_STA_START:
         esp_wifi_connect();
@@ -138,8 +181,11 @@ static esp_err_t event_handler(void *ctx, system_event_t *event)
         xEventGroupSetBits(wifi_event_group, CONNECTED_BIT);
         break;
     case SYSTEM_EVENT_STA_DISCONNECTED:
-        /* This is a workaround as ESP32 WiFi libs don't currently
-           auto-reassociate. */
+        ESP_LOGE(TAG, "Disconnect reason : %d", info->disconnected.reason);
+        if (info->disconnected.reason == WIFI_REASON_BASIC_RATE_NOT_SUPPORT) {
+            /*Switch to 802.11 bgn mode */
+            esp_wifi_set_protocol(ESP_IF_WIFI_STA, WIFI_PROTOCAL_11B | WIFI_PROTOCAL_11G | WIFI_PROTOCAL_11N);
+        }
         esp_wifi_connect();
         xEventGroupClearBits(wifi_event_group, CONNECTED_BIT);
         break;
@@ -251,6 +297,10 @@ void aws_iot_task(void *param) {
     xEventGroupWaitBits(wifi_event_group, CONNECTED_BIT,
                         false, true, portMAX_DELAY);
 
+#if CONFIG_SSL_USING_WOLFSSL
+    /* CA date verification need system time */
+    get_time();
+#endif
     ESP_LOGI(TAG, "Shadow Init");
     rc = aws_iot_shadow_init(&mqttClient, &sp);
     if(SUCCESS != rc) {
@@ -264,11 +314,13 @@ void aws_iot_task(void *param) {
     scp.mqttClientIdLen = (uint16_t) strlen(CONFIG_AWS_EXAMPLE_CLIENT_ID);
 
     ESP_LOGI(TAG, "Shadow Connect");
-    rc = aws_iot_shadow_connect(&mqttClient, &scp);
-    if(SUCCESS != rc) {
-        ESP_LOGE(TAG, "aws_iot_shadow_connect returned error %d, aborting...", rc);
-        abort();
-    }
+    do {
+        rc = aws_iot_shadow_connect(&mqttClient, &scp);
+        if(SUCCESS != rc) {
+            ESP_LOGE(TAG, "aws_iot_shadow_connect returned error %d, aborting...", rc);
+            vTaskDelay(1000 / portTICK_RATE_MS);
+        }
+    } while(SUCCESS != rc);
 
     /*
      * Enable Auto Reconnect functionality. Minimum and Maximum time of Exponential backoff are set in aws_iot_config.h
@@ -289,7 +341,7 @@ void aws_iot_task(void *param) {
     temperature = STARTING_ROOMTEMPERATURE;
 
     // loop and publish a change in temperature
-    while(1) {
+    while(NETWORK_ATTEMPTING_RECONNECT == rc || NETWORK_RECONNECTED == rc || SUCCESS == rc) {
         rc = aws_iot_shadow_yield(&mqttClient, 200);
         if(NETWORK_ATTEMPTING_RECONNECT == rc || shadowUpdateInProgress) {
             rc = aws_iot_shadow_yield(&mqttClient, 1000);
@@ -317,6 +369,8 @@ void aws_iot_task(void *param) {
         }
         ESP_LOGI(TAG, "*****************************************************************************************");
         ESP_LOGI(TAG, "Stack remaining for task '%s' is %lu bytes", pcTaskGetTaskName(NULL), uxTaskGetStackHighWaterMark(NULL));
+
+        ESP_LOGI(TAG, "Free memory for application is %d bytes", esp_get_free_heap_size());
 
         vTaskDelay(1000 / portTICK_RATE_MS);
     }
@@ -367,5 +421,5 @@ void app_main()
 
     initialise_wifi();
     /* Temporarily pin task to core, due to FPU uncertainty */
-    xTaskCreate(&aws_iot_task, "aws_iot_task", 9216, NULL, 5, NULL);
+    xTaskCreate(&aws_iot_task, "aws_iot_task", 4096, NULL, 5, NULL);
 }
