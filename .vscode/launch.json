@@ -8,27 +8,26 @@
 			"request": "launch",
 			"program": "${workspaceFolder}/out/bin/${workspaceRootFolderName}.elf",
 			"miDebuggerPath": "arm-none-eabi-gdb.exe",
-			"args": ["--interpreter=mi *.elf"],
-			"stopAtEntry": true,
+			"args": ["--interpreter=mi"],
+			"MIMode": "gdb",
 			"cwd": "${workspaceFolder}",
 			"externalConsole": true,
-			"MIMode": "gdb",
+			"preLaunchTask": "gdbserver",
+			"stopAtEntry": true,
+			"serverLaunchTimeout": 30000,
 			"setupCommands":
 			[
 				{
 					"description": "Connect GDB to GDB server",
-					"text": "target remote localhost:2331",
-					"ignoreFailures": true
+					"text": "target remote localhost:2331"
 				},
 				{
 					"description": "Reset target to get to a known state",
-					"text": "monitor reset",
-					"ignoreFailures": true
+					"text": "monitor reset"
 				},
 				{
 					"description": "Halt target to get to a known state",
-					"text": "monitor halt",
-					"ignoreFailures": true
+					"text": "monitor halt"
 				}
 			]
 		}

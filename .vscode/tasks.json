@@ -1,0 +1,13 @@
+{
+    "version": "2.0.0",
+    "tasks":
+    [
+        {
+            "label": "gdbserver",
+            "type": "shell",
+            "windows": {"command": "Start-Process -WindowStyle Minimized make debug"},
+            "linux": {"command": "make debug &"},
+            "presentation": {"reveal": "silent"},
+        }
+    ]
+}
