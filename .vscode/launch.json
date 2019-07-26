@@ -14,7 +14,6 @@
 			"externalConsole": true,
 			"preLaunchTask": "gdbserver",
 			"stopAtEntry": true,
-			"serverLaunchTimeout": 30000,
 			"setupCommands":
 			[
 				{
