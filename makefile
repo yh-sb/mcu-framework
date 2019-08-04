@@ -21,7 +21,7 @@ define CLEAN_MODULE
 endef
 
 # Collect prerequisites from modules for linkage
-$(foreach module,$(MODULES),$(call INCLUDE_MODULE,$(module)))
+$(foreach module,$(MODULES),$(eval $(call INCLUDE_MODULE,$(module))))
 ALL_LIBDIR := $(strip $(ALL_LIBDIR))
 ALL_LIB := $(strip $(ALL_LIB))
 ALL_LINKED_OBJ := $(strip $(ALL_LINKED_OBJ))
