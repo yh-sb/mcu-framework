@@ -7,13 +7,13 @@
 			"type": "cppdbg",
 			"request": "launch",
 			"program": "${workspaceFolder}/out/bin/${workspaceRootFolderName}.elf",
-			"miDebuggerPath": "arm-none-eabi-gdb.exe",
-			"args": ["--interpreter=mi"],
-			"MIMode": "gdb",
+			"windows": {"miDebuggerPath": "arm-none-eabi-gdb.exe"},
+			"linux": {"miDebuggerPath": "arm-none-eabi-gdb"},
 			"cwd": "${workspaceFolder}",
 			"externalConsole": true,
-			"preLaunchTask": "gdbserver",
+			"internalConsoleOptions": "neverOpen",
 			"stopAtEntry": true,
+			"preLaunchTask": "gdbserver",
 			"setupCommands":
 			[
 				{
