@@ -6,6 +6,8 @@
 
 using namespace hal;
 
+static void rtc_cb(struct tm time, void *ctx);
+
 static void main_task(void *pvParameters)
 {
 	gpio *green_led = (gpio *)pvParameters;
@@ -29,8 +31,16 @@ int main(void)
 	time.tm_mday = 1;
 	rtc::set(time);
 	
+	rtc::set_alarm_cb(rtc_cb, NULL);
+	hal::rtc::set_alarm({.tm_sec = 1});
+	
 	ASSERT(xTaskCreate(main_task, "main", configMINIMAL_STACK_SIZE * 1, &green_led,
 		tskIDLE_PRIORITY + 1, NULL) == pdPASS);
 	
 	vTaskStartScheduler();
+}
+
+static void rtc_cb(struct tm time, void *ctx)
+{
+	
 }

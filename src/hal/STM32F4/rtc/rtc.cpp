@@ -1,4 +1,5 @@
 #include <stddef.h>
+#include <string.h>
 
 #include "common/assert.h"
 #include "rtc.hpp"
@@ -8,6 +9,10 @@
 using namespace hal;
 
 #define INIT_TIMEOUT 10 /* ms */
+#define IRQ_PRIORITY 7
+
+static void *_ctx = NULL;
+static rtc::cb_t _cb = NULL;
 
 static int8_t first_setup(void);
 static void config_lsi(void);
@@ -40,6 +45,10 @@ int8_t rtc::init(clk_t clk)
 	/* If rtc isn't running yet (if year field is equal to 0) */
 	if(!(RTC->ISR & RTC_ISR_INITS) && !first_setup())
 		return -1;
+	
+	NVIC_ClearPendingIRQ(RTC_Alarm_IRQn);
+	NVIC_SetPriority(RTC_Alarm_IRQn, IRQ_PRIORITY);
+	NVIC_EnableIRQ(RTC_Alarm_IRQn);
 	
 	return 0;
 }
@@ -79,7 +88,7 @@ struct tm rtc::get()
 	return time;
 }
 
-int8_t rtc::set(struct tm time)
+int8_t rtc::set(struct tm &time)
 {
 	ASSERT(is_valid(time));
 	
@@ -140,6 +149,48 @@ bool rtc::is_valid(struct tm &time)
 		   Suppose it is at least 2000 year now */
 		time.tm_year > 100 &&
 		time.tm_wday <= 6 && time.tm_yday <= 365;
+}
+
+void rtc::set_alarm_cb(cb_t cb, void *ctx)
+{
+	_cb = cb;
+	_ctx = ctx;
+}
+
+void rtc::set_alarm(struct tm time)
+{
+	// Disable write protection
+	RTC->WPR = 0xCA;
+	RTC->WPR = 0x53;
+	
+	// Disable alarm A and its interrupt
+	RTC->CR &= ~(RTC_CR_ALRAE_Msk | RTC_CR_ALRAIE_Msk);
+	
+	struct tm time_all_0 = {};
+	if(!memcmp(&time, &time_all_0, sizeof(time)))
+	{
+		// Enable write protection
+		RTC->WPR = 0xFF;
+		EXTI->IMR &= ~EXTI_IMR_MR17;
+		EXTI->RTSR &= ~EXTI_IMR_MR17;
+		return;
+	}
+	
+	// Check that the RTC->ALRMAR register can be accessed
+	while(!(RTC->ISR & RTC_ISR_ALRAWF_Msk));
+	
+	// Alarm every second
+	RTC->ALRMAR |= RTC_ALRMAR_MSK4 | RTC_ALRMAR_MSK3 | RTC_ALRMAR_MSK2 |
+		RTC_ALRMAR_MSK1;
+	
+	// Enable alarm A and its interrupt
+	RTC->CR |= RTC_CR_ALRAE_Msk | RTC_CR_ALRAIE_Msk;
+	
+	// Enable write protection
+	RTC->WPR = 0xFF;
+	
+	EXTI->IMR |= EXTI_IMR_MR17;
+	EXTI->RTSR |= EXTI_IMR_MR17;
 }
 
 static int8_t first_setup(void)
@@ -215,4 +266,15 @@ static int8_t enter_init(void)
 		if(systick_get_past(last_tim) >= INIT_TIMEOUT)
 			return -1;
 	}
+}
+
+extern "C" void rtc_irq_hndlr()
+{
+	if(_cb)
+		_cb(rtc::get(), _ctx);
+}
+
+extern "C" void RTC_Alarm_IRQHandler(void)
+{
+	rtc_irq_hndlr();
 }
