@@ -1,7 +1,7 @@
 -include ../../../../config.mk
 
-SRC := Device\STM32F4xx\Source\startup_stm32f407xx.s \
-	Device\STM32F4xx\Source\system_stm32f4xx.c \
+SRC := Device/STM32F4xx/Source/startup_stm32f407xx.s \
+	Device/STM32F4xx/Source/system_stm32f4xx.c \
 	syscalls.c
 
 INC := Device/STM32F4xx/Include
