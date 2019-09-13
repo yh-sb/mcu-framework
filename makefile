@@ -37,7 +37,7 @@ endif
 
 clean:
 	$(foreach module,$(MODULES),$(call CLEAN_MODULE,$(module)))
-	$(call RMDIR,$(OUTDIR))
+	$(call RMDIR,$(BUILDDIR))
 ifeq ($(FLASHER),JLink)
 	$(call RM,script.jlink)
 endif

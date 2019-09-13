@@ -10,14 +10,14 @@ MODULES := src \
 
 ROOT := $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
 
-OUTDIR := $(ROOT)/out
-OBJDIR := $(OUTDIR)/obj$(patsubst $(abspath $(ROOT))%,%,$(CURDIR))
-BINDIR := $(OUTDIR)/bin
+BUILDDIR := $(ROOT)/build
+OBJDIR := $(BUILDDIR)/obj$(patsubst $(abspath $(ROOT))%,%,$(CURDIR))
+BINDIR := $(BUILDDIR)/bin
 
 ELF := $(BINDIR)/$(notdir $(CURDIR)).elf
 BIN := $(BINDIR)/$(notdir $(CURDIR)).bin
-MAP := $(OUTDIR)/$(notdir $(CURDIR)).map
-LSS := $(OUTDIR)/$(notdir $(CURDIR)).lss
+MAP := $(BUILDDIR)/$(notdir $(CURDIR)).map
+LSS := $(BUILDDIR)/$(notdir $(CURDIR)).lss
 
 GLOBAL_INC := $(ROOT)/src \
 	$(ROOT)/src/hal/STM32F0 \
