@@ -97,7 +97,7 @@ define RMDIR
 @rm -rf "$(1)"
 endef
 define RM
-@rm "$(1)"
+@rm -f "$(1)"
 endef
 
 endif
