@@ -61,20 +61,22 @@ clean:
 # Add .NOTPARALLEL to avoid objcopy collisions in same file during parallel make
 .SECONDEXPANSION .NOTPARALLEL:
 $(OBJDIR)/%.o: %.c | $$(@D)/.f
-	$(CC) $(DEF) $(INC) $(C_CPP_FLAGS) $(CFLAGS) -c $^ -o $@
+	$(CC) $(DEF) $(INC) $(C_CPP_FLAGS) $(CFLAGS) -MMD -MP -c $< -o $@
 # Make some redefinitions to avoid changing the libnmea sources
 	$(call RENAME_SYMBOLS,$(notdir $*),$@)
 
 $(OBJDIR)/%.o: %.cpp | $$(@D)/.f
-	$(CPP) $(DEF) $(INC) $(C_CPP_FLAGS) $(CPPFLAGS) -c $^ -o $@
+	$(CPP) $(DEF) $(INC) $(C_CPP_FLAGS) $(CPPFLAGS) -MMD -MP -c $< -o $@
 
 $(OBJDIR)/%.o: %.s | $$(@D)/.f
-	$(AS) $(DEF) $(INC) $(AFLAGS) -c $^ -o $@
+	$(AS) $(DEF) $(INC) $(AFLAGS) -MMD -MP -c $< -o $@
 
 $(OBJDIR)/%.o: %.S | $$(@D)/.f
-	$(AS) $(DEF) $(INC) $(AFLAGS) -c $^ -o $@
+	$(AS) $(DEF) $(INC) $(AFLAGS) -MMD -MP -c $< -o $@
 
 %/.f:
 	$(call MKDIR,$(dir $@))
+
+-include $(patsubst %.o,%.d,$(OBJ))
 
 endif
