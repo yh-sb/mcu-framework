@@ -8,8 +8,8 @@ $(eval ALL_LIB += $(addprefix -l,$(LIB)))
 $(eval ALL_LINKED_OBJ += $(addprefix $(1)/,$(LINKED_OBJ)))
 endef
 
-define COMPILE_MODULE
-@echo --- Compile "$(1)":
+define BUILD_MODULE
+@echo --- Build "$(1)":
 @$(MAKE) -j $(NUMBER_OF_PROCESSORS) --no-print-directory -C $(1)
 
 endef
@@ -27,7 +27,7 @@ ALL_LIB := $(sort $(ALL_LIB))
 ALL_LINKED_OBJ := $(strip $(ALL_LINKED_OBJ))
 
 all:
-	$(foreach module,$(MODULES),$(call COMPILE_MODULE,$(module)))
+	$(foreach module,$(MODULES),$(call BUILD_MODULE,$(module)))
 	@$(MAKE) -j $(NUMBER_OF_PROCESSORS) --no-print-directory $(ELF)
 	@$(MAKE) -j $(NUMBER_OF_PROCESSORS) --no-print-directory $(BIN)
 ifneq ($(FLASHER),esptool)
