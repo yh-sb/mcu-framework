@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdarg.h>
 
 #include "gpio/gpio.hpp"
 #include "tim/tim.hpp"
@@ -21,7 +22,7 @@ class hd44780
 		
 		void init();
 		
-		void print(const char *str);
+		void print(const char *format, ...);
 		void print(char byte);
 		
 		void ddram_addr(uint8_t addr);

@@ -1,6 +1,7 @@
 #include <stddef.h>
 
 #include "common/assert.h"
+#include "third_party/printf/printf.h"
 #include "hd44780.hpp"
 
 using namespace drv;
@@ -119,13 +120,23 @@ void hd44780::init()
 	xSemaphoreGive(api_lock);
 }
 
-void hd44780::print(const char *str)
+void hd44780::print(const char *format, ...)
 {
-	while(*str != '\0')
-	{
-		write(DATA, *str);
-		str++;
-	}
+	xSemaphoreTake(api_lock, portMAX_DELAY);
+	
+	va_list args;
+	
+	va_start(args, format);
+	
+	char message[DDRAM2_MAX_ADDR] = {};
+	vsnprintf_(message, sizeof(message) - 1, format, args);
+	
+	for(uint8_t i = 0; message[i] != '\0'; i++)
+		write(DATA, message[i]);
+	
+	va_end(args);
+	
+	xSemaphoreGive(api_lock);
 }
 
 void hd44780::print(char byte)
