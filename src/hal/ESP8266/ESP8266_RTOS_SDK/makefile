@@ -143,7 +143,7 @@ $(OBJDIR)/components/lwip/lwip/src/core/ipv4/ip4.o: CFLAGS += -Wno-implicit-func
 $(OBJDIR)/components/lwip/apps/dhcpserver/dhcpserver.o: CFLAGS += -Wno-address
 
 CPPFLAGS :=
-AFLAGS :=
+AFLAGS := -mlongcalls
 
 LIBDIR := components/esp8266/lib \
 	components/newlib/newlib/lib
