@@ -1,6 +1,7 @@
 -include ../../../config.mk
 
-SRC := gpio/gpio.cpp
+SRC := adc/adc.cpp \
+	gpio/gpio.cpp
 
 INC := .
 
