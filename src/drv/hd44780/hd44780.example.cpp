@@ -53,8 +53,7 @@ static void b1_cb(di *di, bool state, void *ctx)
 	hd44780 *lcd = (hd44780 *)ctx;
 	
 	lcd->init();
-	lcd->ddram_addr(0);
-	lcd->print("Test");
+	lcd->print(0, "Test");
 	
 	// Define custom symbol
 	uint8_t cgram[8][8] =
@@ -72,11 +71,7 @@ static void b1_cb(di *di, bool state, void *ctx)
 	};
 	lcd->write_cgram(cgram);
 	
-	lcd->ddram_addr(64); // goto the line 2
-	lcd->print(char(0)); // Print custom symbol
-	
-	lcd->ddram_addr(20); // goto the line 3
-	lcd->print("Line 3");
-	lcd->ddram_addr(84); // goto the line 4
-	lcd->print("Line 4");
+	lcd->print(64, char(0)); // goto the line 2 and print custom symbol
+	lcd->print(20, "Line 3");
+	lcd->print(84, "Line 4");
 }

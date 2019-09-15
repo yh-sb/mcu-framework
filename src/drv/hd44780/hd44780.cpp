@@ -120,16 +120,23 @@ void hd44780::init()
 	xSemaphoreGive(api_lock);
 }
 
-void hd44780::print(const char *format, ...)
+uint8_t hd44780::print(uint8_t ddram_addr, const char *format, ...)
 {
+	ASSERT(format);
+	ASSERT((ddram_addr >= DDRAM1_MIN_ADDR && ddram_addr <= DDRAM1_MAX_ADDR) ||
+		(ddram_addr >= DDRAM2_MIN_ADDR && ddram_addr <= DDRAM2_MAX_ADDR));
+	
 	xSemaphoreTake(api_lock, portMAX_DELAY);
+	
+	write(CMD, SET_DDRAM_ADDRESS | ddram_addr);
 	
 	va_list args;
 	
 	va_start(args, format);
 	
 	char message[DDRAM2_MAX_ADDR] = {};
-	vsnprintf_(message, sizeof(message) - 1, format, args);
+	uint8_t new_ddram_addr = vsnprintf_(message, sizeof(message) - 1,
+		format, args) + ddram_addr;
 	
 	for(uint8_t i = 0; message[i] != '\0'; i++)
 		write(DATA, message[i]);
@@ -137,27 +144,21 @@ void hd44780::print(const char *format, ...)
 	va_end(args);
 	
 	xSemaphoreGive(api_lock);
+	return new_ddram_addr;
 }
 
-void hd44780::print(char byte)
+uint8_t hd44780::print(uint8_t ddram_addr, char byte)
 {
+	ASSERT((ddram_addr >= DDRAM1_MIN_ADDR && ddram_addr <= DDRAM1_MAX_ADDR) ||
+		(ddram_addr >= DDRAM2_MIN_ADDR && ddram_addr <= DDRAM2_MAX_ADDR));
+	
 	xSemaphoreTake(api_lock, portMAX_DELAY);
 	
+	write(CMD, SET_DDRAM_ADDRESS | ddram_addr);
 	write(DATA, byte);
 	
 	xSemaphoreGive(api_lock);
-}
-
-void hd44780::ddram_addr(uint8_t addr)
-{
-	xSemaphoreTake(api_lock, portMAX_DELAY);
-	
-	ASSERT((addr >= DDRAM1_MIN_ADDR && addr <= DDRAM1_MAX_ADDR) ||
-		(addr >= DDRAM2_MIN_ADDR && addr <= DDRAM2_MAX_ADDR));
-	
-	write(CMD, SET_DDRAM_ADDRESS | addr);
-	
-	xSemaphoreGive(api_lock);
+	return ddram_addr++; // TODO: Check returned value to be the really ddram_addr+1
 }
 
 uint8_t hd44780::ddram_addr()
@@ -177,14 +178,16 @@ void hd44780::clear()
 	xSemaphoreTake(api_lock, portMAX_DELAY);
 	
 	write(CMD, CLEAR_DISPLAY);
-	delay(6200); // OLED display requires 6,2 ms rather than 1,53 ms
+	delay(6200); // OLED display requires 6,2 ms unlike LCD (1,53 ms)
 	
 	xSemaphoreGive(api_lock);
 }
 
 void hd44780::write_cgram(uint8_t buff[8][8])
 {
-	uint8_t old_addr = ddram_addr();
+	xSemaphoreTake(api_lock, portMAX_DELAY);
+	
+	uint8_t old_addr = read_bf_and_ddram_addr() & 0b01111111;
 	
 	write(CMD, SET_CGRAM_ADDRESS);
 	
@@ -195,11 +198,15 @@ void hd44780::write_cgram(uint8_t buff[8][8])
 	}
 	
 	write(CMD, SET_DDRAM_ADDRESS | old_addr);
+	
+	xSemaphoreGive(api_lock);
 }
 
 void hd44780::read_cgram(uint8_t buff[8][8])
 {
-	uint8_t old_addr = ddram_addr();
+	xSemaphoreTake(api_lock, portMAX_DELAY);
+	
+	uint8_t old_addr = read_bf_and_ddram_addr() & 0b01111111;
 	
 	write(CMD, SET_CGRAM_ADDRESS);
 	
@@ -220,6 +227,8 @@ void hd44780::read_cgram(uint8_t buff[8][8])
 		_db[i]->mode(gpio::MODE_DO);
 	
 	write(CMD, SET_DDRAM_ADDRESS | old_addr);
+	
+	xSemaphoreGive(api_lock);
 }
 
 uint8_t hd44780::read_bf_and_ddram_addr()
