@@ -84,14 +84,19 @@ hd44780::hd44780(gpio &rs, gpio &rw, gpio &e, gpio &db4, gpio &db5, gpio &db6,
 	}
 	
 	_tim.cb(tim_cb, &task);
+	
+	ASSERT(api_lock = xSemaphoreCreateMutex());
 }
 
 hd44780::~hd44780()
 {
+	vSemaphoreDelete(api_lock);
 }
 
 void hd44780::init()
 {
+	xSemaphoreTake(api_lock, portMAX_DELAY);
+	
 	_rw.set(0);
 	_rs.set(0);
 	
@@ -110,6 +115,8 @@ void hd44780::init()
 	delay(6200); // OLED display requires 6,2 ms rather than 1,53 ms
 	
 	write(CMD, ENTRY_MODE_SET | I_D_BIT);
+	
+	xSemaphoreGive(api_lock);
 }
 
 void hd44780::print(const char *str)
@@ -123,28 +130,45 @@ void hd44780::print(const char *str)
 
 void hd44780::print(char byte)
 {
+	xSemaphoreTake(api_lock, portMAX_DELAY);
+	
 	write(DATA, byte);
+	
+	xSemaphoreGive(api_lock);
 }
 
 void hd44780::ddram_addr(uint8_t addr)
 {
+	xSemaphoreTake(api_lock, portMAX_DELAY);
+	
 	ASSERT((addr >= DDRAM1_MIN_ADDR && addr <= DDRAM1_MAX_ADDR) ||
 		(addr >= DDRAM2_MIN_ADDR && addr <= DDRAM2_MAX_ADDR));
 	
 	write(CMD, SET_DDRAM_ADDRESS | addr);
+	
+	xSemaphoreGive(api_lock);
 }
 
 uint8_t hd44780::ddram_addr()
 {
+	xSemaphoreTake(api_lock, portMAX_DELAY);
+	
 	// 7   bit  - busy flag
 	// 0:6 bits - ddram/cgram address
-	return read_bf_and_ddram_addr() & 0b01111111;
+	uint8_t addr = read_bf_and_ddram_addr() & 0b01111111;
+	
+	xSemaphoreGive(api_lock);
+	return addr;
 }
 
 void hd44780::clear()
 {
+	xSemaphoreTake(api_lock, portMAX_DELAY);
+	
 	write(CMD, CLEAR_DISPLAY);
 	delay(6200); // OLED display requires 6,2 ms rather than 1,53 ms
+	
+	xSemaphoreGive(api_lock);
 }
 
 void hd44780::write_cgram(uint8_t buff[8][8])
