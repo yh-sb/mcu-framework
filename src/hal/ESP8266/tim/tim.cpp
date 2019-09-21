@@ -7,8 +7,6 @@
 
 using namespace hal;
 
-static tim *obj_list[tim::TIM_1 + 1];
-
 static void tim_hw_cb(void *arg);
 static void calc_clk(tim::tim_t tim, uint32_t us, uint8_t *div, uint32_t *load);
 
@@ -21,18 +19,16 @@ tim::tim(tim_t tim):
 	// ESP8266 has only one hw timer
 	ASSERT(tim == TIM_1);
 	
-	_xt_isr_attach(ETS_FRC_TIMER1_INUM, tim_hw_cb, _ctx);
+	_xt_isr_mask(1 << ETS_FRC_TIMER1_INUM);
+	_xt_isr_attach(ETS_FRC_TIMER1_INUM, tim_hw_cb, this);
 	TM1_EDGE_INT_ENABLE();
 	_xt_isr_unmask(1 << ETS_FRC_TIMER1_INUM);
-	
-	obj_list[_tim] = this;
 }
 
 tim::~tim()
 {
 	frc1.ctrl.en = 0;
 	frc1.ctrl.val = 0;
-	obj_list[_tim] = NULL;
 	_xt_isr_mask(1 << ETS_FRC_TIMER1_INUM);
 	TM1_EDGE_INT_DISABLE();
 	_xt_isr_attach(ETS_FRC_TIMER1_INUM, NULL, NULL);
@@ -124,5 +120,5 @@ static void tim_hw_cb(void* arg)
 	if(!frc1.ctrl.reload)
 		frc1.ctrl.en = 0;
 	
-	tim_irq_hndlr(obj_list[tim::TIM_1]);
+	tim_irq_hndlr((tim *)arg);
 }
