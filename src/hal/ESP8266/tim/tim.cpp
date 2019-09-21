@@ -40,8 +40,10 @@ tim::~tim()
 
 void tim::cb(cb_t cb, void *ctx)
 {
+	_xt_isr_mask(1 << ETS_FRC_TIMER1_INUM);
 	_cb = cb;
 	_ctx = ctx;
+	_xt_isr_unmask(1 << ETS_FRC_TIMER1_INUM);
 }
 
 void tim::us(uint32_t us)
@@ -54,11 +56,11 @@ void tim::us(uint32_t us)
 	uint32_t load;
 	calc_clk(_tim, _us, &div, &load);
 	
-	portENTER_CRITICAL();
+	_xt_isr_mask(1 << ETS_FRC_TIMER1_INUM);
 	frc1.ctrl.val = 0;
 	frc1.ctrl.div = div;
 	frc1.load.data = load;
-	portEXIT_CRITICAL();
+	_xt_isr_unmask(1 << ETS_FRC_TIMER1_INUM);
 }
 
 void tim::start(bool is_cyclic)
@@ -68,19 +70,19 @@ void tim::start(bool is_cyclic)
 	/* This action allowed only when TIM is disabled */
 	ASSERT(!frc1.ctrl.en);
 	
-	portENTER_CRITICAL();
+	_xt_isr_mask(1 << ETS_FRC_TIMER1_INUM);
 	frc1.ctrl.reload = is_cyclic;
 	frc1.ctrl.intr_type = 0; // TIMER_EDGE_INT
 	frc1.ctrl.en = 1;
-	portEXIT_CRITICAL();
+	_xt_isr_unmask(1 << ETS_FRC_TIMER1_INUM);
 }
 
 void tim::stop()
 {
-	portENTER_CRITICAL();
+	_xt_isr_mask(1 << ETS_FRC_TIMER1_INUM);
 	frc1.ctrl.en = 0;
 	frc1.ctrl.val = 0;
-	portEXIT_CRITICAL();
+	_xt_isr_unmask(1 << ETS_FRC_TIMER1_INUM);
 }
 
 bool tim::is_expired() const
