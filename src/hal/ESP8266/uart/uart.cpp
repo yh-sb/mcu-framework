@@ -13,6 +13,15 @@ using namespace hal;
 constexpr uint8_t fifo_size = 128;
 constexpr uint32_t max_uart_div = 0xFFFFF;
 
+constexpr uint32_t rx_ena_bits = (UART_RXFIFO_FULL_INT_ENA | UART_RXFIFO_TOUT_INT_ENA);
+constexpr uint32_t rx_clr_bits = (UART_RXFIFO_FULL_INT_CLR | UART_RXFIFO_TOUT_INT_CLR);
+constexpr uint32_t tx_ena_bits = UART_TXFIFO_EMPTY_INT_ENA;
+constexpr uint32_t tx_clr_bits = UART_TXFIFO_EMPTY_INT_CLR;
+constexpr uint32_t err_ena_bits = (UART_RXFIFO_OVF_INT_ENA | UART_PARITY_ERR_INT_ENA |
+	UART_FRM_ERR_INT_ENA);
+constexpr uint32_t err_clr_bits = (UART_RXFIFO_OVF_INT_CLR | UART_PARITY_ERR_INT_CLR |
+	UART_FRM_ERR_INT_CLR);
+
 static DRAM_ATTR uart_dev_t *const uart_devs[] = {&uart0, &uart1};
 
 static void uart_hw_cb(void *arg);
@@ -61,20 +70,15 @@ uart::uart(uart_t uart, uint32_t baud, stopbit_t stopbit, parity_t parity,
 	ASSERT(div <= max_uart_div);
 	uart_dev.clk_div.val = div;
 	
-	uart_dev.conf0.val |= UART_RXFIFO_RST | UART_TXFIFO_RST;
-	uart_dev.conf0.val &= ~(UART_RXFIFO_RST | UART_TXFIFO_RST);
-	
 	// IDLE timeout for UART receiver
-	uart_dev.conf1.rx_tout_thrhd = 2;//10;
+	uart_dev.conf1.rx_tout_thrhd = 2;
 	uart_dev.conf1.rx_tout_en = 1;
 	
 	// Generate tx interrupt when fifo is completely empty
 	uart_dev.conf1.txfifo_empty_thrhd = 0;
 	
-	uart_dev.int_ena.val = 0;
-	uart_dev.int_clr.val = UART_RXFIFO_TOUT_INT_CLR | UART_RXFIFO_FULL_INT_CLR |
-		UART_TXFIFO_EMPTY_INT_CLR | UART_RXFIFO_OVF_INT_CLR |
-		UART_PARITY_ERR_INT_CLR | UART_FRM_ERR_INT_CLR;
+	uart_dev.int_ena.val &= ~(rx_ena_bits | tx_ena_bits | err_ena_bits);
+	uart_dev.int_clr.val = rx_ena_bits | tx_ena_bits | err_ena_bits;
 	
 	_xt_isr_attach(ETS_UART_INUM, uart_hw_cb, this);
 	_xt_isr_unmask(1 << ETS_UART_INUM);
@@ -83,7 +87,7 @@ uart::uart(uart_t uart, uint32_t baud, stopbit_t stopbit, parity_t parity,
 uart::~uart()
 {
 	uart_dev_t &uart_dev = *uart_devs[_uart];
-	uart_dev.int_ena.val = 0;
+	uart_dev.int_ena.val &= ~(rx_ena_bits | tx_ena_bits | err_ena_bits);
 	uart_dev.conf0.val |= UART_TXFIFO_RST | UART_RXFIFO_RST;
 	uart_dev.conf0.val &= ~(UART_TXFIFO_RST | UART_RXFIFO_RST);
 	
@@ -121,11 +125,14 @@ int8_t uart::write(const void *buff, size_t size)
 	tx.remain = size - payload_size;
 	
 	uart_dev_t &uart_dev = *uart_devs[_uart];
+	uart_dev.conf0.txfifo_rst = 1;
+	uart_dev.conf0.txfifo_rst = 0;
+	
 	while(payload_size--)
 		uart_dev.fifo.rw_byte = *(tx.buff++);
 	
-	uart_dev.int_clr.val = UART_TXFIFO_EMPTY_INT_CLR;
-	uart_dev.int_ena.val = UART_TXFIFO_EMPTY_INT_ENA;
+	uart_dev.int_clr.val = tx_clr_bits;
+	uart_dev.int_ena.val |= tx_ena_bits;
 	
 	// Task will be unlocked later from isr
 	ulTaskNotifyTake(true, portMAX_DELAY);
@@ -154,17 +161,13 @@ int8_t uart::read(void *buff, size_t *size, uint32_t timeout)
 	uart_dev.conf0.rxfifo_rst = 0;
 	uart_dev.conf1.rxfifo_full_thrhd = std::min<size_t>(*size, fifo_size - 1);
 	
-	uart_dev.int_clr.val = UART_RXFIFO_FULL_INT_CLR | UART_RXFIFO_TOUT_INT_CLR |
-		UART_RXFIFO_OVF_INT_CLR | UART_PARITY_ERR_INT_CLR |
-		UART_FRM_ERR_INT_CLR;
-	uart_dev.int_ena.val = UART_RXFIFO_FULL_INT_ENA | UART_RXFIFO_TOUT_INT_ENA |
-		UART_RXFIFO_OVF_INT_ENA | UART_PARITY_ERR_INT_ENA |
-		UART_FRM_ERR_INT_ENA;
+	uart_dev.int_clr.val = rx_clr_bits | err_clr_bits;
+	uart_dev.int_ena.val |= rx_ena_bits | err_ena_bits;
 	
 	// Task will be unlocked later from isr
 	if(!ulTaskNotifyTake(true, timeout))
 	{
-		uart_dev.int_ena.val = 0;
+		uart_dev.int_ena.val &= ~(rx_ena_bits | err_ena_bits);
 		rx.irq_res = RES_RX_TIMEOUT;
 	}
 	*size -= rx.remain;
@@ -207,7 +210,7 @@ void uart::tx_irq_hndlr()
 		return;
 	}
 	tx.irq_res = uart::RES_OK;
-	uart_dev.int_ena.val = 0;
+	uart_dev.int_ena.val &= ~tx_ena_bits;
 	
 	BaseType_t hi_task_woken = 0;
 	vTaskNotifyGiveFromISR(task, &hi_task_woken);
@@ -232,7 +235,7 @@ void uart::rx_irq_hndlr(bool is_timeout)
 		return;
 	}
 	rx.irq_res = uart::RES_OK;
-	uart_dev.int_ena.val = 0;
+	uart_dev.int_ena.val &= ~(rx_ena_bits | err_ena_bits);
 	
 	BaseType_t hi_task_woken = 0;
 	vTaskNotifyGiveFromISR(task, &hi_task_woken);
@@ -243,12 +246,11 @@ void uart::rx_irq_hndlr(bool is_timeout)
 void uart::err_irq_hndlr()
 {
 	uart_dev_t &uart_dev = *uart_devs[_uart];
-	uart_dev.int_ena.val = 0;
+	uart_dev.int_ena.val &= ~(rx_ena_bits | tx_ena_bits | err_ena_bits);
 	uart_dev.conf0.val |= UART_TXFIFO_RST | UART_RXFIFO_RST;
 	uart_dev.conf0.val &= ~(UART_TXFIFO_RST | UART_RXFIFO_RST);
 	
 	rx.irq_res = uart::RES_RX_FAIL;
-	tx.irq_res = uart::RES_TX_FAIL;
 	
 	BaseType_t hi_task_woken = 0;
 	vTaskNotifyGiveFromISR(task, &hi_task_woken);
@@ -265,21 +267,19 @@ extern "C" void uart_irq_hndlr(uart *obj)
 		(uart_dev.int_ena.rxfifo_full && (status & UART_RXFIFO_FULL_INT_ST)))
 	{
 		obj->rx_irq_hndlr(status & UART_RXFIFO_TOUT_INT_ST);
-		uart_dev.int_clr.val = UART_RXFIFO_TOUT_INT_CLR |
-			UART_RXFIFO_FULL_INT_CLR;
+		uart_dev.int_clr.val = rx_clr_bits;
 	}
 	else if(uart_dev.int_ena.txfifo_empty && (status & UART_TXFIFO_EMPTY_INT_ST))
 	{
 		obj->tx_irq_hndlr();
-		uart_dev.int_clr.val = UART_TXFIFO_EMPTY_INT_CLR;
+		uart_dev.int_clr.val = tx_clr_bits;
 	}
 	else if((uart_dev.int_ena.rxfifo_ovf && (status & UART_RXFIFO_OVF_INT_ST)) ||
 		(uart_dev.int_ena.frm_err && (status & UART_FRM_ERR_INT_ST)) ||
 		(uart_dev.int_ena.parity_err && (status & UART_PARITY_ERR_INT_ST)))
 	{
 		obj->err_irq_hndlr();
-		uart_dev.int_clr.val = UART_RXFIFO_OVF_INT_CLR | UART_FRM_ERR_INT_CLR |
-			UART_PARITY_ERR_INT_CLR;
+		uart_dev.int_clr.val = err_clr_bits;
 	}
 }
 
