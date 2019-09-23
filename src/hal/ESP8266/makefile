@@ -2,7 +2,8 @@
 
 SRC := adc/adc.cpp \
 	gpio/gpio.cpp \
-	tim/tim.cpp
+	tim/tim.cpp \
+	uart/uart.cpp
 
 INC := .
 
