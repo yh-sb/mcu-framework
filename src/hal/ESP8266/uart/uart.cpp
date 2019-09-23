@@ -189,7 +189,33 @@ int8_t uart::exch(const void *tx_buff, size_t tx_size, void *rx_buff,
 	
 	xSemaphoreTake(api_lock, portMAX_DELAY);
 	
-	// TODO
+	task = xTaskGetCurrentTaskHandle();
+	
+	rx.buff = (uint8_t *)rx_buff;
+	rx.remain = *rx_size;
+	
+	tx.buff = (uint8_t *)tx_buff;
+	uint8_t payload_size = std::min<size_t>(tx_size, fifo_size);
+	tx.remain = tx_size - payload_size;
+	
+	uart_dev_t &uart_dev = *uart_devs[_uart];
+	uart_dev.conf0.val |= UART_TXFIFO_RST | UART_RXFIFO_RST;
+	uart_dev.conf0.val &= ~(UART_TXFIFO_RST | UART_RXFIFO_RST);
+	uart_dev.conf1.rxfifo_full_thrhd = std::min<size_t>(*rx_size, fifo_size - 1);
+	
+	while(payload_size--)
+		uart_dev.fifo.rw_byte = *(tx.buff++);
+	
+	uart_dev.int_clr.val = rx_clr_bits | tx_clr_bits | err_clr_bits;
+	uart_dev.int_ena.val |= rx_ena_bits | tx_ena_bits | err_ena_bits;
+	
+	// Task will be unlocked later from isr
+	if(!ulTaskNotifyTake(true, timeout))
+	{
+		uart_dev.int_ena.val &= ~(rx_ena_bits | tx_ena_bits | err_ena_bits);
+		rx.irq_res = RES_RX_TIMEOUT;
+	}
+	*rx_size -= rx.remain;
 	
 	xSemaphoreGive(api_lock);
 	
@@ -211,6 +237,9 @@ void uart::tx_irq_hndlr()
 	}
 	tx.irq_res = uart::RES_OK;
 	uart_dev.int_ena.val &= ~tx_ena_bits;
+	
+	if(uart_dev.int_ena.val & rx_ena_bits)
+		return; // Wait for rx operation
 	
 	BaseType_t hi_task_woken = 0;
 	vTaskNotifyGiveFromISR(task, &hi_task_woken);
@@ -236,6 +265,9 @@ void uart::rx_irq_hndlr(bool is_timeout)
 	}
 	rx.irq_res = uart::RES_OK;
 	uart_dev.int_ena.val &= ~(rx_ena_bits | err_ena_bits);
+	
+	if(uart_dev.int_ena.val & tx_ena_bits)
+		return; // Wait for tx operation
 	
 	BaseType_t hi_task_woken = 0;
 	vTaskNotifyGiveFromISR(task, &hi_task_woken);

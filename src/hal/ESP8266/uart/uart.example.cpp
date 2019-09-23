@@ -17,7 +17,14 @@ static void main_task(void *pvParameters)
 		size_t size;
 		memset(buff, 0, sizeof(buff));
 		size = sizeof(buff);
-		_uart.read(buff, &size, portMAX_DELAY);*/
+		_uart.read(buff, &size, portMAX_DELAY); */
+		
+		/* Example of full duplex transferring:
+		uint8_t buff[100];
+		size_t size;
+		memset(buff, 0, sizeof(buff));
+		size = sizeof(buff);
+		_uart.exch("mytest", sizeof("mytest") - 1, buff, &size, portMAX_DELAY); */
 		
 		vTaskDelay(500);
 	}
