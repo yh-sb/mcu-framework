@@ -331,8 +331,7 @@ spi::spi(spi_t spi, uint32_t baud, cpol_t cpol, cpha_t cpha,
 	tx_dma(dma_tx),
 	tx_buff(NULL),
 	rx_dma(dma_rx),
-	rx_buff(NULL),
-	rx_irq_res(RES_OK)
+	rx_buff(NULL)
 {
 	ASSERT(_spi < SPI_END && spi_list[_spi]);
 	ASSERT(_baud > 0);

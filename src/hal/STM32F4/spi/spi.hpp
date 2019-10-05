@@ -94,7 +94,6 @@ class spi
 		
 		dma &rx_dma;
 		void *rx_buff;
-		int8_t rx_irq_res;
 		
 		static void on_dma_tx(dma *dma, dma::event_t event, void *ctx);
 		static void on_dma_rx(dma *dma, dma::event_t event, void *ctx);
