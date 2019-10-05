@@ -419,9 +419,9 @@ void spi::baud(uint32_t baud)
 	
 	xSemaphoreTake(api_lock, portMAX_DELAY);
 	
+	_baud = baud;
 	uint8_t presc = calc_presc(_spi, _baud);
 	
-	_baud = baud;
 	SPI_TypeDef *spi = spi_list[_spi];
 	
 	spi->CR1 &= ~(SPI_CR1_SPE | SPI_CR1_BR);
