@@ -59,10 +59,7 @@ LDFLAGS := -Tsrc/hal/ESP8266/ESP8266_RTOS_SDK/esp8266.ld \
 	-nostdlib \
 	-u call_user_start \
 	-Wl,--no-check-sections \
-	-Wl,-static \
-	-Wl,--cref \
-	-Wl,--Map="$(MAP)", \
-	-Wl,-EL
+	-Wl,--Map="$(MAP)",--cref
 
 CC := xtensa-lx106-elf-gcc-5.2.0
 CPP := xtensa-lx106-elf-gcc-5.2.0
@@ -74,7 +71,7 @@ SIZE := xtensa-lx106-elf-size
 
 FLASHER := esptool
 
-ESPTOOL_PARAM := --port COM6 --baud 256000 --chip esp8266
+ESPTOOL_PARAM := --port COM6 --baud 512000 --chip esp8266
 
 ifeq ($(OS),Windows_NT)
 
