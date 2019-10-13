@@ -28,10 +28,10 @@ LINKED_OBJ :=
 
 # -------------------------
 
-OBJ := $(patsubst %.c,$(OBJDIR)/%.o,$(filter %.c,$(SRC))) \
-	$(patsubst %.cpp,$(OBJDIR)/%.o,$(filter %.cpp,$(SRC))) \
-	$(patsubst %.s,$(OBJDIR)/%.o,$(filter %.s,$(SRC))) \
-	$(patsubst %.S,$(OBJDIR)/%.o,$(filter %.S,$(SRC)))
+OBJ := $(patsubst %.c,$(OBJDIR)/%.c.o,$(filter %.c,$(SRC))) \
+	$(patsubst %.cpp,$(OBJDIR)/%.cpp.o,$(filter %.cpp,$(SRC))) \
+	$(patsubst %.s,$(OBJDIR)/%.s.o,$(filter %.s,$(SRC))) \
+	$(patsubst %.S,$(OBJDIR)/%.S.o,$(filter %.S,$(SRC)))
 
 INC := $(addprefix -I,$(GLOBAL_INC) $(INC))
 DEF := $(addprefix -D,$(GLOBAL_DEF) $(DEF))
@@ -49,16 +49,16 @@ clean:
 	$(call RMDIR,$(OBJDIR))
 
 .SECONDEXPANSION:
-$(OBJDIR)/%.o: %.c | $$(@D)/.f
+$(OBJDIR)/%.c.o: %.c | $$(@D)/.f
 	$(CC) $(DEF) $(INC) $(C_CPP_FLAGS) $(CFLAGS) -MMD -MP -c $< -o $@
 
-$(OBJDIR)/%.o: %.cpp | $$(@D)/.f
+$(OBJDIR)/%.cpp.o: %.cpp | $$(@D)/.f
 	$(CPP) $(DEF) $(INC) $(C_CPP_FLAGS) $(CPPFLAGS) -MMD -MP -c $< -o $@
 
-$(OBJDIR)/%.o: %.s | $$(@D)/.f
+$(OBJDIR)/%.s.o: %.s | $$(@D)/.f
 	$(AS) $(DEF) $(INC) $(AFLAGS) -MMD -MP -c $< -o $@
 
-$(OBJDIR)/%.o: %.S | $$(@D)/.f
+$(OBJDIR)/%.S.o: %.S | $$(@D)/.f
 	$(AS) $(DEF) $(INC) $(AFLAGS) -MMD -MP -c $< -o $@
 
 %/.f:
