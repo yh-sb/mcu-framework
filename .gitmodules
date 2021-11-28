@@ -7,3 +7,6 @@
 [submodule "stm32f4"]
 	path = stm32f4
 	url = https://github.com/yhsb2k/stm32f4.git
+[submodule "esp8266"]
+	path = esp8266
+	url = https://github.com/yhsb2k/esp8266.git
