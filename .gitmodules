@@ -1,3 +1,6 @@
 [submodule "stm32f0"]
 	path = stm32f0
 	url = https://github.com/yhsb2k/stm32f0.git
+[submodule "stm32f1"]
+	path = stm32f1
+	url = https://github.com/yhsb2k/stm32f1.git
