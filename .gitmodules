@@ -13,3 +13,6 @@
 [submodule "esp32"]
 	path = esp32
 	url = https://github.com/yhsb2k/esp32.git
+[submodule "rp2040"]
+	path = rp2040
+	url = https://github.com/yhsb2k/rp2040.git
