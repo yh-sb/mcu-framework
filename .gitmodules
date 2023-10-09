@@ -10,11 +10,11 @@
 	path = stm32f4
 	url = https://github.com/yhsb2k/stm32f4.git
 	branch = master
-[submodule "esp32"]
-	path = esp32
-	url = https://github.com/yhsb2k/esp32.git
-	branch = master
 [submodule "rp2040"]
 	path = rp2040
 	url = https://github.com/yhsb2k/rp2040.git
+	branch = master
+[submodule "esp32s3"]
+	path = esp32s3
+	url = https://github.com/yhsb2k/esp32s3.git
 	branch = master
