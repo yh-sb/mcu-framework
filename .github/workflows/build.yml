@@ -1,0 +1,88 @@
+name: build
+
+on: [push, pull_request]
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout with submodules
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Cache Arm GNU Toolchain and Ninja
+        uses: actions/cache@v3
+        id: cache
+        with:
+          key: ${{ runner.OS }}-cache-${{ hashFiles('.github/workflows/build.yml') }}
+          path: |
+            C:\arm-gnu-toolchain
+            C:\ninja
+
+      - name: Install Arm GNU Toolchain
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          curl.exe -L https://developer.arm.com/-/media/Files/downloads/gnu/13.3.rel1/binrel/arm-gnu-toolchain-13.3.rel1-mingw-w64-i686-arm-none-eabi.zip -o arm-gnu-toolchain.zip
+          mkdir C:\arm-gnu-toolchain
+          tar -xf arm-gnu-toolchain.zip -C C:\arm-gnu-toolchain --strip-components=1
+
+      - name: Install Ninja
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          curl.exe -L https://github.com/ninja-build/ninja/releases/download/v1.11.1/ninja-win.zip -o ninja-win.zip
+          mkdir C:\ninja
+          tar -xf ninja-win.zip -C C:\ninja
+
+      - name: Build
+        run: |
+          $env:Path = "C:\arm-gnu-toolchain\bin;C:\ninja;" + $env:Path
+          .\build.ps1
+
+      - name: Set artifacts suffix (if tag)
+        if: startsWith(github.ref, 'refs/tags/') == true
+        run: Add-Content $env:GITHUB_ENV "git_suffix=$(git describe --tags --abbrev=0)"
+
+      - name: Set artifacts suffix (if branch)
+        if: startsWith(github.ref, 'refs/tags/') != true
+        run: Add-Content $env:GITHUB_ENV "git_suffix=$(Write-Output "$(git rev-parse --abbrev-ref HEAD)-$(git rev-parse --short HEAD)")"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: stm32f4-${{env.git_suffix}}
+          path: |
+            build/stm32f4.bin
+            build/stm32f4.elf
+            build/stm32f4.map
+          if-no-files-found: error
+
+  linux:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout with submodules
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Cache Arm GNU Toolchain
+        uses: actions/cache@v3
+        id: cache
+        with:
+          key: ${{ runner.OS }}-cache-${{ hashFiles('.github/workflows/build.yml') }}
+          path: ~/arm-gnu-toolchain
+
+      - name: Install Arm GNU Toolchain
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          curl -L https://developer.arm.com/-/media/Files/downloads/gnu/13.3.rel1/binrel/arm-gnu-toolchain-13.3.rel1-x86_64-arm-none-eabi.tar.xz -o arm-gnu-toolchain.tar.xz
+          mkdir ~/arm-gnu-toolchain
+          tar -xf arm-gnu-toolchain.tar.xz -C ~/arm-gnu-toolchain --strip-components=1
+
+      - name: Install dependencies
+        run: sudo apt update && sudo apt install ninja-build
+
+      - name: Build
+        run: |
+          export PATH=~/arm-gnu-toolchain/bin:$PATH
+          ./build.sh
