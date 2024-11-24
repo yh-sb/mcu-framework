@@ -28,17 +28,6 @@ add_compile_options(
     $<$<COMPILE_LANGUAGE:CXX>:-fno-use-cxa-atexit>
 )
 
-add_link_options(
-    -mcpu=cortex-m4
-    -mfloat-abi=hard
-    -mfpu=fpv4-sp-d16
-    -Wl,--gc-sections
-    -specs=nano.specs
-    -specs=nosys.specs
-    -Wl,-Map=${CMAKE_PROJECT_NAME}.map,--cref
-    -T${CMAKE_CURRENT_SOURCE_DIR}/periph/stm32f4/CMSIS/Device/ST/STM32F4xx/Source/linker/STM32F407VGTx_FLASH.ld
-)
-
 add_compile_definitions(STM32F407xx)
 
 add_subdirectory(periph)
@@ -46,6 +35,7 @@ add_subdirectory(periph/stm32f4)
 add_subdirectory(drivers)
 
 set(FREERTOS_PORT GCC_ARM_CM4F CACHE STRING "")
+set(FREERTOS_HEAP 4)
 add_library(freertos_config INTERFACE)
 target_include_directories(freertos_config SYSTEM INTERFACE periph/stm32f4/include)
 add_subdirectory(third_party/FreeRTOS-Kernel)
@@ -55,6 +45,17 @@ add_subdirectory(third_party/printf)
 add_executable(${CMAKE_PROJECT_NAME}
     main.cpp
     periph/stm32f4/src/FreeRTOSHooks.c
+)
+
+target_link_options(${CMAKE_PROJECT_NAME} PRIVATE
+    -mcpu=cortex-m4
+    -mfloat-abi=hard
+    -mfpu=fpv4-sp-d16
+    -Wl,--gc-sections
+    -specs=nano.specs
+    -specs=nosys.specs
+    -Wl,-Map=${CMAKE_PROJECT_NAME}.map,--cref
+    -T${CMAKE_CURRENT_SOURCE_DIR}/periph/stm32f4/CMSIS/Device/ST/STM32F4xx/Source/linker/STM32F407VGTx_FLASH.ld
 )
 
 target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE
