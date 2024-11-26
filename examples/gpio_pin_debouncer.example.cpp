@@ -28,7 +28,7 @@ static void button_1_task(void *pvParameters)
                 green_led.toggle();
             }
         }
-        vTaskDelay(1);
+        vTaskDelay(pdMS_TO_TICKS(1));
     }
 }
 

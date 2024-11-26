@@ -11,7 +11,7 @@ static void heartbeat_task(void *pvParameters)
     while(1)
     {
         green_led->toggle();
-        vTaskDelay(500);
+        vTaskDelay(pdMS_TO_TICKS(500));
     }
 }
 

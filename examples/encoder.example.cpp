@@ -14,7 +14,7 @@ static void encoder_task(void *pvParameters)
     while(1)
     {
         encoder->poll();
-        vTaskDelay(1);
+        vTaskDelay(pdMS_TO_TICKS(1));
     }
 }
 

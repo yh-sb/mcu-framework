@@ -37,7 +37,7 @@ static void button_1_task(void *pvParameters)
                 auto res = dht_sensor.read(buff, sizeof(buff));
             }
         }
-        vTaskDelay(1);
+        vTaskDelay(pdMS_TO_TICKS(1));
     }
 }
 

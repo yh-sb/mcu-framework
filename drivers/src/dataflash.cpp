@@ -503,7 +503,7 @@ enum dataflash::res dataflash::wait_ready(uint32_t timeout_ms, status_t *status)
             break;
         }
         
-        vTaskDelay(1);
+        vTaskDelay(pdMS_TO_TICKS(1));
     } while(timeout_ms--);
     
     if(!timeout_ms)

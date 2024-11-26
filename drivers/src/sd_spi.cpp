@@ -271,7 +271,7 @@ enum sd::res sd_spi::read_data(void *data, uint16_t size)
                 return res::read_err;
             }
         }
-        vTaskDelay(1);
+        vTaskDelay(pdMS_TO_TICKS(1));
     }
     if(!wait_cnt)
     {
@@ -360,7 +360,7 @@ enum sd::res sd_spi::wait_ready()
             break;
         }
         
-        vTaskDelay(1);
+        vTaskDelay(pdMS_TO_TICKS(1));
     };
     
     return wait_cnt ? res::ok : res::no_response;

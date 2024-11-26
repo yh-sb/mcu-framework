@@ -75,7 +75,7 @@ enum ds18b20::res ds18b20::get_temperature(uint64_t rom, float &temperature)
     {
         goto Exit;
     }
-    vTaskDelay(timeouts[static_cast<uint8_t>(resolution)]);
+    vTaskDelay(pdMS_TO_TICKS(timeouts[static_cast<uint8_t>(resolution)]));
     
     scratchpad_t scratchpad;
     res = read_scratchpad(rom, scratchpad);

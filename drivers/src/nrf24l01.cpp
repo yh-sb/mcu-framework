@@ -197,7 +197,7 @@ enum nrf24l01::res nrf24l01::init()
     freertos::semaphore_take(api_lock, portMAX_DELAY);
     
     ce.set(0);
-    vTaskDelay(power_on_reset_timeout.count());
+    vTaskDelay(pdMS_TO_TICKS(power_on_reset_timeout.count()));
     
     auto res = set_mode(mode::PWR_DOWN);
     if(res != res::ok)

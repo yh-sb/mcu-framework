@@ -59,7 +59,7 @@ static void button_1_task(void *pvParameters)
                 hd44780.print(0, "Test %d", cnt);
             }
         }
-        vTaskDelay(1);
+        vTaskDelay(pdMS_TO_TICKS(1));
     }
 }
 

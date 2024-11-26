@@ -36,7 +36,7 @@ static void button_1_task(void *pvParameters)
                 auto res = ds18b20.get_temperature(0, temperature);
             }
         }
-        vTaskDelay(1);
+        vTaskDelay(pdMS_TO_TICKS(1));
     }
 }
 

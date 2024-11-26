@@ -43,7 +43,7 @@ static void button_1_task(void *pvParameters)
                 }
             }
         }
-        vTaskDelay(1);
+        vTaskDelay(pdMS_TO_TICKS(1));
     }
 }
 

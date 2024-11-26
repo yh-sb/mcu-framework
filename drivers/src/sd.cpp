@@ -72,7 +72,7 @@ enum sd::res sd::init()
     
     set_speed(SPI_INIT_BAUD);
     // TODO: In fact this delay is 790 us instead of 250000 us
-    vTaskDelay(POWER_STABILIZATION_TIME);
+    vTaskDelay(pdMS_TO_TICKS(POWER_STABILIZATION_TIME));
     
     init_sd();
     
@@ -495,7 +495,7 @@ enum sd::res sd::process_acmd41(bool is_hi_capacity)
             break;
         }
         
-        vTaskDelay(1);
+        vTaskDelay(pdMS_TO_TICKS(1));
     }
     if(!retry_cnt)
     {
@@ -530,7 +530,7 @@ enum sd::res sd::process_cmd1()
             break;
         }
         
-        vTaskDelay(1);
+        vTaskDelay(pdMS_TO_TICKS(1));
     }
     if(!retry_cnt)
     {

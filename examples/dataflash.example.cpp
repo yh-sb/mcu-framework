@@ -45,7 +45,7 @@ static void button_1_task(void *pvParameters)
                 res = at45db.read(buff, 1);
             }
         }
-        vTaskDelay(1);
+        vTaskDelay(pdMS_TO_TICKS(1));
     }
 }
 
