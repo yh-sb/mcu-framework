@@ -1,0 +1,5 @@
+/periph/stm32f0/CMSIS/* linguist-vendored
+/periph/stm32f1/CMSIS/* linguist-vendored
+/periph/stm32f4/CMSIS/* linguist-vendored
+
+/third_party/* linguist-vendored
