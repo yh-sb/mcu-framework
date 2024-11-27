@@ -1,0 +1,26 @@
+{
+    "version": "0.2.0",
+    "configurations":
+    [
+        {
+            "name": "stm32f4",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/stm32f4.elf",
+            "cwd": "${workspaceFolder}/build",
+            "internalConsoleOptions": "neverOpen",
+            "miDebuggerPath": "arm-none-eabi-gdb",
+            "postDebugTask": "hide terminal",
+            "showDisplayString": true,
+            "visualizerFile": "${workspaceFolder}/.vscode/stl.gcc.natvis",
+            "debugServerPath": "JLinkGDBserverCL",
+            "debugServerArgs": "-device STM32F407VG -if SWD -speed auto -strict -nogui -singlerun",
+            "serverStarted":"Connected to target",
+            "postRemoteConnectCommands":
+            [
+                { "text": "target remote localhost:2331" },
+                { "text": "monitor reset" }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,19 @@
+{
+    "tasks":
+    [
+        {
+            "label": "gdbserver",
+            "type": "shell",
+            "windows": {"command": "start make debug"},
+            "linux": {"command": "make debug &"},
+            "dependsOn": ["make"],
+            "presentation": { "showReuseMessage": false, "clear": true },
+            "group": { "kind": "build" }
+        },
+        {
+            "label": "hide terminal",
+            "command": "${command:workbench.action.togglePanel}"
+        }
+    ],
+    "version": "2.0.0"
+}

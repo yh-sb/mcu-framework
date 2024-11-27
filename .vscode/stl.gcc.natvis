@@ -1,0 +1,902 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+
+<!-- The most complete Natvis for GCC 12 -->
+
+    <Type Name="std::array&lt;*&gt;">
+        <DisplayString>{{ size={$T2} }}</DisplayString>
+        <Expand>
+            <Item Name="size">$T2</Item>
+            <ArrayItems>
+                <Size>$T2</Size>
+                <ValuePointer>_M_elems</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
+
+    <Type Name="std::vector&lt;bool,*&gt;">
+        <DisplayString>{{ size={((_M_impl._M_finish._M_p - _M_impl._M_start._M_p) * 8 * sizeof(unsigned long)) + _M_impl._M_finish._M_offset} }}</DisplayString>
+        <Expand>
+            <Item Name="size">((_M_impl._M_finish._M_p - _M_impl._M_start._M_p) * 8 * sizeof(unsigned long)) + _M_impl._M_finish._M_offset</Item>
+            <Item Name="capacity">(_M_impl._M_end_of_storage - _M_impl._M_start._M_p) * 8 * sizeof(unsigned long)</Item>
+            <IndexListItems>
+                <Size>((_M_impl._M_finish._M_p - _M_impl._M_start._M_p) * 8 * sizeof(unsigned long)) + _M_impl._M_finish._M_offset</Size>
+                <ValueNode>(bool)(((_M_impl._M_start._M_p[$i / (8 * sizeof(unsigned long))] &gt;&gt; ($i % (8 * sizeof(unsigned long)))) &amp; 1))</ValueNode>
+            </IndexListItems>
+        </Expand>
+    </Type>
+
+    <Type Name="std::vector&lt;*&gt;">
+        <DisplayString>{{ size={_M_impl._M_finish - _M_impl._M_start} }}</DisplayString>
+        <Expand>
+            <Item Name="size">_M_impl._M_finish - _M_impl._M_start</Item>
+            <Item Name="capacity">_M_impl._M_end_of_storage - _M_impl._M_start</Item>
+            <ArrayItems>
+                <Size>_M_impl._M_finish - _M_impl._M_start</Size>
+                <ValuePointer>_M_impl._M_start</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
+
+    <Type Name="std::deque&lt;*&gt;">
+        <DisplayString Condition="(_M_impl._M_start._M_cur + 1) - _M_impl._M_start._M_cur &lt; 512">{{ size={((_M_impl._M_finish._M_node - _M_impl._M_start._M_node + 1) * (512 / sizeof($T1))) - (_M_impl._M_start._M_cur - _M_impl._M_start._M_first) - (_M_impl._M_finish._M_last - _M_impl._M_finish._M_cur)} }}</DisplayString>
+        <DisplayString>{{ size={_M_impl._M_finish._M_node - _M_impl._M_start._M_node} }}</DisplayString>
+        <Expand>
+            <Item Condition="(_M_impl._M_start._M_cur + 1) - _M_impl._M_start._M_cur &lt; 512" Name="size">((_M_impl._M_finish._M_node - _M_impl._M_start._M_node + 1) * (512 / sizeof($T1))) - (_M_impl._M_start._M_cur - _M_impl._M_start._M_first) - (_M_impl._M_finish._M_last - _M_impl._M_finish._M_cur)</Item>
+            <Item Condition="(_M_impl._M_start._M_cur + 1) - _M_impl._M_start._M_cur &gt;= 512" Name="size">_M_impl._M_finish._M_node - _M_impl._M_start._M_node</Item>
+            <Item Condition="(_M_impl._M_start._M_cur + 1) - _M_impl._M_start._M_cur &lt; 512" Name="capacity">(_M_impl._M_finish._M_node - _M_impl._M_start._M_node + 1) * (512 / sizeof($T1)) - 1</Item>
+            <Item Condition="(_M_impl._M_start._M_cur + 1) - _M_impl._M_start._M_cur &gt;= 512" Name="capacity">_M_impl._M_finish._M_node - _M_impl._M_start._M_node</Item>
+            <IndexListItems>
+                <Size Condition="(_M_impl._M_start._M_cur + 1) - _M_impl._M_start._M_cur &lt; 512">((_M_impl._M_finish._M_node - _M_impl._M_start._M_node + 1) * (512 / sizeof($T1))) - (_M_impl._M_start._M_cur - _M_impl._M_start._M_first) - (_M_impl._M_finish._M_last - _M_impl._M_finish._M_cur)</Size>
+                <Size Condition="(_M_impl._M_start._M_cur + 1) - _M_impl._M_start._M_cur &gt;= 512">_M_impl._M_finish._M_node - _M_impl._M_start._M_node</Size>
+                <ValueNode Condition="(_M_impl._M_start._M_cur + 1) - _M_impl._M_start._M_cur &lt; 512">*(*(_M_impl._M_start._M_node + (($i + (_M_impl._M_start._M_cur - _M_impl._M_start._M_first)) / (512 / sizeof($T1)))) + (($i + (_M_impl._M_start._M_cur - _M_impl._M_start._M_first)) % (512 / sizeof($T1))))</ValueNode>
+                <ValueNode Condition="(_M_impl._M_start._M_cur + 1) - _M_impl._M_start._M_cur &gt;= 512">**(_M_impl._M_start._M_node + $i)</ValueNode>
+            </IndexListItems>
+        </Expand>
+    </Type>
+
+    <Type Name="std::queue&lt;*&gt;">
+        <AlternativeType Name="std::stack&lt;*&gt;"/>
+        <AlternativeType Name="std::priority_queue&lt;*&gt;"/>
+        <DisplayString>{c}</DisplayString>
+        <Expand>
+            <ExpandedItem>c</ExpandedItem>
+        </Expand>
+    </Type>
+
+    <Type Name="std::forward_list&lt;*&gt;">
+        <DisplayString Condition="_M_impl._M_head._M_next == 0">empty</DisplayString>
+        <DisplayString>{{ {($T1)((std::forward_list&lt;$T1,$T2&gt;::_Node*)_M_impl._M_head)._M_storage}, ... }}</DisplayString>
+        <Expand>
+            <LinkedListItems>
+                <HeadPointer>(std::forward_list&lt;$T1,$T2&gt;::_Node*)_M_impl._M_head</HeadPointer>
+                <NextPointer>_M_next</NextPointer>
+                <ValueNode>($T1)_M_storage</ValueNode>
+            </LinkedListItems>
+        </Expand>
+    </Type>
+
+    <Type Name="std::list&lt;*&gt;">
+        <AlternativeType Name="std::__cxx11::list&lt;*&gt;"/>
+        <DisplayString>{{ size={_M_impl._M_node._M_size} }}</DisplayString>
+        <Expand>
+            <Item Name="size">_M_impl._M_node._M_size</Item>
+            <LinkedListItems Condition="_M_impl._M_node._M_next != &amp;_M_impl._M_node"> <!-- this condition doesn't affect anything here. <Size> matters -->
+                <Size>_M_impl._M_node._M_size</Size>
+                <HeadPointer>(std::__cxx11::list&lt;$T1,$T2&gt;::_Node*)_M_impl._M_node</HeadPointer>
+                <NextPointer>_M_next</NextPointer>
+                <ValueNode>($T1)_M_storage</ValueNode>
+            </LinkedListItems>
+        </Expand>
+    </Type>
+
+    <Type Name="std::set&lt;*&gt;">
+        <AlternativeType Name="std::multiset&lt;*&gt;"/>
+        <DisplayString>{{ size={_M_t._M_impl._M_node_count} }}</DisplayString>
+        <Expand>
+            <Item Name="size">_M_t._M_impl._M_node_count</Item>
+            <TreeItems>
+                <Size>_M_t._M_impl._M_node_count</Size>
+                <HeadPointer>(std::set&lt;$T1,$T2,$T3&gt;::_Rep_type::_Link_type)_M_t._M_impl._M_header._M_parent</HeadPointer>
+                <LeftPointer>_M_left</LeftPointer>
+                <RightPointer>_M_right</RightPointer>
+                <ValueNode>($T1)_M_storage</ValueNode>
+            </TreeItems>
+        </Expand>
+    </Type>
+
+    <Type Name="std::map&lt;*&gt;">
+        <AlternativeType Name="std::multimap&lt;*&gt;"/>
+        <DisplayString>{{ size={_M_t._M_impl._M_node_count} }}</DisplayString>
+        <Expand>
+            <Item Name="size">_M_t._M_impl._M_node_count</Item>
+            <TreeItems>
+                <Size>_M_t._M_impl._M_node_count</Size>
+                <HeadPointer>(std::map&lt;$T1,$T2,$T3,$T4&gt;::_Rep_type::_Link_type)_M_t._M_impl._M_header._M_parent</HeadPointer>
+                <LeftPointer>_M_left</LeftPointer>
+                <RightPointer>_M_right</RightPointer>
+                <ValueNode>(std::pair&lt;$T1,$T2&gt;)_M_storage</ValueNode>
+            </TreeItems>
+        </Expand>
+    </Type>
+
+    <Type Name="std::unordered_set&lt;*&gt;">
+        <AlternativeType Name="std::unordered_multiset&lt;*&gt;"/>
+        <DisplayString>{{ size={_M_h._M_element_count} }}</DisplayString>
+        <Expand>
+            <Item Name="size">_M_h._M_element_count</Item>
+            <Item Name="bucket count">_M_h._M_bucket_count</Item>
+            <Item Name="load factor">(float)_M_h._M_element_count / (float)_M_h._M_bucket_count</Item>
+            <Item Name="max load factor">(float)_M_h._M_rehash_policy._M_max_load_factor</Item>
+            <LinkedListItems>
+                <Size>_M_h._M_element_count</Size>
+                <HeadPointer>(std::unordered_set&lt;$T1,$T2,$T3,$T4&gt;::_Hashtable::__node_type*)_M_h._M_before_begin</HeadPointer>
+                <NextPointer>_M_nxt</NextPointer>
+                <ValueNode>($T1)_M_storage</ValueNode>
+            </LinkedListItems>
+        </Expand>
+    </Type>
+
+    <Type Name="std::unordered_map&lt;*&gt;">
+        <AlternativeType Name="std::unordered_multimap&lt;*&gt;"/>
+        <DisplayString>{{ size={_M_h._M_element_count} }}</DisplayString>
+        <Expand>
+            <Item Name="size">_M_h._M_element_count</Item>
+            <Item Name="bucket count">_M_h._M_bucket_count</Item>
+            <Item Name="load factor">(float)_M_h._M_element_count / (float)_M_h._M_bucket_count</Item>
+            <Item Name="max load factor">(float)_M_h._M_rehash_policy._M_max_load_factor</Item>
+            <LinkedListItems>
+                <Size>_M_h._M_element_count</Size>
+                <HeadPointer>(std::unordered_map&lt;$T1,$T2,$T3,$T4,$T5&gt;::_Hashtable::__node_type*)_M_h._M_before_begin</HeadPointer>
+                <NextPointer>_M_nxt</NextPointer>
+                <ValueNode>(std::pair&lt;$T1,$T2&gt;)_M_storage</ValueNode>
+            </LinkedListItems>
+        </Expand>
+    </Type>
+
+    <Type Name="std::unique_ptr&lt;*&gt;">
+        <DisplayString Condition="_M_t._M_t.std::_Head_base&lt;0, $T1*, false&gt;::_M_head_impl == 0">nullptr</DisplayString>
+        <DisplayString>{*std::_Head_base&lt;0, $T1*, false&gt;::_M_head(_M_t._M_t)}</DisplayString>
+        <Expand>
+            <ExpandedItem>*std::_Head_base&lt;0, $T1*, false&gt;::_M_head(_M_t._M_t)</ExpandedItem>
+        </Expand>
+    </Type>
+
+    <Type Name="std::auto_ptr&lt;*&gt;">
+        <DisplayString Condition="_M_ptr == 0">nullptr</DisplayString>
+        <DisplayString>{*_M_ptr}</DisplayString>
+        <Expand>
+            <ExpandedItem Condition="_M_ptr != 0">*_M_ptr</ExpandedItem>
+        </Expand>
+    </Type>
+
+    <Type Name="std::shared_ptr&lt;*&gt;">
+        <AlternativeType Name="std::weak_ptr&lt;*&gt;"/>
+        <DisplayString Condition="_M_ptr == 0">nullptr</DisplayString>
+        <DisplayString>{*($T1*)_M_ptr}</DisplayString>
+        <Expand>
+            <Item Name="strong refs">_M_refcount._M_pi-&gt;_M_use_count</Item>
+            <Item Name="weak refs">_M_refcount._M_pi-&gt;_M_weak_count</Item>
+            <ExpandedItem>*($T1*)_M_ptr</ExpandedItem>
+        </Expand>
+    </Type>
+
+    <Type Name="std::reference_wrapper&lt;*&gt;">
+        <DisplayString Condition="_M_data == 0">empty</DisplayString>
+        <DisplayString>{*_M_data}</DisplayString>
+        <Expand>
+            <Item Name="ptr">_M_data</Item>
+        </Expand>
+    </Type>
+
+    <Type Name="std::initializer_list&lt;*&gt;">
+        <DisplayString>{{ size={_M_len} }}</DisplayString>
+        <Expand>
+            <Item Name="size">_M_len</Item>
+            <ArrayItems>
+                <Size>_M_len</Size>
+                <ValuePointer>_M_array</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
+
+    <Type Name="std::tuple&lt;*&gt;">
+            <DisplayString Condition="strlen($T6) != 0">{{ {std::_Head_base&lt;0, $T1, false&gt;::_M_head(*this)}, {std::_Head_base&lt;1, $T2, false&gt;::_M_head(*this)}, {std::_Head_base&lt;2, $T3, false&gt;::_M_head(*this)}, {std::_Head_base&lt;3, $T4, false&gt;::_M_head(*this)}, {std::_Head_base&lt;4, $T5, false&gt;::_M_head(*this)}, ... }}</DisplayString>
+            <DisplayString Condition="strlen($T5) != 0">{{ {std::_Head_base&lt;0, $T1, false&gt;::_M_head(*this)}, {std::_Head_base&lt;1, $T2, false&gt;::_M_head(*this)}, {std::_Head_base&lt;2, $T3, false&gt;::_M_head(*this)}, {std::_Head_base&lt;3, $T4, false&gt;::_M_head(*this)}, {std::_Head_base&lt;4, $T5, false&gt;::_M_head(*this)} }}</DisplayString>
+            <DisplayString Condition="strlen($T4) != 0">{{ {std::_Head_base&lt;0, $T1, false&gt;::_M_head(*this)}, {std::_Head_base&lt;1, $T2, false&gt;::_M_head(*this)}, {std::_Head_base&lt;2, $T3, false&gt;::_M_head(*this)}, {std::_Head_base&lt;3, $T4, false&gt;::_M_head(*this)} }}</DisplayString>
+            <DisplayString Condition="strlen($T3) != 0">{{ {std::_Head_base&lt;0, $T1, false&gt;::_M_head(*this)}, {std::_Head_base&lt;1, $T2, false&gt;::_M_head(*this)}, {std::_Head_base&lt;2, $T3, false&gt;::_M_head(*this)} }}</DisplayString>
+            <DisplayString Condition="strlen($T2) != 0">{{ {std::_Head_base&lt;0, $T1, false&gt;::_M_head(*this)}, {std::_Head_base&lt;1, $T2, false&gt;::_M_head(*this)} }}</DisplayString>
+            <DisplayString>{{ {std::_Head_base&lt;0, $T1, false&gt;::_M_head(*this)} }}</DisplayString>
+        <Expand>
+            <Item Name="[0]" Condition="strlen($T1) != 0">std::_Head_base&lt;0, $T1, false&gt;::_M_head(*this)</Item>
+            <Item Name="[1]" Condition="strlen($T2) != 0">std::_Head_base&lt;1, $T2, false&gt;::_M_head(*this)</Item>
+            <Item Name="[2]" Condition="strlen($T3) != 0">std::_Head_base&lt;2, $T3, false&gt;::_M_head(*this)</Item>
+            <Item Name="[3]" Condition="strlen($T4) != 0">std::_Head_base&lt;3, $T4, false&gt;::_M_head(*this)</Item>
+            <Item Name="[4]" Condition="strlen($T5) != 0">std::_Head_base&lt;4, $T5, false&gt;::_M_head(*this)</Item>
+            <Item Name="[5]" Condition="strlen($T6) != 0">std::_Head_base&lt;5, $T6, false&gt;::_M_head(*this)</Item>
+            <Item Name="[6]" Condition="strlen($T7) != 0">std::_Head_base&lt;6, $T7, false&gt;::_M_head(*this)</Item>
+            <Item Name="[7]" Condition="strlen($T8) != 0">std::_Head_base&lt;7, $T8, false&gt;::_M_head(*this)</Item>
+            <Item Name="[8]" Condition="strlen($T9) != 0">std::_Head_base&lt;8, $T9, false&gt;::_M_head(*this)</Item>
+            <Item Name="[9]" Condition="strlen($T10) != 0">std::_Head_base&lt;9, $T10, false&gt;::_M_head(*this)</Item>
+        </Expand>
+    </Type>
+
+    <Type Name="std::optional&lt;*&gt;">
+        <DisplayString Condition="_M_payload._M_engaged == false">no value</DisplayString>
+        <DisplayString>{_M_payload._M_payload._M_value}</DisplayString>
+        <Expand>
+            <ExpandedItem Condition="_M_payload._M_engaged == true">_M_payload._M_payload._M_value</ExpandedItem>
+        </Expand>
+    </Type>
+
+    <Type Name="std::variant&lt;*&gt;">
+        <DisplayString Condition="_M_index == 0">{_M_u._M_first._M_storage}</DisplayString>
+        <DisplayString Condition="_M_index == 1">{_M_u._M_rest._M_first._M_storage}</DisplayString>
+        <DisplayString Condition="_M_index == 2">{_M_u._M_rest._M_rest._M_first._M_storage}</DisplayString>
+        <DisplayString Condition="_M_index == 3">{_M_u._M_rest._M_rest._M_rest._M_first._M_storage}</DisplayString>
+        <DisplayString Condition="_M_index == 4">{_M_u._M_rest._M_rest._M_rest._M_rest._M_first._M_storage}</DisplayString>
+        <DisplayString Condition="_M_index == 5">{_M_u._M_rest._M_rest._M_rest._M_rest._M_rest._M_first._M_storage}</DisplayString>
+        <DisplayString Condition="_M_index == 6">{_M_u._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_first._M_storage}</DisplayString>
+        <DisplayString Condition="_M_index == 7">{_M_u._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_first._M_storage}</DisplayString>
+        <DisplayString Condition="_M_index == 8">{_M_u._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_first._M_storage}</DisplayString>
+        <DisplayString Condition="_M_index == 9">{_M_u._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_first._M_storage}</DisplayString>
+        <DisplayString Condition="_M_index == 10">{_M_u._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_first._M_storage}</DisplayString>
+        <DisplayString Condition="_M_index == 11">{_M_u._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_first._M_storage}</DisplayString>
+        <DisplayString Condition="_M_index == 12">{_M_u._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_first._M_storage}</DisplayString>
+        <DisplayString Condition="_M_index == 13">{_M_u._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_first._M_storage}</DisplayString>
+        <DisplayString Condition="_M_index == 14">{_M_u._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_first._M_storage}</DisplayString>
+        <DisplayString Condition="_M_index == 15">{_M_u._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_first._M_storage}</DisplayString>
+        <Expand>
+            <Item Name="type" Condition="_M_index == 0">"$T1",s</Item>
+            <Item Name="value" Condition="_M_index == 0">_M_u._M_first._M_storage</Item>
+            <Item Name="type" Condition="_M_index == 1">"$T2",s</Item>
+            <Item Name="value" Condition="_M_index == 1">_M_u._M_rest._M_first._M_storage</Item>
+            <Item Name="type" Condition="_M_index == 2">"$T3",s</Item>
+            <Item Name="value" Condition="_M_index == 2">_M_u._M_rest._M_rest._M_first._M_storage</Item>
+            <Item Name="type" Condition="_M_index == 3">"$T4",s</Item>
+            <Item Name="value" Condition="_M_index == 3">_M_u._M_rest._M_rest._M_rest._M_first._M_storage</Item>
+            <Item Name="type" Condition="_M_index == 4">"$T5",s</Item>
+            <Item Name="value" Condition="_M_index == 4">_M_u._M_rest._M_rest._M_rest._M_rest._M_first._M_storage</Item>
+            <Item Name="type" Condition="_M_index == 5">"$T6",s</Item>
+            <Item Name="value" Condition="_M_index == 5">_M_u._M_rest._M_rest._M_rest._M_rest._M_rest._M_first._M_storage</Item>
+            <Item Name="type" Condition="_M_index == 6">"$T7",s</Item>
+            <Item Name="value" Condition="_M_index == 6">_M_u._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_first._M_storage</Item>
+            <Item Name="type" Condition="_M_index == 7">"$T8",s</Item>
+            <Item Name="value" Condition="_M_index == 7">_M_u._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_first._M_storage</Item>
+            <Item Name="type" Condition="_M_index == 8">"$T9",s</Item>
+            <Item Name="value" Condition="_M_index == 8">_M_u._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_first._M_storage</Item>
+            <Item Name="type" Condition="_M_index == 9">"$T10",s</Item>
+            <Item Name="value" Condition="_M_index == 9">_M_u._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_first._M_storage</Item>
+            <Item Name="type" Condition="_M_index == 10">"$T11",s</Item>
+            <Item Name="value" Condition="_M_index == 10">_M_u._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_first._M_storage</Item>
+            <Item Name="type" Condition="_M_index == 11">"$T12",s</Item>
+            <Item Name="value" Condition="_M_index == 11">_M_u._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_first._M_storage</Item>
+            <Item Name="type" Condition="_M_index == 12">"$T13",s</Item>
+            <Item Name="value" Condition="_M_index == 12">_M_u._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_first._M_storage</Item>
+            <Item Name="type" Condition="_M_index == 13">"$T14",s</Item>
+            <Item Name="value" Condition="_M_index == 13">_M_u._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_first._M_storage</Item>
+            <Item Name="type" Condition="_M_index == 14">"$T15",s</Item>
+            <Item Name="value" Condition="_M_index == 14">_M_u._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_first._M_storage</Item>
+            <Item Name="type" Condition="_M_index == 15">"$T16",s</Item>
+            <Item Name="value" Condition="_M_index == 15">_M_u._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_rest._M_first._M_storage</Item>
+        </Expand>
+    </Type>
+
+    <Type Name="std::any">
+        <DisplayString Condition="_M_manager == 0">void</DisplayString>
+        <DisplayString>{_M_storage}</DisplayString> <!-- Can't execute `_M_manager(_Op_get_type_info, this, &__arg)` to get the stored type. TODO -->
+    </Type>
+
+    <Type Name="std::pair&lt;*&gt;">
+        <DisplayString>({first}, {second})</DisplayString>
+        <Expand>
+            <Item Name="first">first</Item>
+            <Item Name="second">second</Item>
+        </Expand>
+    </Type>
+
+    <Type Name="std::bitset&lt;*&gt;">
+        <DisplayString>{{ size={$T1} }}</DisplayString>
+        <Expand>
+            <Item Name="size">$T1</Item>
+            <IndexListItems Condition="$T1&lt;=32">
+                <Size>$T1</Size>
+                <ValueNode>(_M_w &gt;&gt; $i) &amp; 1</ValueNode>
+            </IndexListItems>
+            <IndexListItems Condition="$T1&gt;32">
+                <Size>$T1</Size>
+                <ValueNode>(_M_w[$i / 32] &gt;&gt; ($i % 32)) &amp; 1</ValueNode>
+            </IndexListItems>
+        </Expand>
+    </Type>
+
+    <Type Name="std::string">
+        <AlternativeType Name="std::__cxx11::basic_string&lt;*&gt;"/>
+        <DisplayString>{_M_dataplus._M_p,s}</DisplayString>
+        <Expand>
+            <Item Name="size">_M_string_length</Item>
+            <Item Name="capacity" Condition="_M_dataplus._M_p == _M_local_buf">sizeof(_M_local_buf)</Item>
+            <Item Name="capacity" Condition="_M_dataplus._M_p != _M_local_buf">_M_allocated_capacity</Item>
+            <Item Name="string">_M_dataplus._M_p,s</Item>
+            <ArrayItems>
+                <Size>_M_string_length</Size>
+                <ValuePointer>_M_dataplus._M_p</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
+
+    <Type Name="std::string_view">
+        <AlternativeType Name="std::basic_string_view&lt;*&gt;"/>
+        <DisplayString>{_M_str,s}</DisplayString>
+        <Expand>
+            <Item Name="size">_M_len</Item>
+            <Item Name="string">_M_str,s</Item>
+            <ArrayItems>
+                <Size>_M_len</Size>
+                <ValuePointer>_M_str</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
+
+    <Type Name="std::stringstream"> <!-- "std::stringstream" type isn't recognized by vscode natvis. TODO. Can't get std::__cxx11::basic_stringstream<...>::_M_stringbuf. GDB print: "<incomplete type>"-->
+        <AlternativeType Name="std::__cxx11::basic_stringstream&lt;char&gt;"/>
+        <DisplayString>{_M_stringbuf}</DisplayString>
+        <Expand>
+            <Item Name="string">_M_stringbuf</Item>
+        </Expand>
+    </Type>
+
+    <Type Name="std::stringbuf"> <!-- "std::stringbuf" type isn't recognized by vscode natvis. TODO. -->
+        <AlternativeType Name="std::__cxx11::basic_stringbuf&lt;char&gt;"/>
+        <DisplayString>{_M_string}</DisplayString>
+        <Expand>
+            <ExpandedItem>_M_string</ExpandedItem>
+        </Expand>
+    </Type>
+
+    <Type Name="std::span&lt;*&gt;">
+        <DisplayString>{{ size={_M_extent._M_extent_value} }}</DisplayString>
+        <Expand>
+            <Item Name="size">_M_extent._M_extent_value</Item>
+            <Item Name="size_bytes">_M_extent._M_extent_value * sizeof($T1)</Item>
+            <ArrayItems>
+                <Size>_M_extent._M_extent_value</Size>
+                <ValuePointer>_M_ptr</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
+
+    <Type Name="std::complex&lt;*&gt;">
+        <DisplayString>{_M_value}</DisplayString>
+    </Type>
+
+    <Type Name="std::valarray&lt;*&gt;">
+        <DisplayString>{{ size={_M_size} }}</DisplayString>
+        <Expand>
+            <ArrayItems>
+                <Size>_M_size</Size>
+                <ValuePointer>_M_data</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
+
+    <Type Name="std::function&lt;*&gt;">
+        <DisplayString Condition="_M_manager == 0">empty</DisplayString>
+        <DisplayString>{*_M_manager}</DisplayString>
+        <Expand>
+            <ExpandedItem Condition="_M_manager != 0">*_M_manager</ExpandedItem>
+        </Expand>
+    </Type>
+
+    <Type Name="std::atomic&lt;*&gt;">
+        <DisplayString>{_M_i}</DisplayString>
+        <Expand>
+            <ExpandedItem>_M_i</ExpandedItem>
+        </Expand>
+    </Type>
+
+    <Type Name="std::mutex">
+        <AlternativeType Name="std::timed_mutex"/>
+        <DisplayString>{{ {_M_mutex} }}</DisplayString> <!-- TODO: Visualize internal structure of pthread_mutex_t -->
+    </Type>
+
+    <Type Name="std::shared_mutex">
+        <DisplayString>{{ {_M_impl._M_rwlock} }}</DisplayString> <!-- TODO: Visualize internal structure of pthread_rwlock_t -->
+    </Type>
+
+    <Type Name="std::lock_guard&lt;*&gt;">
+        <DisplayString>{($T1)_M_device}</DisplayString>
+        <Expand>
+            <Item Name="mutex">($T1)_M_device</Item>
+        </Expand>
+    </Type>
+
+    <Type Name="std::scoped_lock&lt;*&gt;">
+        <DisplayString Condition="strlen($T4) != 0">{std::_Head_base&lt;0, $T1&amp;, false&gt;::_M_head(_M_devices)}, {std::_Head_base&lt;1, $T2&amp;, false&gt;::_M_head(_M_devices)}, {std::_Head_base&lt;2, $T3&amp;, false&gt;::_M_head(_M_devices)}, ...</DisplayString>
+        <DisplayString Condition="strlen($T3) != 0">{std::_Head_base&lt;0, $T1&amp;, false&gt;::_M_head(_M_devices)}, {std::_Head_base&lt;1, $T2&amp;, false&gt;::_M_head(_M_devices)}, {std::_Head_base&lt;2, $T3&amp;, false&gt;::_M_head(_M_devices)}</DisplayString>
+        <DisplayString Condition="strlen($T2) != 0">{std::_Head_base&lt;0, $T1&amp;, false&gt;::_M_head(_M_devices)}, {std::_Head_base&lt;1, $T2&amp;, false&gt;::_M_head(_M_devices)}</DisplayString>
+        <DisplayString>{($T1)_M_device}</DisplayString>
+        <Expand>
+            <Item Name="[0]" Condition="!$T2">($T1)_M_device</Item>
+            <Item Name="[0]" Condition="strlen($T2) != 0">std::_Head_base&lt;0, $T1&amp;, false&gt;::_M_head(_M_devices)</Item>
+            <Item Name="[1]" Condition="strlen($T2) != 0">std::_Head_base&lt;1, $T2&amp;, false&gt;::_M_head(_M_devices)</Item>
+            <Item Name="[2]" Condition="strlen($T3) != 0">std::_Head_base&lt;2, $T3&amp;, false&gt;::_M_head(_M_devices)</Item>
+            <Item Name="[3]" Condition="strlen($T4) != 0">std::_Head_base&lt;3, $T4&amp;, false&gt;::_M_head(_M_devices)</Item>
+            <Item Name="[4]" Condition="strlen($T5) != 0">std::_Head_base&lt;4, $T5&amp;, false&gt;::_M_head(_M_devices)</Item>
+            <Item Name="[5]" Condition="strlen($T6) != 0">std::_Head_base&lt;5, $T6&amp;, false&gt;::_M_head(_M_devices)</Item>
+        </Expand>
+    </Type>
+
+    <Type Name="std::unique_lock&lt;*&gt;">
+        <DisplayString Condition="_M_owns">{{ locked }}</DisplayString>
+        <DisplayString>{{ free }}</DisplayString>
+        <Expand>
+            <Item Name="locked">_M_owns</Item>
+            <Item Name="mutex">($T1)*_M_device</Item>
+        </Expand>
+    </Type>
+
+    <Type Name="std::shared_lock&lt;*&gt;">
+        <DisplayString Condition="_M_owns">{{ locked }}</DisplayString>
+        <DisplayString>{{ free }}</DisplayString>
+        <Expand>
+            <Item Name="locked">_M_owns</Item>
+            <Item Name="mutex">($T1)*_M_pm</Item>
+        </Expand>
+    </Type>
+
+    <Type Name="std::promise&lt;*&gt;">
+        <AlternativeType Name="std::packaged_task&lt;*&gt;"/>
+        <DisplayString Condition="_M_future._M_ptr._M_result._M_t._M_t.std::_Head_base&lt;0, std::__future_base::_Result_base*, false&gt;::_M_head_impl != 0">{{ value set }}</DisplayString>
+        <DisplayString Condition="_M_future._M_ptr != 0">{{ value not set }}</DisplayString>
+        <!-- TODO: How to detect {{ empty }} state? -->
+    </Type>
+
+    <Type Name="std::future&lt;*&gt;">
+        <AlternativeType Name="std::shared_future&lt;*&gt;"/>
+        <!--<DisplayString>{($T1)(this-&gt;_M_get_result()._M_value())}</DisplayString>--> <!-- returns the result, but changes object state which cause runtime exception -->
+        <DisplayString Condition="_M_state._M_ptr._M_result._M_t._M_t.std::_Head_base&lt;0, std::__future_base::_Result_base*, false&gt;::_M_head_impl != 0">{{ value set }}</DisplayString>
+        <DisplayString Condition="_M_state._M_ptr != 0">{{ value not set }}</DisplayString>
+        <DisplayString>{{ empty }}</DisplayString>
+    </Type>
+
+    <Type Name="std::thread">
+        <DisplayString>{{ id={_M_id._M_thread} }}</DisplayString>
+    </Type>
+
+    <Type Name="std::jthread">
+        <DisplayString>{_M_thread}</DisplayString>
+    </Type>
+
+    <Type Name="std::filesystem::path">
+        <AlternativeType Name="std::filesystem::__cxx11::path"/>
+        <DisplayString>{_M_pathname._M_dataplus._M_p}</DisplayString>
+        <Expand>
+            <Item Name="size">_M_pathname._M_string_length</Item>
+            <Item Name="string">_M_pathname._M_dataplus._M_p</Item>
+            <ArrayItems>
+                <Size>_M_pathname._M_string_length</Size>
+                <ValuePointer>_M_pathname._M_dataplus._M_p</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
+
+    <Type Name="std::source_location">
+        <DisplayString>{_M_impl._M_function_name}: (line {_M_impl._M_line}:{_M_impl._M_column})</DisplayString>
+        <Expand>
+            <Item Name="function">_M_impl._M_function_name</Item>
+            <Item Name="file">_M_impl._M_file_name</Item>
+            <Item Name="line">_M_impl._M_line</Item>
+            <Item Name="column">_M_impl._M_column</Item>
+        </Expand>
+    </Type>
+
+    <Type Name="std::error_code">
+        <DisplayString>{{ value={_M_value}, category={this-&gt;message()} }}</DisplayString>
+        <Expand>
+            <Item Name="value">_M_value</Item>
+            <Item Name="category">this-&gt;message()</Item>
+        </Expand>
+    </Type>
+
+    <!-- Chrono -->
+
+    <Type Name="std::chrono::time_point"> <!-- "std::chrono::time_point" type isn't recognized by vscode natvis. TODO -->
+        <AlternativeType Name="std::chrono::system_clock::time_point"/>
+        <AlternativeType Name="std::chrono::high_resolution_clock::time_point"/>
+        <AlternativeType Name="std::chrono::_V2::system_clock::time_point"/>
+        <AlternativeType Name="std::chrono::_V2::high_resolution_clock::time_point"/>
+        
+        <DisplayString>{1969 + 4 * ((__d.__r / 1000 / 1000 / 1000 / 60 / 60 / 24 + 365) / (365 * 3 + 366)) + ((__d.__r / 1000 / 1000 / 1000 / 60 / 60 / 24 + 365) % (365 * 3 + 366) &lt;= (3 * 365) ? ((__d.__r / 1000 / 1000 / 1000 / 60 / 60 / 24 + 365) % (365 * 3 + 366)) / 365 : 3)} {((__d.__r / 1000 / 1000 / 1000 / 60 / 60 / 24 + 365) % (365 * 3 + 366) &lt;= (3 * 365) ? ((__d.__r / 1000 / 1000 / 1000 / 60 / 60 / 24 + 365) % (365 * 3 + 366)) % 365 : ((__d.__r / 1000 / 1000 / 1000 / 60 / 60 / 24 + 365) % (365 * 3 + 366)) - 365 * 3) + 1} day {(__d.__r / 1000 / 1000 / 1000 / 60 / 60) % 24}:{(__d.__r / 1000 / 1000 / 1000 / 60) % 60}:{(__d.__r / 1000 / 1000 / 1000) % 60} {(__d.__r / 1000 / 1000) % 1000} ms {(__d.__r / 1000) % 1000} μs {__d.__r % 1000} ns</DisplayString>
+    </Type>
+
+    <Type Name="std::chrono::steady_clock::time_point">
+        <AlternativeType Name="std::chrono::_V2::steady_clock::time_point"/>
+        <DisplayString Condition="__d.__r / 1000 / 1000 / 1000 / 60 / 60 / 24 == 0">{__d.__r / 1000 / 1000 / 1000 / 60 / 60 % 24}:{__d.__r / 1000 / 1000 / 1000 / 60 % 60}:{__d.__r / 1000 / 1000 / 1000 % 60} {__d.__r / 1000 / 1000 % 1000} ms {__d.__r / 1000 % 1000} μs {__d.__r % 1000} ns</DisplayString>
+        <DisplayString Condition="__d.__r / 1000 / 1000 / 1000 / 60 / 60 / 24 == 1">1 day {__d.__r / 1000 / 1000 / 1000 / 60 / 60 % 24}:{__d.__r / 1000 / 1000 / 1000 / 60 % 60}:{__d.__r / 1000 / 1000 / 1000 % 60} {__d.__r / 1000 / 1000 % 1000} ms {__d.__r / 1000 % 1000} μs {__d.__r % 1000} ns</DisplayString>
+        <DisplayString>{__d.__r / 1000 / 1000 / 1000 / 60 / 60 / 24} days {__d.__r / 1000 / 1000 / 1000 / 60 / 60 % 24}:{__d.__r / 1000 / 1000 / 1000 / 60 % 60}:{__d.__r / 1000 / 1000 / 1000 % 60} {__d.__r / 1000 / 1000 % 1000} ms {__d.__r / 1000 % 1000} μs {__d.__r % 1000} ns</DisplayString>
+    </Type>
+
+    <Type Name="std::time_t">
+        <AlternativeType Name="time_t"/>
+        <DisplayString>{1969 + 4 * ((*this / 60 / 60 / 24 + 365) / (365 * 3 + 366)) + ((*this / 60 / 60 / 24 + 365) % (365 * 3 + 366) &lt;= (3 * 365) ? ((*this / 60 / 60 / 24 + 365) % (365 * 3 + 366)) / 365 : 3)} {((*this / 60 / 60 / 24 + 365) % (365 * 3 + 366) &lt;= (3 * 365) ? ((*this / 60 / 60 / 24 + 365) % (365 * 3 + 366)) % 365 : ((*this / 60 / 60 / 24 + 365) % (365 * 3 + 366)) - 365 * 3) + 1} day {(*this / 60 / 60) % 24}:{(*this / 60) % 60}:{*this % 60}</DisplayString>
+    </Type>
+
+    <Type Name="std::tm">
+        <AlternativeType Name="tm"/>
+        <DisplayString>{tm_year + 1900}-{tm_mon}-{tm_mday + 1} {tm_hour}:{tm_min}:{tm_sec}</DisplayString>
+    </Type>
+
+    <Type Name="timeval">
+        <DisplayString>{1969 + 4 * ((tv_sec / 60 / 60 / 24 + 365) / (365 * 3 + 366)) + ((tv_sec / 60 / 60 / 24 + 365) % (365 * 3 + 366) &lt;= (3 * 365) ? ((tv_sec / 60 / 60 / 24 + 365) % (365 * 3 + 366)) / 365 : 3)} {((tv_sec / 60 / 60 / 24 + 365) % (365 * 3 + 366) &lt;= (3 * 365) ? ((tv_sec / 60 / 60 / 24 + 365) % (365 * 3 + 366)) % 365 : ((tv_sec / 60 / 60 / 24 + 365) % (365 * 3 + 366)) - 365 * 3) + 1} day {(tv_sec / 60 / 60) % 24}:{(tv_sec / 60) % 60}:{tv_sec % 60} {(tv_usec / 1000) % 1000} ms {tv_usec % 1000} μs</DisplayString>
+    </Type>
+
+    <Type Name="std::chrono::system_clock::duration">
+        <AlternativeType Name="std::chrono::steady_clock::duration"/>
+        <AlternativeType Name="std::chrono::high_resolution_clock::duration"/>
+        <AlternativeType Name="std::chrono::_V2::system_clock::duration"/>
+        <AlternativeType Name="std::chrono::_V2::steady_clock::duration"/>
+        <AlternativeType Name="std::chrono::_V2::high_resolution_clock::duration"/>
+        <DisplayString Condition="__r / 1000 / 1000 / 1000 / 60 / 60 / 24 == 0 &amp;&amp; __r / 1000 / 1000 / 1000 / 60 / 60 % 24 == 0 &amp;&amp; __r / 1000 / 1000 / 1000 / 60 % 60 == 0 &amp;&amp; __r / 1000 / 1000 / 1000 % 60 == 0 &amp;&amp; __r / 1000 / 1000 % 1000 == 0 &amp;&amp; __r % 1000 == 0">{__r / 1000 % 1000} μs</DisplayString>
+        <DisplayString Condition="__r / 1000 / 1000 / 1000 / 60 / 60 / 24 == 0 &amp;&amp; __r / 1000 / 1000 / 1000 / 60 / 60 % 24 == 0 &amp;&amp; __r / 1000 / 1000 / 1000 / 60 % 60 == 0 &amp;&amp; __r / 1000 / 1000 / 1000 % 60 == 0 &amp;&amp; __r / 1000 / 1000 % 1000 == 0">{__r / 1000 % 1000} μs {__r % 1000} ns</DisplayString>
+        <DisplayString Condition="__r / 1000 / 1000 / 1000 / 60 / 60 / 24 == 0 &amp;&amp; __r / 1000 / 1000 / 1000 / 60 / 60 % 24 == 0 &amp;&amp; __r / 1000 / 1000 / 1000 / 60 % 60 == 0 &amp;&amp; __r / 1000 / 1000 / 1000 % 60 == 0">{__r / 1000 / 1000 % 1000} ms {__r / 1000 % 1000} μs {__r % 1000} ns</DisplayString>
+        <DisplayString Condition="__r / 1000 / 1000 / 1000 / 60 / 60 / 24 == 0 &amp;&amp; __r / 1000 / 1000 / 1000 / 60 / 60 % 24 == 0 &amp;&amp; __r / 1000 / 1000 / 1000 / 60 % 60 == 0">{__r / 1000 / 1000 / 1000 % 60} s {__r / 1000 / 1000 % 1000} ms {__r / 1000 % 1000} μs {__r % 1000} ns</DisplayString>
+        <DisplayString Condition="__r / 1000 / 1000 / 1000 / 60 / 60 / 24 == 0 &amp;&amp; __r / 1000 / 1000 / 1000 / 60 / 60 % 24 == 0">{__r / 1000 / 1000 / 1000 / 60 % 60} m {__r / 1000 / 1000 / 1000 % 60} s {__r / 1000 / 1000 % 1000} ms {__r / 1000 % 1000} μs {__r % 1000} ns</DisplayString>
+        <DisplayString Condition="__r / 1000 / 1000 / 1000 / 60 / 60 / 24 == 0">{__r / 1000 / 1000 / 1000 / 60 / 60 % 24}:{__r / 1000 / 1000 / 1000 / 60 % 60}:{__r / 1000 / 1000 / 1000 % 60} {__r / 1000 / 1000 % 1000} ms {__r / 1000 % 1000} μs {__r % 1000} ns</DisplayString>
+        <DisplayString Condition="__r / 1000 / 1000 / 1000 / 60 / 60 / 24 == 1">1 day {__r / 1000 / 1000 / 1000 / 60 / 60 % 24}:{__r / 1000 / 1000 / 1000 / 60 % 60}:{__r / 1000 / 1000 / 1000 % 60} {__r / 1000 / 1000 % 1000} ms {__r / 1000 % 1000} μs {__r % 1000} ns</DisplayString>
+        <DisplayString>{__r / 1000 / 1000 / 1000 / 60 / 60 / 24} days {__r / 1000 / 1000 / 1000 / 60 / 60 % 24}:{__r / 1000 / 1000 / 1000 / 60 % 60}:{__r / 1000 / 1000 / 1000 % 60} {__r / 1000 / 1000 % 1000} ms {__r / 1000 % 1000} μs {__r % 1000} ns</DisplayString>
+    </Type>
+
+    <Type Name="std::chrono::nanoseconds">
+        <AlternativeType Name="std::chrono::duration&lt;*,std::ratio&lt;1,1000000000&gt;&gt;"/>
+        <DisplayString>{__r} ns</DisplayString>
+    </Type>
+
+    <Type Name="std::chrono::microseconds">
+        <AlternativeType Name="std::chrono::duration&lt;*,std::ratio&lt;1,1000000&gt;&gt;"/>
+        <DisplayString>{__r} μs</DisplayString>
+    </Type>
+
+    <Type Name="std::chrono::milliseconds">
+        <AlternativeType Name="std::chrono::duration&lt;*,std::ratio&lt;1,1000&gt;&gt;"/>
+        <DisplayString>{__r} ms</DisplayString>
+    </Type>
+
+    <Type Name="std::chrono::seconds">
+        <AlternativeType Name="std::chrono::duration&lt;*,std::ratio&lt;1,1&gt;&gt;"/>
+        <DisplayString>{__r} s</DisplayString>
+    </Type>
+
+    <Type Name="std::chrono::minutes">
+        <AlternativeType Name="std::chrono::duration&lt;*,std::ratio&lt;60,1&gt;&gt;"/>
+        <DisplayString>{__r} m</DisplayString>
+    </Type>
+
+    <Type Name="std::chrono::hours">
+        <AlternativeType Name="std::chrono::duration&lt;*,std::ratio&lt;3600,1&gt;&gt;"/>
+        <DisplayString>{__r} h</DisplayString>
+    </Type>
+
+    <Type Name="std::chrono::days">
+        <AlternativeType Name="std::chrono::duration&lt;*,std::ratio&lt;86400,1&gt;&gt;"/>
+        <DisplayString>{__r} d</DisplayString>
+    </Type>
+
+    <Type Name="std::chrono::weeks">
+        <AlternativeType Name="std::chrono::duration&lt;*,std::ratio&lt;604800,1&gt;&gt;"/>
+        <DisplayString>{__r} w</DisplayString>
+    </Type>
+
+    <Type Name="std::chrono::months">
+        <AlternativeType Name="std::chrono::duration&lt;*,std::ratio&lt;2629746,1&gt;&gt;"/>
+        <DisplayString Condition="__r == 1">{__r} month</DisplayString>
+        <DisplayString>{__r} months</DisplayString>
+    </Type>
+
+    <Type Name="std::chrono::years">
+        <AlternativeType Name="std::chrono::duration&lt;*,std::ratio&lt;31556952,1&gt;&gt;"/>
+        <DisplayString Condition="__r == 1">{__r} year</DisplayString>
+        <DisplayString>{__r} years</DisplayString>
+    </Type>
+
+    <Type Name="std::chrono::day">
+        <DisplayString Condition="_M_d % 10 == 1 &amp;&amp; _M_d % 100 != 11">{(int)_M_d}st</DisplayString>
+        <DisplayString Condition="_M_d % 10 == 2 &amp;&amp; _M_d % 100 != 12">{(int)_M_d}nd</DisplayString>
+        <DisplayString Condition="_M_d % 10 == 3 &amp;&amp; _M_d % 100 != 13">{(int)_M_d}rd</DisplayString>
+        <DisplayString>{(int)_M_d}th</DisplayString>
+    </Type>
+
+    <Type Name="std::chrono::month">
+        <DisplayString Condition="_M_m == 1">January</DisplayString>
+        <DisplayString Condition="_M_m == 2">February</DisplayString>
+        <DisplayString Condition="_M_m == 3">March</DisplayString>
+        <DisplayString Condition="_M_m == 4">April</DisplayString>
+        <DisplayString Condition="_M_m == 5">May</DisplayString>
+        <DisplayString Condition="_M_m == 6">June</DisplayString>
+        <DisplayString Condition="_M_m == 7">July</DisplayString>
+        <DisplayString Condition="_M_m == 8">August</DisplayString>
+        <DisplayString Condition="_M_m == 9">September</DisplayString>
+        <DisplayString Condition="_M_m == 10">October</DisplayString>
+        <DisplayString Condition="_M_m == 11">November</DisplayString>
+        <DisplayString Condition="_M_m == 12">December</DisplayString>
+        <DisplayString>{_M_m}</DisplayString>
+    </Type>
+
+    <Type Name="std::chrono::year">
+        <DisplayString>{_M_y}</DisplayString>
+    </Type>
+
+    <Type Name="std::chrono::weekday">
+        <DisplayString Condition="_M_wd == 0">Sunday</DisplayString>
+        <DisplayString Condition="_M_wd == 1">Monday</DisplayString>
+        <DisplayString Condition="_M_wd == 2">Tuesday</DisplayString>
+        <DisplayString Condition="_M_wd == 3">Wednesday</DisplayString>
+        <DisplayString Condition="_M_wd == 4">Thursday</DisplayString>
+        <DisplayString Condition="_M_wd == 5">Friday</DisplayString>
+        <DisplayString Condition="_M_wd == 6">Saturday</DisplayString>
+        <DisplayString>{_M_wd}</DisplayString>
+    </Type>
+
+    <Type Name="std::chrono::weekday_indexed">
+        <DisplayString Condition="_M_index == 1">{(int)_M_index}st {_M_wd}</DisplayString>
+        <DisplayString Condition="_M_index == 2">{(int)_M_index}nd {_M_wd}</DisplayString>
+        <DisplayString Condition="_M_index == 3">{(int)_M_index}rd {_M_wd}</DisplayString>
+        <DisplayString Condition="_M_index == 4 || _M_index == 5">{(int)_M_index}th {_M_wd}</DisplayString>
+        <DisplayString>{(int)_M_index}, {_M_wd}</DisplayString>
+        <Expand>
+            <Item Name="weekday">_M_wd</Item>
+            <Item Name="index">(int)_M_index</Item>
+        </Expand>
+    </Type>
+
+    <Type Name="std::chrono::weekday_last">
+        <DisplayString>Last {_M_wd}</DisplayString>
+        <Expand>
+            <Item Name="weekday">_M_wd</Item>
+        </Expand>
+    </Type>
+
+    <Type Name="std::chrono::month_day">
+        <DisplayString>{_M_m} {_M_d}</DisplayString>
+        <Expand>
+            <Item Name="month">_M_m</Item>
+            <Item Name="day">_M_d</Item>
+        </Expand>
+    </Type>
+
+    <Type Name="std::chrono::month_day_last">
+        <DisplayString>Last day of {_M_m}</DisplayString>
+        <Expand>
+            <Item Name="month">_M_m</Item>
+        </Expand>
+    </Type>
+
+    <Type Name="std::chrono::month_weekday">
+        <DisplayString>{_M_wdi} of {_M_m}</DisplayString>
+        <Expand>
+            <Item Name="month">_M_m</Item>
+            <Item Name="weekday_indexed">_M_wdi</Item>
+        </Expand>
+    </Type>
+
+    <Type Name="std::chrono::month_weekday_last">
+        <DisplayString>Last {_M_wdl._M_wd} of {_M_m}</DisplayString>
+        <Expand>
+            <Item Name="month">_M_m</Item>
+            <Item Name="weekday">_M_wdl._M_wd</Item>
+        </Expand>
+    </Type>
+
+    <Type Name="std::chrono::year_month">
+        <DisplayString>{_M_y} {_M_m}</DisplayString>
+        <Expand>
+            <Item Name="year">_M_y</Item>
+            <Item Name="month">_M_m</Item>
+        </Expand>
+    </Type>
+
+    <Type Name="std::chrono::year_month_day">
+        <DisplayString>{_M_y} {_M_m} {_M_d}</DisplayString>
+        <Expand>
+            <Item Name="year">_M_y</Item>
+            <Item Name="month">_M_m</Item>
+            <Item Name="day">_M_d</Item>
+        </Expand>
+    </Type>
+
+    <Type Name="std::chrono::year_month_day_last">
+        <DisplayString>{_M_mdl}, {_M_y}</DisplayString>
+        <Expand>
+            <Item Name="year">_M_y</Item>
+            <Item Name="month">_M_mdl._M_m</Item>
+        </Expand>
+    </Type>
+
+    <Type Name="std::chrono::year_month_weekday">
+        <DisplayString>{_M_wdi} of {_M_m}, {_M_y}</DisplayString>
+        <Expand>
+            <Item Name="year">_M_y</Item>
+            <Item Name="month">_M_m</Item>
+            <Item Name="weekday_indexed">_M_wdi</Item>
+        </Expand>
+    </Type>
+
+    <Type Name="std::chrono::year_month_weekday_last">
+        <DisplayString>{_M_wdl} of {_M_m}, {_M_y}</DisplayString>
+        <Expand>
+            <Item Name="year">_M_y</Item>
+            <Item Name="month">_M_m</Item>
+            <Item Name="weekday">_M_wdl._M_wd</Item>
+        </Expand>
+    </Type>
+
+    <!-- "std::chrono::hh_mm_ss" type isn't recognized by vscode natvis. TODO -->
+    <Type Name="std::chrono::hh_mm_ss&lt;*&gt;">
+        <AlternativeType Name="std::chrono::hh_mm_ss&lt;std::chrono::duration&lt;*,std::ratio&lt;1,1000&gt;&gt;&gt;"/>
+        <DisplayString Condition="_M_is_neg">-{_M_h.__r} h {_M_m.__r} m {_M_s.__r} s {_M_ss.__r} ss</DisplayString>
+        <DisplayString>{_M_h.__r} h {_M_m.__r} m {_M_s.__r} s {_M_ss.__r} ss</DisplayString>
+        <Expand>
+            <Item Name="is_negative">_M_is_neg</Item>
+            <Item Name="hours">_M_h</Item>
+            <Item Name="minutes">_M_m</Item>
+            <Item Name="seconds">_M_s</Item>
+            <Item Name="subseconds">_M_ss</Item>
+        </Expand>
+    </Type>
+
+    <!-- Iterators -->
+
+    <Type Name="std::_Bit_iterator">
+        <AlternativeType Name="std::vector&lt;bool,*&gt;::iterator"/>
+        <AlternativeType Name="std::vector&lt;bool,*&gt;::const_iterator"/>
+        <AlternativeType Name="std::_Bit_const_iterator"/>
+        <DisplayString>{(bool)((*_M_p &gt;&gt; _M_offset) &amp; 1)}</DisplayString>
+    </Type>
+
+    <Type Name="std::_Bit_reference">
+        <DisplayString>{(bool)(*_M_p &amp; _M_mask)}</DisplayString>
+    </Type>
+
+    <Type Name="__gnu_cxx::__normal_iterator&lt;*&gt;">
+        <AlternativeType Name="std::vector&lt;*&gt;::iterator"/>
+        <AlternativeType Name="std::vector&lt;*&gt;::const_iterator"/>
+        <AlternativeType Name="std::span&lt;*&gt;::iterator"/>
+        <DisplayString>{{ *{_M_current}={*_M_current} }}</DisplayString>
+        <Expand>
+            <ExpandedItem>_M_current</ExpandedItem>
+        </Expand>
+    </Type>
+
+    <Type Name="std::_List_iterator&lt;*&gt;">
+        <AlternativeType Name="std::_List_const_iterator&lt;*&gt;"/>
+        <AlternativeType Name="std::__cxx11::list&lt;*&gt;::iterator"/> <!-- Doesn't work. $T1 recognized as "void" by vscode natvis. TODO. https://github.com/microsoft/vscode-cpptools/issues/10782 -->
+        <AlternativeType Name="std::__cxx11::list&lt;*&gt;::const_iterator"/> <!-- Doesn't work. $T1 recognized as "void" by vscode natvis. TODO -->
+        <DisplayString>{{ *{_M_node}={($T1)((std::_List_node&lt;$T1&gt;*)_M_node)-&gt;_M_storage} }}</DisplayString>
+        <Expand>
+            <ExpandedItem>($T1)((std::_List_node&lt;$T1&gt;*)_M_node)-&gt;_M_storage</ExpandedItem>
+        </Expand>
+    </Type>
+
+    <Type Name="std::_Fwd_list_iterator&lt;*&gt;">
+        <AlternativeType Name="std::_Fwd_list_const_iterator&lt;*&gt;"/>
+        <AlternativeType Name="std::forward_list&lt;*&gt;::iterator"/> <!-- Doesn't work. $T1 recognized as "void" by vscode natvis. TODO. https://github.com/microsoft/vscode-cpptools/issues/10782 -->
+        <AlternativeType Name="std::forward_list&lt;*&gt;::const_iterator"/> <!-- Doesn't work. $T1 recognized as "void" by vscode natvis. TODO -->
+        <DisplayString>{{ *{_M_node}={($T1)((std::_Fwd_list_node&lt;$T1&gt;*)_M_node)-&gt;_M_storage} }}</DisplayString>
+        <Expand>
+            <ExpandedItem>($T1)((std::_Fwd_list_node&lt;$T1&gt;*)_M_node)-&gt;_M_storage</ExpandedItem>
+        </Expand>
+    </Type>
+
+    <Type Name="std::_Rb_tree_iterator&lt;*&gt;">
+        <AlternativeType Name="std::_Rb_tree_const_iterator&lt;*&gt;"/>
+        <AlternativeType Name="std::set&lt;*&gt;::iterator"/> <!-- Doesn't work. $T1 recognized as "void" by vscode natvis. TODO. https://github.com/microsoft/vscode-cpptools/issues/10782 -->
+        <AlternativeType Name="std::set&lt;*&gt;::const_iterator"/> <!-- Doesn't work. $T1 recognized as "void" by vscode natvis. TODO -->
+        <AlternativeType Name="std::multiset&lt;*&gt;::iterator"/> <!-- Doesn't work. $T1 recognized as "void" by vscode natvis. TODO -->
+        <AlternativeType Name="std::multiset&lt;*&gt;::const_iterator"/> <!-- Doesn't work. $T1 recognized as "void" by vscode natvis. TODO -->
+        <DisplayString>{{ *{_M_node}={($T1)((std::_Rb_tree_node&lt;$T1&gt;*)_M_node)-&gt;_M_storage} }}</DisplayString>
+        <Expand>
+            <ExpandedItem>($T1)((std::_Rb_tree_node&lt;$T1&gt;*)_M_node)-&gt;_M_storage</ExpandedItem>
+        </Expand>
+    </Type>
+
+    <Type Name="std::_Deque_iterator&lt;*&gt;">
+        <AlternativeType Name="std::deque&lt;*&gt;::iterator"/>
+        <AlternativeType Name="std::deque&lt;*&gt;::const_iterator"/>
+        <DisplayString>{{ *{_M_cur}={*_M_cur} }}</DisplayString>
+        <Expand>
+            <ExpandedItem>*_M_cur</ExpandedItem>
+        </Expand>
+    </Type>
+
+    <Type Name="std::__detail::_Node_iterator&lt;*&gt;">
+        <AlternativeType Name="std::__detail::_Node_const_iterator&lt;*&gt;"/>
+        <AlternativeType Name="std::unordered_set&lt;*&gt;::iterator"/> <!-- Doesn't work. $T1 recognized as "void" by vscode natvis. TODO. https://github.com/microsoft/vscode-cpptools/issues/10782 -->
+        <AlternativeType Name="std::unordered_set&lt;*&gt;::const_iterator"/> <!-- Doesn't work. $T1 recognized as "void" by vscode natvis. TODO -->
+        <AlternativeType Name="std::unordered_multiset&lt;*&gt;::iterator"/> <!-- Doesn't work. $T1 recognized as "void" by vscode natvis. TODO -->
+        <AlternativeType Name="std::unordered_multiset&lt;*&gt;::const_iterator"/> <!-- Doesn't work. $T1 recognized as "void" by vscode natvis. TODO -->
+        <DisplayString Condition="_M_cur == 0">{{ null }}</DisplayString>
+        <DisplayString>{{ *{_M_cur}={($T1)_M_cur._M_storage} }}</DisplayString>
+        <Expand>
+            <ExpandedItem>($T1)_M_cur._M_storage</ExpandedItem>
+        </Expand>
+    </Type>
+
+    <Type Name="std::unordered_map&lt;*&gt;::iterator"> <!-- Doesn't work. $T1 and $T2 recognized as "void" by vscode natvis. TODO. https://github.com/microsoft/vscode-cpptools/issues/10782 -->
+        <AlternativeType Name="std::unordered_map&lt;*&gt;::const_iterator"/> <!-- Doesn't work. $T1 and $T2 recognized as "void" by vscode natvis. TODO -->
+        <AlternativeType Name="std::unordered_multimap&lt;*&gt;::iterator"/> <!-- Doesn't work. $T1 and $T2 recognized as "void" by vscode natvis. TODO -->
+        <AlternativeType Name="std::unordered_multimap&lt;*&gt;::const_iterator"/> <!-- Doesn't work. $T1 and $T2 recognized as "void" by vscode natvis. TODO -->
+        <DisplayString Condition="_M_cur == 0">{{ null }}</DisplayString>
+        <DisplayString>{{ *{_M_cur}={(std::pair&lt;$T1,$T2&gt;)_M_cur._M_storage} }}</DisplayString>
+        <Expand>
+            <ExpandedItem>(std::pair&lt;$T1,$T2&gt;)_M_cur._M_storage</ExpandedItem>
+        </Expand>
+    </Type>
+
+    <Type Name="std::reverse_iterator&lt;std::_Bit_iterator&gt;">
+        <AlternativeType Name="std::reverse_iterator&lt;std::_Bit_const_iterator&gt;"/>
+        <AlternativeType Name="std::vector&lt;bool,*&gt;::reverse_iterator"/>
+        <AlternativeType Name="std::vector&lt;bool,*&gt;::const_reverse_iterator"/>
+        <DisplayString>{(bool)((*current._M_p &gt;&gt; (current._M_offset - 1)) &amp; 1)}</DisplayString>
+    </Type>
+
+    <Type Name="std::reverse_iterator&lt;__gnu_cxx::__normal_iterator&lt;*&gt;&gt;">
+        <AlternativeType Name="std::vector&lt;*&gt;::reverse_iterator"/>
+        <AlternativeType Name="std::vector&lt;*&gt;::const_reverse_iterator"/>
+        <AlternativeType Name="std::span&lt;*&gt;::reverse_iterator"/>
+        <DisplayString>{{ *{current._M_current - 1}={*(current._M_current - 1)} }}</DisplayString>
+        <Expand>
+            <ExpandedItem>current._M_current - 1</ExpandedItem>
+        </Expand>
+    </Type>
+
+    <Type Name="std::reverse_iterator&lt;std::_List_iterator&lt;*&gt;&gt;">
+        <AlternativeType Name="std::reverse_iterator&lt;std::_List_const_iterator&lt;*&gt;&gt;"/>
+        <DisplayString>{ ($T1)(current._M_node._M_prev) }</DisplayString>
+        <Expand>
+            <ExpandedItem>($T1)(current._M_node._M_prev)</ExpandedItem>
+        </Expand>
+    </Type>
+
+    <Type Name="std::__cxx11::list&lt;*&gt;::reverse_iterator">
+        <AlternativeType Name="std::__cxx11::list&lt;*&gt;::const_reverse_iterator"/>
+        <DisplayString>{ (std::_List_iterator&lt;$T1&gt;)(current._M_node._M_prev) }</DisplayString> <!-- Doesn't work. $T1 recognized as "void" by vscode natvis. TODO. https://github.com/microsoft/vscode-cpptools/issues/10782 -->
+        <Expand>
+            <ExpandedItem>(std::_List_iterator&lt;$T1&gt;)(current._M_node._M_prev)</ExpandedItem> <!-- Doesn't work. $T1 recognized as "void" by vscode natvis. TODO -->
+        </Expand>
+    </Type>
+
+    <Type Name="std::reverse_iterator&lt;std::_Rb_tree_iterator&lt;*&gt;&gt;">
+        <AlternativeType Name="std::reverse_iterator&lt;std::_Rb_tree_const_iterator&lt;*&gt;&gt;"/>
+        <AlternativeType Name="std::set&lt;*&gt;::reverse_iterator"/>
+        <AlternativeType Name="std::set&lt;*&gt;::const_reverse_iterator"/>
+        <AlternativeType Name="std::multiset&lt;*&gt;::reverse_iterator"/>
+        <AlternativeType Name="std::multiset&lt;*&gt;::const_reverse_iterator"/>
+        <AlternativeType Name="std::map&lt;*&gt;::reverse_iterator"/>
+        <AlternativeType Name="std::map&lt;*&gt;::const_reverse_iterator"/>
+        <AlternativeType Name="std::multimap&lt;*&gt;::reverse_iterator"/>
+        <AlternativeType Name="std::multimap&lt;*&gt;::const_reverse_iterator"/>
+        <!--<DisplayString>{{ *{this}={**this} }}</DisplayString>--> <!-- Doesn't work. {**this} here causes sigmentation fault. TODO -->
+        <Expand>
+            <Item Name="value">**this</Item> <!-- If operator*() isn't used in code, this Item get error: "Could not find operator*". TODO -->
+        </Expand>
+    </Type>
+
+    <Type Name="std::reverse_iterator&lt;std::_Deque_iterator&lt;*&gt;&gt;">
+        <AlternativeType Name="std::deque&lt;*&gt;::reverse_iterator"/>
+        <AlternativeType Name="std::deque&lt;*&gt;::const_reverse_iterator"/>
+        <DisplayString Condition="current._M_cur == current._M_first">{{ *{*(current._M_node - 1) + 512 / sizeof(*current._M_cur) - 1}={*(*(current._M_node - 1) + 512 / sizeof(*current._M_cur) - 1)} }}</DisplayString>
+        <DisplayString>{{ *{current._M_cur - 1}={*(current._M_cur - 1)} }}</DisplayString>
+        <Expand>
+            <ExpandedItem Condition="current._M_cur == current._M_first">*(*(current._M_node - 1) + 512 / sizeof(*current._M_cur) - 1)</ExpandedItem>
+            <ExpandedItem>*(current._M_cur - 1)</ExpandedItem>
+        </Expand>
+    </Type>
+
+    <Type Name="std::reverse_iterator&lt;*&gt;">
+        <DisplayString>{{ *{current - 1}={*(current - 1)} }}</DisplayString>
+        <Expand>
+            <ExpandedItem>*(current - 1)</ExpandedItem>
+        </Expand>
+    </Type>
+
+</AutoVisualizer>
