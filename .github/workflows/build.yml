@@ -1,24 +1,38 @@
 name: build
 
-on: [push, pull_request]
+on:
+  push:
+    paths-ignore:
+      - '**/*.md'
+      - '.gitattributes'
+      - '.gitignore'
+      - '.vscode/**'
+  pull_request:
+    paths-ignore:
+      - '**/*.md'
+      - '.gitattributes'
+      - '.gitignore'
+      - '.vscode/**'
 
 jobs:
   windows:
     runs-on: windows-latest
     steps:
       - name: Checkout with submodules
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      - name: Cache Arm GNU Toolchain and Ninja
-        uses: actions/cache@v3
+      - name: Cache Arm GNU Toolchain, xtensa-esp-elf, Ninja and Python environment
+        uses: actions/cache@v4
         id: cache
         with:
-          key: ${{ runner.OS }}-cache-${{ hashFiles('.github/workflows/build.yml') }}
+          key: ${{ runner.OS }}-cache-${{ hashFiles('.github/workflows/build.yml') }}-${{ hashFiles('.git/modules/third_party/esp-idf/HEAD') }}
           path: |
             C:\arm-gnu-toolchain
+            C:\xtensa-esp-elf
             C:\ninja
+            ~\.espressif
 
       - name: Install Arm GNU Toolchain
         if: steps.cache.outputs.cache-hit != 'true'
@@ -27,50 +41,141 @@ jobs:
           mkdir C:\arm-gnu-toolchain
           tar -xf arm-gnu-toolchain.zip -C C:\arm-gnu-toolchain --strip-components=1
 
+      - name: Install xtensa-esp-elf toolchain
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          curl.exe -L https://github.com/espressif/crosstool-NG/releases/download/esp-13.2.0_20240530/xtensa-esp-elf-13.2.0_20240530-x86_64-w64-mingw32_hotfix.zip -o xtensa-esp-elf-toolchain.zip
+          tar -xf xtensa-esp-elf-toolchain.zip -C C:\
+
       - name: Install Ninja
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
-          curl.exe -L https://github.com/ninja-build/ninja/releases/download/v1.11.1/ninja-win.zip -o ninja-win.zip
+          curl.exe -L https://github.com/ninja-build/ninja/releases/download/v1.12.1/ninja-win.zip -o ninja-win.zip
           mkdir C:\ninja
           tar -xf ninja-win.zip -C C:\ninja
 
-      - name: Build
+      - name: Install esp-idf Python environment and requirements
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          python -m pip install --upgrade pip
+          python third_party/esp-idf/tools/idf_tools.py install-python-env
+          python -m pip install -r third_party/esp-idf/tools/requirements/requirements.core.txt
+
+      - name: Set artifacts suffix
+        run: |
+          # Get git branch+hash or release tag
+          if ($env:GITHUB_REF.StartsWith('refs/tags/')) {
+              $git_artifact_suffix = git describe --tags --abbrev=0
+          } else {
+              $git_artifact_suffix = "$(git rev-parse --abbrev-ref HEAD)-$(git rev-parse --short HEAD)"
+          }
+          Add-Content -Path $env:GITHUB_ENV -Value "git_artifact_suffix=$git_artifact_suffix"
+
+      - name: Build STM32F4
         run: |
           $env:Path = "C:\arm-gnu-toolchain\bin;C:\ninja;" + $env:Path
-          .\build.ps1
+          make
 
-      - name: Set artifacts suffix (if tag)
-        if: startsWith(github.ref, 'refs/tags/') == true
-        run: Add-Content $env:GITHUB_ENV "git_suffix=$(git describe --tags --abbrev=0)"
-
-      - name: Set artifacts suffix (if branch)
-        if: startsWith(github.ref, 'refs/tags/') != true
-        run: Add-Content $env:GITHUB_ENV "git_suffix=$(Write-Output "$(git rev-parse --abbrev-ref HEAD)-$(git rev-parse --short HEAD)")"
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+      - name: Upload STM32F4 artifacts
+        uses: actions/upload-artifact@v4
         with:
-          name: stm32f4-${{env.git_suffix}}
+          name: stm32f4-${{env.git_artifact_suffix}}
           path: |
             build/stm32f4.bin
             build/stm32f4.elf
             build/stm32f4.map
           if-no-files-found: error
 
+      - name: Build STM32F0
+        run: |
+          $env:Path = "C:\arm-gnu-toolchain\bin;C:\ninja;" + $env:Path
+          make clean
+          make stm32f0
+          make
+
+      - name: Upload STM32F0 artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: stm32f0-${{env.git_artifact_suffix}}
+          path: |
+            build/stm32f0.bin
+            build/stm32f0.elf
+            build/stm32f0.map
+          if-no-files-found: error
+
+      - name: Build STM32F1
+        run: |
+          $env:Path = "C:\arm-gnu-toolchain\bin;C:\ninja;" + $env:Path
+          make clean
+          make stm32f1
+          make
+
+      - name: Upload STM32F1 artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: stm32f1-${{env.git_artifact_suffix}}
+          path: |
+            build/stm32f1.bin
+            build/stm32f1.elf
+            build/stm32f1.map
+          if-no-files-found: error
+
+      - name: Build RP2040
+        run: |
+          $env:Path = "C:\arm-gnu-toolchain\bin;C:\ninja;" + $env:Path
+          make clean
+          make rp2040
+          make
+
+      - name: Upload RP2040 artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: rp2040-${{env.git_artifact_suffix}}
+          path: |
+            build/rp2040.bin
+            build/rp2040.elf
+            build/rp2040.elf.map
+            build/rp2040.uf2
+          if-no-files-found: error
+
+      - name: Build ESP32S3
+        run: |
+          $env:Path = "C:\xtensa-esp-elf\bin;C:\ninja;" + $env:Path
+          make clean
+          make esp32s3
+          make
+          mv build/flash2_args build/flash_args
+
+      - name: Upload ESP32S3 artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: esp32s3-${{env.git_artifact_suffix}}
+          path: |
+            build/bootloader/bootloader.bin
+            build/bootloader/bootloader.elf
+            build/partition_table/partition-table.bin
+            build/esp32s3.bin
+            build/esp32s3.map
+            build/flash_args
+          if-no-files-found: error
+
   linux:
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout with submodules
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      - name: Cache Arm GNU Toolchain
-        uses: actions/cache@v3
+      - name: Cache Arm GNU Toolchain, xtensa-esp-elf toolchain and esp-idf Python environment
+        uses: actions/cache@v4
         id: cache
         with:
-          key: ${{ runner.OS }}-cache-${{ hashFiles('.github/workflows/build.yml') }}
-          path: ~/arm-gnu-toolchain
+          key: ${{ runner.OS }}-cache-${{ hashFiles('.github/workflows/build.yml') }}-${{ hashFiles('.git/modules/third_party/esp-idf/HEAD') }}
+          path: |
+            ~/arm-gnu-toolchain
+            ~/xtensa-esp-elf
+            ~/.espressif
 
       - name: Install Arm GNU Toolchain
         if: steps.cache.outputs.cache-hit != 'true'
@@ -79,10 +184,52 @@ jobs:
           mkdir ~/arm-gnu-toolchain
           tar -xf arm-gnu-toolchain.tar.xz -C ~/arm-gnu-toolchain --strip-components=1
 
-      - name: Install dependencies
+      - name: Install xtensa-esp-elf toolchain
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          curl -L https://github.com/espressif/crosstool-NG/releases/download/esp-13.2.0_20240530/xtensa-esp-elf-13.2.0_20240530-x86_64-linux-gnu.tar.xz -o xtensa-esp-elf-toolchain.tar.xz
+          tar -xf xtensa-esp-elf-toolchain.tar.xz -C ~/
+
+      - name: Install esp-idf Python environment and requirements
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          python -m pip install --upgrade pip
+          python third_party/esp-idf/tools/idf_tools.py install-python-env
+          python -m pip install -r third_party/esp-idf/tools/requirements/requirements.core.txt
+          python -m pip install -U pyparsing --force
+
+      - name: Install Ninja
         run: sudo apt update && sudo apt install ninja-build
 
-      - name: Build
+      - name: Build STM32F4
         run: |
           export PATH=~/arm-gnu-toolchain/bin:$PATH
-          ./build.sh
+          make
+
+      - name: Build STM32F0
+        run: |
+          export PATH=~/arm-gnu-toolchain/bin:$PATH
+          make clean
+          make stm32f0
+          make
+
+      - name: Build STM32F1
+        run: |
+          export PATH=~/arm-gnu-toolchain/bin:$PATH
+          make clean
+          make stm32f1
+          make
+
+      - name: Build RP2040
+        run: |
+          export PATH=~/arm-gnu-toolchain/bin:$PATH
+          make clean
+          make rp2040
+          make
+
+      - name: Build ESP32S3
+        run: |
+          export PATH=~/xtensa-esp-elf/bin:$PATH
+          make clean
+          make esp32s3
+          make
