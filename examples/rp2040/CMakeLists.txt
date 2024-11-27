@@ -77,3 +77,7 @@ set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES SUFFIX ".elf")
 add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
     COMMAND ${CMAKE_SIZE} ${CMAKE_PROJECT_NAME}.elf
 )
+
+# Flash .uf2 file to RPI-RP2 disk using RP2040 bootloader.
+include(debug-probes/uf2-bootloader.cmake)
+# If you have JLink connected. Use "flash" target from debug-probes/jlink.cmake with "-device RP2040_M0_0 -if SWD" options.

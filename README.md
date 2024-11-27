@@ -16,9 +16,12 @@ make
 
 ## Requirements
 * [GNU Arm Embedded Toolchain](https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads)
-* [CMake](https://cmake.org/download)
-* [Ninja](https://ninja-build.org)
-* [JLink](https://www.segger.com/downloads/jlink) for flashing and debugging
+* [CMake](https://github.com/Kitware/CMake/releases)
+* [Make](https://github.com/maweil/MakeForWindows/releases)
+* [Ninja](https://github.com/ninja-build/ninja/releases)
+* [JLink](https://www.segger.com/downloads/jlink) for debug and uploading firmware to all ARM Cortex-M
+
+  or just for STM32 only: **STM32CubeProgrammer** and **ST-LINK gdbserver** from [STM32CubeCLT](https://www.st.com/en/development-tools/stm32cubeclt.html?dl=redirect) package
 
 ## Requirements for ESP32 project
 * GNU Xtensa esp-elf toolchain from [ESP-IDF v5.3.1 package](https://dl.espressif.com/dl/esp-idf)

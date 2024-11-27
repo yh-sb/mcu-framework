@@ -70,3 +70,7 @@ add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
     COMMAND ${CMAKE_SIZE} ${CMAKE_PROJECT_NAME}.elf
     COMMAND ${CMAKE_OBJCOPY} -O binary ${CMAKE_PROJECT_NAME}.elf "${CMAKE_PROJECT_NAME}.bin"
 )
+
+# Add targets for flashing, erasing, resetting and debugging
+set(JLINK_PARAMS -device STM32F407VG -if SWD)
+include(debug-probes/jlink.cmake)

@@ -64,3 +64,7 @@ target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE
 add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
     COMMAND ${CMAKE_SIZE} ${CMAKE_PROJECT_NAME}
 )
+
+# Add targets for flashing, erasing, resetting and debugging
+set(ESPTOOL_PARAMS --chip esp32s3)
+include(debug-probes/esptool.cmake)
