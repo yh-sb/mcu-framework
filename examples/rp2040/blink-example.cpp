@@ -1,7 +1,5 @@
 // Example for RP2040 development board
 
-#include <stdio.h>
-#include "pico/stdio_uart.h"
 #include "FreeRTOS.h"
 #include "task.h"
 #include "periph/gpio_rp2040.hpp"
