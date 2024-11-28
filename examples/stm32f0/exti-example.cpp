@@ -21,21 +21,18 @@ int main(int argc, char *argv[])
     periph::systick::init();
     
     // Green LED
-    periph::gpio_stm32f0 green_led(periph::gpio_stm32f0::port::c, 9, periph::gpio::mode::digital_output, 0);
+    periph::gpio_stm32f0 green_led(periph::gpio_stm32f0::port::c, 9, periph::gpio::mode::digital_output);
+    
     // Blue LED
-    periph::gpio_stm32f0 blue_led(periph::gpio_stm32f0::port::c, 7, periph::gpio::mode::digital_output, 0);
+    periph::gpio_stm32f0 blue_led(periph::gpio_stm32f0::port::c, 7, periph::gpio::mode::digital_output);
+    
     // External interrupt gpio (Button)
     periph::gpio_stm32f0 button1_gpio(periph::gpio_stm32f0::port::a, 0, periph::gpio::mode::digital_input, 0);
     
-    periph::exti_stm32f0 exti1(button1_gpio, periph::exti::trigger::both);
-    exti1.set_callback([&blue_led]()
-    {
-        blue_led.toggle();
-    });
-    exti1.on();
+    periph::exti_stm32f0 exti0(button1_gpio, periph::exti::trigger::both);
+    exti0.set_callback([&blue_led]() { blue_led.toggle(); });
+    exti0.enable();
     
     xTaskCreate(heartbeat_task, "heartbeat", configMINIMAL_STACK_SIZE, &green_led, 1, nullptr);
     vTaskStartScheduler();
-    
-    return 0;
 }

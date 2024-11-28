@@ -21,6 +21,4 @@ int main(int argc, char *argv[])
     
     xTaskCreate(heartbeat_task, "heartbeat", configMINIMAL_STACK_SIZE, &led, 1, nullptr);
     vTaskStartScheduler();
-    
-    return 0;
 }

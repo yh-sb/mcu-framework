@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
     periph::systick::init();
     
     // Green LED
-    periph::gpio_stm32f4 green_led(periph::gpio_stm32f4::port::d, 12, periph::gpio::mode::digital_output, 0);
+    periph::gpio_stm32f4 green_led(periph::gpio_stm32f4::port::d, 12, periph::gpio::mode::digital_output);
     
     // Rotary incremental encoder
     periph::gpio_stm32f4 encoder_pin_a(periph::gpio_stm32f4::port::a, 7, periph::gpio::mode::digital_input, 1);
@@ -34,9 +34,7 @@ int main(int argc, char *argv[])
         green_led.toggle();
     });
     
-    xTaskCreate(encoder_task, "encoder_task", configMINIMAL_STACK_SIZE, &encoder, 1, nullptr);
+    xTaskCreate(encoder_task, "encoder", configMINIMAL_STACK_SIZE, &encoder, 1, nullptr);
     
     vTaskStartScheduler();
-    
-    return 0;
 }

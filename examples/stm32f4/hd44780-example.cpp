@@ -71,8 +71,8 @@ int main(int argc, char *argv[])
     periph::gpio_stm32f4 green_led(periph::gpio_stm32f4::port::d, 12, periph::gpio::mode::digital_output, 1);
     
     // Button 1
-    periph::gpio_stm32f4 button_1(periph::gpio_stm32f4::port::a, 0, periph::gpio::mode::digital_input);
-    drv::gpio_pin_debouncer button1_di(button_1, std::chrono::milliseconds(50), 1);
+    periph::gpio_stm32f4 button_1_gpio(periph::gpio_stm32f4::port::a, 0, periph::gpio::mode::digital_input);
+    drv::gpio_pin_debouncer button_1(button_1_gpio, std::chrono::milliseconds(50), 1);
     
     // HD44780 display
     periph::gpio_stm32f4 rs(periph::gpio_stm32f4::port::a, 5, periph::gpio::mode::digital_output);
@@ -85,10 +85,8 @@ int main(int argc, char *argv[])
     periph::timer_stm32f4 hd44780_timer(6);
     drv::hd44780 hd44780(rs, rw, e, db4, db5, db6, db7, hd44780_timer);
     
-    task_params_t task_params = {button1_di, hd44780, green_led};
-    xTaskCreate(button_1_task, "button_1_task", configMINIMAL_STACK_SIZE, &task_params, 1, nullptr);
+    task_params_t task_params = {button_1, hd44780, green_led};
+    xTaskCreate(button_1_task, "button_1", configMINIMAL_STACK_SIZE, &task_params, 1, nullptr);
     
     vTaskStartScheduler();
-    
-    return 0;
 }

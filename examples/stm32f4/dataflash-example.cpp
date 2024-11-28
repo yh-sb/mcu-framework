@@ -1,5 +1,5 @@
 // Example for STM32F4DISCOVERY development board
-// SD card connected to SPI1 interface (PA7-MOSI, PA6-MISO, PA5-CLK, PA4-CS)
+// SD card connected to SPI1: PA7-MOSI, PA6-MISO, PA5-CLK, PA4-CS
 
 #include <cstring>
 #include "FreeRTOS.h"
@@ -57,8 +57,8 @@ int main(int argc, char *argv[])
     periph::gpio_stm32f4 green_led(periph::gpio_stm32f4::port::d, 12, periph::gpio::mode::digital_output, 1);
     
     // Button 1
-    periph::gpio_stm32f4 button_1(periph::gpio_stm32f4::port::a, 0, periph::gpio::mode::digital_input);
-    drv::gpio_pin_debouncer button1_di(button_1, std::chrono::milliseconds(50), 1);
+    periph::gpio_stm32f4 button1_gpio(periph::gpio_stm32f4::port::a, 0, periph::gpio::mode::digital_input);
+    drv::gpio_pin_debouncer button_1(button_1_gpio, std::chrono::milliseconds(50), 1);
     
     // AT45DB dataflash chip
     periph::gpio_stm32f4 spi1_mosi(periph::gpio_stm32f4::port::a, 7, periph::gpio::mode::alternate_function);
@@ -71,10 +71,8 @@ int main(int argc, char *argv[])
         periph::spi::bit_order::msb, spi1_write_dma, spi1_read_dma, spi1_mosi, spi1_miso, spi1_clk);
     drv::dataflash at45db(spi1, spi1_cs);
     
-    task_params_t task_params = {button1_di, at45db, green_led};
-    xTaskCreate(button_1_task, "button_1_task", configMINIMAL_STACK_SIZE, &task_params, 1, nullptr);
+    task_params_t task_params = {button_1, at45db, green_led};
+    xTaskCreate(button_1_task, "button_1", configMINIMAL_STACK_SIZE, &task_params, 1, nullptr);
     
     vTaskStartScheduler();
-    
-    return 0;
 }
