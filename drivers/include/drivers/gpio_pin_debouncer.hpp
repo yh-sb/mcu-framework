@@ -32,4 +32,4 @@ private:
     bool state;
     size_t cnt;
 };
-}
+} // namespace drv

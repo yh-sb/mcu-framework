@@ -2,7 +2,6 @@
 #include "drivers/encoder.hpp"
 
 using namespace drv;
-using namespace periph;
 
 enum
 {
@@ -18,8 +17,8 @@ encoder::encoder(periph::gpio &a, periph::gpio &b):
     prev_state(STATE_0_0),
     prev_prev_state(STATE_0_0)
 {
-    assert(a.mode() == gpio::mode::digital_input);
-    assert(b.mode() == gpio::mode::digital_input);
+    assert(a.mode() == periph::gpio::mode::digital_input);
+    assert(b.mode() == periph::gpio::mode::digital_input);
 }
 
 encoder::~encoder()

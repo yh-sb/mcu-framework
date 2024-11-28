@@ -92,7 +92,7 @@ std::tm rtc::get()
 
 rtc::res rtc::set(std::tm &tm)
 {
-    //assert(is_valid(time));
+    assert(is_valid(tm));
     
     // Normalize time for STM32 RTC periphery
     tm.tm_mon++;
@@ -118,12 +118,12 @@ rtc::res rtc::set(std::tm &tm)
     tmp_time |= (tm.tm_sec / 10) << RTC_TR_ST_Pos;
     tmp_time |= (tm.tm_sec % 10) << RTC_TR_SU_Pos;
     
-    auto result = enter_init();
-    if(result != res::ok)
+    auto res = enter_init();
+    if(res != res::ok)
     {
         // Write protection enable
         RTC->WPR = 0xFF;
-        return result;
+        return res;
     }
     
     RTC->TR = tmp_time;
@@ -138,12 +138,12 @@ rtc::res rtc::set(std::tm &tm)
 
 void rtc::bckp_write(uint8_t addr, const void *buff, size_t size)
 {
-    
+    // TODO
 }
 
 void rtc::bckp_read(uint8_t addr, void *buff, size_t size)
 {
-    
+    // TODO
 }
 
 bool rtc::is_valid(const std::tm &tm)
@@ -155,7 +155,7 @@ bool rtc::is_valid(const std::tm &tm)
         tm.tm_wday <= 6 && tm.tm_yday <= 365;
 }
 
-void rtc::set_alarm_callback(std::function<void(const std::tm &)> on_alarm)
+void rtc::set_alarm_callback(std::function<void(const std::tm &tm)> on_alarm)
 {
     ::on_alarm = on_alarm;
 }

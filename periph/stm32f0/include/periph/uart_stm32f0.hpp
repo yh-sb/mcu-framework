@@ -31,7 +31,19 @@ public:
         odd
     };
     
-    uart_stm32f0(uint8_t uart, uint32_t baudrate, stopbits stopbits, parity parity,
+    /**
+     * @brief  Construct uart (universal asynchronous receiver-transmitter) object
+     * 
+     * @param  uart     Number of UART interface. Can be 1 to 8
+     * @param  baudrate Baudrate in bits per second
+     * @param  stopbits Number of stop bits
+     * @param  parity   Parity bit
+     * @param  dma_tx   DMA instance for transmitting data
+     * @param  dma_rx   DMA instance for receiving data
+     * @param  gpio_tx  GPIO pin for transmitting data
+     * @param  gpio_rx  GPIO pin for receiving data
+     */
+    uart_stm32f0(uint8_t uart, uint32_t baudrate, enum stopbits stopbits, enum parity parity,
         dma_stm32f0 &dma_tx, dma_stm32f0 &dma_rx, gpio_stm32f0 &gpio_tx, gpio_stm32f0 &gpio_rx);
     ~uart_stm32f0();
     

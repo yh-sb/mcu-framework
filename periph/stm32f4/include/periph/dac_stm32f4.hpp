@@ -16,11 +16,11 @@ public:
     };
     
     /**
-     * @brief  Construct a new dac stm32f4 object
+     * @brief  Construct dac (digital to analog converter) object
      * 
-     * @param  dac Can be 1 or 2. Refers to the STM32F4 DAC1 and DAC2.
+     * @param  dac   Can be 1 or 2. Refers to the DAC1 and DAC2
      * @param  align Alignment of the data
-     * @param  gpio GPIO pin to be used as DAC output
+     * @param  gpio  GPIO pin to be used as DAC output
      */
     dac_stm32f4(uint8_t dac, enum align align, gpio &gpio);
     ~dac_stm32f4();
@@ -35,4 +35,4 @@ private:
     gpio &gpio;
     static constexpr float v_ref = 3.3;
 };
-}
+} // namespace periph

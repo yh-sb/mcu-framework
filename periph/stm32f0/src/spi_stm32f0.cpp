@@ -7,7 +7,7 @@
 
 using namespace periph;
 
-static constexpr auto spis = 2; // Total number of SPI periph in STM32F0
+static constexpr auto spis = 2; // Total number of SPI interfaces
 
 static spi_stm32f0 *obj_list[spis];
 
@@ -304,7 +304,7 @@ spi::res spi_stm32f0::write(const void *buff, uint16_t size, gpio *cs)
     write_dma.source((uint8_t*)write_buff);
     write_dma.size(size);
     write_dma.start();
-    spi_regs[this->spi]->CR2 |= SPI_CR2_TXDMAEN;
+    spi_regs[spi]->CR2 |= SPI_CR2_TXDMAEN;
     
     // Task will be unlocked later from isr
     ulTaskNotifyTake(true, portMAX_DELAY);
@@ -411,7 +411,7 @@ void spi_stm32f0::gpio_af_init(gpio_stm32f0 &gpio)
     GPIO_TypeDef *gpio_reg = gpio_hw_mapping::gpio[static_cast<uint8_t>(gpio.port())];
     uint8_t pin = gpio.pin();
     
-    // Push-pull type
+    // Push-pull
     gpio_reg->OTYPER &= ~(GPIO_OTYPER_OT_0 << pin);
     
     // Configure alternate function
@@ -425,7 +425,7 @@ void spi_stm32f0::remap_dma(uint8_t spi, dma_stm32f0 &dma)
     
 #if defined(STM32F070x6) || defined(STM32F070xB) || defined(STM32F071xB) || \
     defined(STM32F072xB) || defined(STM32F078xx)
-    if((ch == 3 || ch == 4) && spi == 2)
+    if((ch == 3 || ch == 4) && spi == 1)
     {
         SYSCFG->CFGR1 &= ~SYSCFG_CFGR1_SPI2_DMA_RMP;
     }

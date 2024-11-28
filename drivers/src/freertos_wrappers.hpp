@@ -26,4 +26,4 @@ public:
 private:
     const SemaphoreHandle_t &_semaphore;
 };
-}
+} // namespace freertos

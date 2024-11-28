@@ -20,16 +20,26 @@ namespace periph
 class i2c_stm32f4 : public i2c
 {
 public:
+    /**
+     * @brief  Construct i2c (Inter-Integrated Circuit) object
+     * 
+     * @param  i2c       Number of I2C hardware interface. Can be 1 to 3
+     * @param  baudrate  Baudrate in Hz. Can be up to 400000 in fast mode
+     * @param  dma_write DMA object for write operation
+     * @param  dma_read  DMA object for read operation
+     * @param  sda       GPIO object for SDA pin
+     * @param  scl       GPIO object for SCL pin
+     */
     i2c_stm32f4(uint8_t i2c, uint32_t baudrate, dma_stm32f4 &dma_write, dma_stm32f4 &dma_read,
         gpio_stm32f4 &sda, gpio_stm32f4 &scl);
     ~i2c_stm32f4();
     
-    virtual void baudrate(uint32_t baudrate) = 0;
+    void baudrate(uint32_t baudrate) final;
     
-    virtual uint32_t baudrate() const = 0;
+    uint32_t baudrate() const final { return baud; }
     
-    virtual res write_read(uint16_t address, const void *write_buff, uint16_t write_size,
-        void *read_buff, uint16_t read_size) = 0;
+    res write_read(uint16_t address, const void *write_buff, uint16_t write_size,
+        void *read_buff, uint16_t read_size) final;
     
 private:
     uint8_t i2c;

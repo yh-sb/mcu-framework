@@ -11,24 +11,18 @@ namespace periph
 class timer_stm32f0 : public timer
 {
 public:
-    static constexpr uint8_t timers = 17; /**< The total number of timers */
+    static constexpr uint8_t timers = 17; // The total number of timers
     
     /**
-     * @brief  Construct a new timer stm32f0 object
+     * @brief  Construct timer object
      * 
      * @param  timer The timer instance to be used:
      *               - 1:  Advanced-control timer TIM1
      *               - 2:  General-purpose timer TIM2
      *               - 3:  General-purpose timer TIM3
      * 
-     * 
      *               - 6:  Basic timer TIM6
      *               - 7:  Basic timer TIM7
-     * 
-     * 
-     * 
-     * 
-     * 
      * 
      *               - 14: General-purpose timer TIM14
      *               - 15: General-purpose timer TIM15
@@ -56,4 +50,4 @@ private:
     static void calc_clk(uint8_t tim, uint32_t usec, uint16_t &psc, uint16_t &arr);
     friend void ::tim_irq_hndlr(timer_stm32f0 *obj);
 };
-}
+} // namespace periph

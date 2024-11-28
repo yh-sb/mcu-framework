@@ -64,7 +64,7 @@ void timer_stm32f4::timeout(std::chrono::microseconds timeout)
 void timer_stm32f4::start(bool is_cyclic)
 {
     assert(_timeout.count() > 0);
-    assert(on_timeout != nullptr);
+    assert(on_timeout);
     
     TIM_TypeDef *tim_reg = timer_hw_mapping::timer[tim];
     // This action allowed only when TIM is disabled

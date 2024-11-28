@@ -20,4 +20,4 @@ private:
     uint8_t prev_prev_state;
     std::function<void(int8_t diff)> on_change;
 };
-}
+} // namespace drv

@@ -8,7 +8,7 @@
 
 using namespace periph;
 
-static constexpr auto uarts = 8; // Total number of UART periph in STM32F0
+static constexpr auto uarts = 8; // Total number of UART interfaces
 
 constexpr auto isr_err_flags = USART_ISR_PE | USART_ISR_FE | USART_ISR_NE | USART_ISR_ORE;
 

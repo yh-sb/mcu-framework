@@ -16,6 +16,20 @@ namespace periph
 class spi_stm32f1 : public spi
 {
 public:
+    /**
+     * @brief  Construct spi (serial peripheral interface) object
+     * 
+     * @param  spi       Number of SPI hardware interface. Can be 1 to 3
+     * @param  baudrate  Baudrate in Hz
+     * @param  cpol      Clock polarity
+     * @param  cpha      Clock phase
+     * @param  bit_order Bit order
+     * @param  dma_write DMA instance for write operations
+     * @param  dma_read  DMA instance for read operations
+     * @param  mosi      GPIO pin for master output slave input
+     * @param  miso      GPIO pin for master input slave output
+     * @param  clk       GPIO pin for clock
+     */
     spi_stm32f1(uint8_t spi, uint32_t baudrate, enum cpol cpol, enum cpha cpha,
         enum bit_order bit_order, dma_stm32f1 &dma_write, dma_stm32f1 &dma_read,
         gpio_stm32f1 &mosi, gpio_stm32f1 &miso, gpio_stm32f1 &clk);

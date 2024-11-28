@@ -46,9 +46,6 @@ public:
         tmp = (RCC->CFGR & RCC_CFGR_PPRE) >> RCC_CFGR_PPRE_Pos;
         uint32_t apb_presc = apb_prescallers[tmp];
         
-        //tmp = (RCC->CFGR & RCC_CFGR_PPRE2) >> RCC_CFGR_PPRE2_Pos;
-        //uint32_t apb2_presc = apb2_prescallers[tmp];
-        
         SystemCoreClockUpdate();
         uint32_t frequency = SystemCoreClock;
         

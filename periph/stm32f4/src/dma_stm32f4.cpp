@@ -5,7 +5,7 @@
 
 using namespace periph;
 
-static constexpr auto dmas = 2; // Total number of DMA periph in STM32F4
+static constexpr auto dmas = 2; // Total number of DMA controllers
 static constexpr auto streams = 8; // Total number of DMA streams
 static constexpr auto channels = 8; // Total number of DMA channels in one stream
 
@@ -262,7 +262,7 @@ uint16_t dma_stm32f4::remains() const
 
 void dma_stm32f4::set_callback(std::function<void(event event)> on_event)
 {
-    this->on_event = on_event;
+    this->on_event = std::move(on_event);
 }
 
 void dma_stm32f4::start(bool is_cyclic)
@@ -287,8 +287,6 @@ void dma_stm32f4::start(bool is_cyclic)
 
 void dma_stm32f4::stop()
 {
-    on_event = nullptr;
-    
     NVIC_DisableIRQ(irqn_num[dma][stream]);
     
     DMA_Stream_TypeDef *stream_reg = dma_stream[dma][stream];

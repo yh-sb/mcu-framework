@@ -59,6 +59,9 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python third_party/esp-idf/tools/idf_tools.py install-python-env
+
+      - name: Install esp-idf Python requirements
+        run: |
           python -m pip install -r third_party/esp-idf/tools/requirements/requirements.core.txt
 
       - name: Set artifacts suffix
@@ -195,6 +198,9 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python third_party/esp-idf/tools/idf_tools.py install-python-env
+
+      - name: Install esp-idf Python requirements
+        run: |
           python -m pip install -r third_party/esp-idf/tools/requirements/requirements.core.txt
           python -m pip install -U pyparsing --force
 

@@ -4,7 +4,7 @@
 
 using namespace periph;
 
-constexpr auto pins = 30;  // Total number of pins
+constexpr auto pins = 30;  // Total number of gpio pins
 
 gpio_rp2040::gpio_rp2040(uint8_t pin, enum mode mode, bool state):
     _pin(pin),

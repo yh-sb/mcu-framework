@@ -22,8 +22,8 @@ public:
     
     enum class bit_order : uint8_t
     {
-        msb,
-        lsb
+        msb, // Most significant bit first
+        lsb  // Least significant bit first
     };
     
     enum class res : int8_t

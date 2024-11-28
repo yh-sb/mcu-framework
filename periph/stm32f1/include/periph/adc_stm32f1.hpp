@@ -17,13 +17,24 @@ public:
         _12_bit
     };
     
-    // adc: 0-15 ADC, 16 - temp, 17 - vref
-    adc_onetime_stm32f1(uint8_t adc, uint8_t channel, resolution resolution = resolution::_12_bit);
+    /**
+     * @brief  Construct onetime adc (analog to digital converter) object
+     * 
+     * @param  adc        Number of ADC hardware intstance. Can be 1 or 2
+     * @param  channel    Number of ADC channel. Can be 0 to 15, 16 - temp, 17 - vref
+     * @param  resolution Resolution of the ADC
+     */
+    adc_onetime_stm32f1(uint8_t adc, uint8_t channel, enum resolution resolution = resolution::_12_bit);
     ~adc_onetime_stm32f1();
     
+    /**
+     * @brief  Read the voltage from the ADC
+     * @return Voltage in volts
+     */
     double read() final;
     
 private:
+    static constexpr uint8_t ch_max_num = 18; // The total number of channels in ADC
     uint8_t adc;
     uint8_t channel;
     enum resolution resol;
@@ -40,8 +51,18 @@ public:
         _12_bit
     };
     
-    // adc: 0-15 ADC, 16 - temp, 17 - vref
-    adc_cyclic_stm32f1(uint8_t adc, std::vector<uint8_t> channels, resolution resolution,
+    /**
+     * @brief  Construct cyclic adc (analog to digital converter) object
+     * 
+     * @param  adc               Number of ADC hardware intstance. Can be 1 or 2
+     * @param  channels          Vector of ADC channels. Can be 0 to 15, 16 - temp, 17 - vref
+     * @param  resolution        Resolution of the ADC
+     * @param  timer             Number of timer instance. Can be 1 to 4
+     * @param  dma               Reference to the DMA instance
+     * @param  frequency         Frequency of the cyclic ADC measurements
+     * @param  number_of_samples Number of samples to be measured before callback is called
+     */
+    adc_cyclic_stm32f1(uint8_t adc, std::vector<uint8_t> channels, enum resolution resolution,
         uint8_t timer, periph::dma_stm32f1 &dma, uint32_t frequency, uint8_t number_of_samples);
     ~adc_cyclic_stm32f1();
     
@@ -54,7 +75,7 @@ public:
     void stop() final;
     
 private:
-    static constexpr uint8_t ch_max_num = 17; // The total number of channels in ADC
+    static constexpr uint8_t ch_max_num = 18; // The total number of channels in ADC
     uint8_t adc;
     std::vector<uint8_t> channels;
     std::function<void(double voltage)> callbacks[ch_max_num];

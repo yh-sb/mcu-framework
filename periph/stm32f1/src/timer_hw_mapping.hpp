@@ -13,7 +13,7 @@ constexpr TIM_TypeDef *const timer[timer_stm32f1::timers] =
     defined(STM32F105xC) || defined(STM32F107xC)
     TIM1,
 #else
-    NULL,
+    nullptr,
 #endif
     TIM2, TIM3,
 #if defined(STM32F100xB) || defined(STM32F100xE) || defined(STM32F101xB) || \
@@ -22,41 +22,41 @@ constexpr TIM_TypeDef *const timer[timer_stm32f1::timers] =
     defined(STM32F105xC) || defined(STM32F107xC)
     TIM4,
 #else
-    NULL,
+    nullptr,
 #endif
 #if defined(STM32F100xE) || defined(STM32F101xE) || defined(STM32F101xG) || \
     defined(STM32F103xE) || defined(STM32F103xG) || defined(STM32F105xC) || \
     defined(STM32F107xC)
     TIM5,
 #else
-    NULL,
+    nullptr,
 #endif
 #if defined(STM32F100xB) || defined(STM32F100xE) || defined(STM32F101xE) || \
     defined(STM32F101xG) || defined(STM32F103xE) || defined(STM32F103xG) || \
     defined(STM32F105xC) || defined(STM32F107xC)
     TIM6, TIM7,
 #else
-    NULL, NULL,
+    nullptr, nullptr,
 #endif
 #if defined(STM32F103xE) || defined(STM32F103xG)
     TIM8,
 #else
-    NULL,
+    nullptr,
 #endif
 #if defined(STM32F101xG) || defined(STM32F103xG)
     TIM9, TIM10, TIM11,
 #else
-    NULL, NULL, NULL,
+    nullptr, nullptr, nullptr,
 #endif
 #if defined(STM32F100xE) || defined(STM32F101xG) || defined(STM32F103xG)
     TIM12, TIM13, TIM14,
 #else
-    NULL, NULL, NULL,
+    nullptr, nullptr, nullptr,
 #endif
 #if defined(STM32F100xB) || defined(STM32F100xE)
     TIM15, TIM16, TIM17
 #else
-    NULL, NULL, NULL
+    nullptr, nullptr, nullptr
 #endif
 };
 

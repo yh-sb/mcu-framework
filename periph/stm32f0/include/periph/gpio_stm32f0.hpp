@@ -12,7 +12,15 @@ public:
         a, b, c, d, e, f
     };
     
-    gpio_stm32f0(port port, uint8_t pin, enum mode mode, bool state = false);
+    /**
+     * @brief  Construct gpio (general-purpose input/output) object
+     * 
+     * @param  port  GPIO port
+     * @param  pin   GPIO pin. Can be 0 to 15
+     * @param  mode  GPIO mode
+     * @param  state Initial state of the pin
+     */
+    gpio_stm32f0(enum port port, uint8_t pin, enum mode mode, bool state = false);
     ~gpio_stm32f0();
     
     void set(bool state) final;

@@ -12,13 +12,19 @@ namespace periph
 class exti_stm32f1 : public exti
 {
 public:
+    /**
+     * @brief  Construct exti (external interrupt) object
+     * 
+     * @param  gpio    GPIO pin to use as interrupt source
+     * @param  trigger Trigger type
+     */
     exti_stm32f1(gpio_stm32f1 &gpio, enum trigger trigger = trigger::both);
     ~exti_stm32f1();
     
     void set_callback(std::function<void()> on_interrupt) final;
     
-    void on() final;
-    void off() final;
+    void enable() final;
+    void disable() final;
     
     void trigger(enum trigger trigger) final;
     enum trigger trigger() final { return _trigger; }
@@ -29,4 +35,4 @@ private:
     std::function<void()> on_interrupt;
     friend void ::exti_irq_hndlr(exti_stm32f1 *obj);
 };
-}
+} // namespace periph

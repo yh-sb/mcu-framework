@@ -29,7 +29,7 @@ constexpr uint8_t gpio_af_list[timer_stm32f4::timers] =
 };
 
 pwm_stm32f4::pwm_stm32f4(uint8_t timer, uint8_t channel, gpio_stm32f4 &gpio, enum mode mode):
-    _frequency(0),
+    freq(0),
     _duty_cycle(0),
     mode(mode),
     gpio(gpio)
@@ -93,9 +93,9 @@ void pwm_stm32f4::frequency(uint32_t frequency)
 {
     assert(frequency > 0);
     
-    _frequency = frequency;
+    freq = frequency;
     uint16_t presc, reload;
-    calc_frequency(tim, _frequency, presc, reload);
+    calc_frequency(tim, freq, presc, reload);
     
     timer_hw_mapping::timer[tim]->PSC = presc;
     timer_hw_mapping::timer[tim]->ARR = reload;
@@ -119,7 +119,7 @@ void pwm_stm32f4::duty_cycle(uint8_t duty_cycle)
 
 void pwm_stm32f4::start()
 {
-    assert(_frequency > 0);
+    assert(freq > 0);
     
     timer_hw_mapping::timer[tim]->CR1 &= ~TIM_CR1_OPM;
     timer_hw_mapping::timer[tim]->CR1 |= TIM_CR1_CEN;

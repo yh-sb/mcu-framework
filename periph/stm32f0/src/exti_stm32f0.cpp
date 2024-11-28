@@ -71,10 +71,10 @@ exti_stm32f0::~exti_stm32f0()
 
 void exti_stm32f0::set_callback(std::function<void()> on_interrupt)
 {
-    this->on_interrupt = on_interrupt;
+    this->on_interrupt = std::move(on_interrupt);
 }
 
-void exti_stm32f0::on()
+void exti_stm32f0::enable()
 {
     assert(on_interrupt);
     
@@ -86,7 +86,7 @@ void exti_stm32f0::on()
     NVIC_ClearPendingIRQ(irqn[pin]);
 }
 
-void exti_stm32f0::off()
+void exti_stm32f0::disable()
 {
     EXTI->IMR &= ~(1 << gpio.pin());
 }

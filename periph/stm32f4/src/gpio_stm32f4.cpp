@@ -9,6 +9,7 @@ gpio_stm32f4::gpio_stm32f4(enum port port, uint8_t pin, enum mode mode, bool sta
     _pin(pin),
     _mode(mode)
 {
+    assert(gpio_hw_mapping::gpio[static_cast<uint8_t>(port)]);
     assert(pin < gpio_hw_mapping::pins);
     
     RCC->AHB1ENR |= gpio_hw_mapping::rcc_en[static_cast<uint8_t>(port)];
@@ -102,6 +103,6 @@ void gpio_stm32f4::mode(enum mode mode, bool state)
     // Setup default state
     if(mode == mode::digital_output || mode == mode::open_drain)
     {
-        gpio->BSRR =  1 << (state ? _pin : _pin + GPIO_BSRR_BR0_Pos);
+        gpio->BSRR = 1 << (state ? _pin : _pin + GPIO_BSRR_BR0_Pos);
     }
 }

@@ -37,7 +37,7 @@ constexpr TIM_TypeDef *const timers[4] = // ADC timers
 #endif
 };
 
-constexpr uint32_t rcc_en[4] = // TODO
+constexpr uint32_t rcc_en[4] =
 {
     RCC_APB2ENR_TIM1EN, RCC_APB1ENR_TIM2EN, RCC_APB1ENR_TIM3EN,
 #if defined(STM32F100xB) || defined(STM32F100xE) || defined(STM32F101xB) || \
@@ -50,12 +50,12 @@ constexpr uint32_t rcc_en[4] = // TODO
 #endif
 };
 
-constexpr volatile uint32_t *const rcc_en_reg[4] = // TODO
+constexpr volatile uint32_t *const rcc_en_reg[4] =
 {
     &RCC->APB2ENR, &RCC->APB1ENR, &RCC->APB1ENR, &RCC->APB1ENR
 };
 
-constexpr rcc::clk_source rcc_src[4] = // TODO
+constexpr rcc::clk_source rcc_src[4] =
 {
     rcc::clk_source::apb2, rcc::clk_source::apb1, rcc::clk_source::apb1, rcc::clk_source::apb1
 };
@@ -65,11 +65,11 @@ adc_onetime_stm32f1::adc_onetime_stm32f1(uint8_t adc, uint8_t channel, enum reso
     resol(resolution)
 {
     assert(adc >= 1 && adc <= 2 && adcs[adc - 1]);
-    assert(channel >= 0 && channel <= 17); // 0-15 ADC, 16 - temp, 17 - vref
+    assert(channel >= 0 && channel < ch_max_num);
     
     this->adc = adc - 1;
     
-    if(adc == 0)
+    if(this->adc == 0)
     {
         RCC->APB2ENR |= RCC_APB2ENR_ADC1EN;
         RCC->APB2RSTR |= RCC_APB2RSTR_ADC1RST;
@@ -185,7 +185,7 @@ adc_cyclic_stm32f1::adc_cyclic_stm32f1(uint8_t adc, std::vector<uint8_t> channel
     // Setup external trigger
     adc_reg->CR2 &= ~ADC_CR2_EXTSEL;
     
-    switch(timer)
+    switch(this->timer)
     {
         // CC1, CC2, CC3 events
         case 0: break;
@@ -218,7 +218,7 @@ adc_cyclic_stm32f1::adc_cyclic_stm32f1(uint8_t adc, std::vector<uint8_t> channel
     dma.set_callback([this](dma_stm32f1::event event) { on_dma(event); });
     dma.start(true);
     
-    timer_init(timer, frequency);
+    timer_init(this->timer, frequency);
 }
 
 adc_cyclic_stm32f1::~adc_cyclic_stm32f1()
@@ -257,7 +257,7 @@ void adc_cyclic_stm32f1::set_callback(uint8_t channel, std::function<void(double
     {
         if(ch == channel)
         {
-            callbacks[channel] = on_value;
+            callbacks[channel] = std::move(on_value);
             break;
         }
     }
@@ -376,6 +376,9 @@ void adc_cyclic_stm32f1::on_dma(dma_stm32f1::event event)
         voltage /= number_of_samples;
         voltage = (voltage / 4095) * 3.3; // If vref is 3.3v
         
-        callbacks[ch](voltage);
+        if(callbacks[ch])
+        {
+            callbacks[ch](voltage);
+        }
     }
 }

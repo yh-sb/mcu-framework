@@ -66,4 +66,4 @@ private:
     SemaphoreHandle_t api_lock;
     enum resolution resolution;
 };
-}
+} // namespace drv

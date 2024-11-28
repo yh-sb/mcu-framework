@@ -158,8 +158,10 @@ i2c_stm32f4::i2c_stm32f4(uint8_t i2c, uint32_t baudrate, dma_stm32f4 &dma_write,
     i2c_reg->CR2 |= (I2C_CR2_ITERREN | I2C_CR2_ITEVTEN);
     i2c_reg->CR1 |= I2C_CR1_PE;
     
-    dma_write.destination((void *)&i2c_reg->DR);
-    dma_read.source((void *)&i2c_reg->DR);
+    write_dma.destination((void *)&i2c_reg->DR);
+    write_dma.set_callback([this](dma_stm32f4::event event) { on_dma_write(event); });
+    read_dma.source((void *)&i2c_reg->DR);
+    read_dma.set_callback([this](dma_stm32f4::event event) { on_dma_read(event); });
     
     NVIC_ClearPendingIRQ(irqn_events[this->i2c]);
     NVIC_ClearPendingIRQ(irqn_errors[this->i2c]);
@@ -225,7 +227,7 @@ i2c::res i2c_stm32f4::write_read(uint16_t address, const void *write_buff,
     this->read_size = read_size;
     
     task = xTaskGetCurrentTaskHandle();
-    i2c_regs[this->i2c]->CR1 |= I2C_CR1_START;
+    i2c_regs[i2c]->CR1 |= I2C_CR1_START;
     
     // Task will be unlocked later from isr
     ulTaskNotifyTake(true, portMAX_DELAY);
@@ -393,7 +395,6 @@ extern "C" void i2c_event_irq_hndlr(i2c_stm32f4 *obj)
         {
             obj->write_dma.source(obj->write_buff);
             obj->write_dma.size(obj->write_size);
-            obj->write_dma.set_callback([obj](dma_stm32f4::event event) { obj->on_dma_write(event); });
             obj->write_dma.start();
         }
         else if(obj->read_buff)
@@ -409,7 +410,6 @@ extern "C" void i2c_event_irq_hndlr(i2c_stm32f4 *obj)
             
             obj->read_dma.destination(obj->read_buff);
             obj->read_dma.size(obj->read_size);
-            obj->read_dma.set_callback([obj](dma_stm32f4::event event) { obj->on_dma_read(event); });
             obj->read_dma.start();
         }
     }

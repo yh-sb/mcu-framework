@@ -17,7 +17,6 @@ dac_stm32f1::dac_stm32f1(uint8_t dac, enum align align, periph::gpio &gpio):
     gpio(gpio)
 {
     assert(dac >= 1 && dac <= 2);
-    assert(align <= align::left_12);
     assert(gpio.mode() == gpio::mode::analog);
     
     RCC->APB1ENR |= RCC_APB1ENR_DACEN;

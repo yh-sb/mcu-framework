@@ -6,7 +6,7 @@
 namespace periph::gpio_hw_mapping
 {
 constexpr auto ports = 7; // GPIOG - the last gpio port
-constexpr auto pins = 16; // The total number of pins
+constexpr auto pins = 16; // The total number of pins in port
 
 constexpr GPIO_TypeDef *const gpio[ports] =
 {

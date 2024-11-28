@@ -12,7 +12,7 @@ constexpr uint8_t const max_channels[timer_stm32f1::timers] =
 {
     4, 4, 4, 4, 4, 0,
     0, 4, 2, 1, 1, 2,
-    1, 1, 2, 2, 2 // TODO: Clarify the number of channels for different MCU (100xx vs 103xx)
+    1, 1, 2, 2, 2 // TODO: Clarify the number of channels for different MCUs (100xx vs 103xx)
 };
 
 constexpr uint32_t ccmr[pwm_stm32f1::pwm_channels][static_cast<uint8_t>(pwm_stm32f1::mode::inverted) + 1] = 
@@ -24,7 +24,7 @@ constexpr uint32_t ccmr[pwm_stm32f1::pwm_channels][static_cast<uint8_t>(pwm_stm3
 };
 
 pwm_stm32f1::pwm_stm32f1(uint8_t timer, uint8_t channel, gpio_stm32f1 &gpio, enum mode mode):
-    _frequency(0),
+    freq(0),
     _duty_cycle(0),
     mode(mode),
     gpio(gpio)
@@ -86,9 +86,9 @@ void pwm_stm32f1::frequency(uint32_t frequency)
 {
     assert(frequency > 0);
     
-    _frequency = frequency;
+    freq = frequency;
     uint16_t presc, reload;
-    calc_frequency(tim, _frequency, presc, reload);
+    calc_frequency(tim, freq, presc, reload);
     
     timer_hw_mapping::timer[tim]->PSC = presc;
     timer_hw_mapping::timer[tim]->ARR = reload;
@@ -112,7 +112,7 @@ void pwm_stm32f1::duty_cycle(uint8_t duty_cycle)
 
 void pwm_stm32f1::start()
 {
-    assert(_frequency > 0);
+    assert(freq > 0);
     
     timer_hw_mapping::timer[tim]->CR1 &= ~TIM_CR1_OPM;
     timer_hw_mapping::timer[tim]->CR1 |= TIM_CR1_CEN;

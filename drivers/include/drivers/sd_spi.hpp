@@ -27,4 +27,4 @@ private:
     periph::spi &spi;
     periph::gpio &cs;
 };
-}
+} // namespace drv

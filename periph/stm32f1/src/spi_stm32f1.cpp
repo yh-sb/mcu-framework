@@ -7,7 +7,7 @@
 
 using namespace periph;
 
-static constexpr auto spis = 3; // Total number of SPI periph in STM32F1
+static constexpr auto spis = 3; // Total number of SPI interfaces
 
 static spi_stm32f1 *obj_list[spis];
 
@@ -312,7 +312,7 @@ spi::res spi_stm32f1::write(const void *buff, uint16_t size, gpio *cs)
     write_dma.source((uint8_t*)write_buff);
     write_dma.size(size);
     write_dma.start();
-    spi_regs[this->spi]->CR2 |= SPI_CR2_TXDMAEN;
+    spi_regs[spi]->CR2 |= SPI_CR2_TXDMAEN;
     
     // Task will be unlocked later from isr
     ulTaskNotifyTake(true, portMAX_DELAY);

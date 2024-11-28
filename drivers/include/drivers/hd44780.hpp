@@ -64,4 +64,4 @@ private:
     
     void delay(uint32_t us);
 };
-}
+} // namespace drv

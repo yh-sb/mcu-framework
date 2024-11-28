@@ -20,9 +20,9 @@ public:
     
     virtual void set_callback(std::function<void()> on_interrupt) = 0;
     
-    virtual void on() = 0;
+    virtual void enable() = 0;
     
-    virtual void off() = 0;
+    virtual void disable() = 0;
     
     virtual void trigger(trigger trigger) = 0;
     

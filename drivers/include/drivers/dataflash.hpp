@@ -232,4 +232,4 @@ private:
     uint32_t get_timeout(enum cmd cmd, info_t &info);
     uint32_t get_chip_erase_timeout(info_t &info);
 };
-}
+} // namespace drv

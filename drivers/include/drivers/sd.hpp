@@ -118,4 +118,4 @@ private:
         uint64_t  capacity; // in bytes
     } info;
 };
-}
+} // namespace drv

@@ -8,7 +8,7 @@
 
 using namespace periph;
 
-static constexpr auto uarts = 6; // Total number of UART periph in STM32F4
+static constexpr auto uarts = 6; // Total number of UART interfaces
 
 static uart_stm32f4 *obj_list[uarts];
 
@@ -243,8 +243,8 @@ uart_stm32f4::uart_stm32f4(uint8_t uart, uint32_t baudrate, enum stopbits stopbi
     uart_reg->BRR = div;
     
     tx_dma.destination((void *)&uart_reg->DR);
-    rx_dma.source((void *)&uart_reg->DR);
     tx_dma.set_callback([this](dma_stm32f4::event event) { on_dma_tx(event); });
+    rx_dma.source((void *)&uart_reg->DR);
     rx_dma.set_callback([this](dma_stm32f4::event event) { on_dma_rx(event); });
     
     uart_reg->CR1 |= USART_CR1_UE | USART_CR1_TE | USART_CR1_IDLEIE | USART_CR1_PEIE;

@@ -17,7 +17,7 @@ public:
     static constexpr uint8_t pwm_channels = 4; // The total number of pwm channels
     
     /**
-     * @brief  Construct a new pwm stm32f4 object
+     * @brief  Construct pwm (pulse-width modulation) object
      * 
      * @param  timer The timer instance to be used:
      *               - 1:  Advanced-control timer TIM1
@@ -32,20 +32,20 @@ public:
      *               - 12: General-purpose timer TIM12
      *               - 13: General-purpose timer TIM13
      *               - 14: General-purpose timer TIM14
-     * @param  channel The PWM channel to be used. Can be: 1 .. 4
-     * @param  gpio GPIO pin to be used as PWM output
-     * @param  mode PWM mode
+     * @param  channel The PWM channel to be used. Can be 1 to 4
+     * @param  gpio    GPIO pin to be used as PWM output
+     * @param  mode    PWM mode
      */
     pwm_stm32f4(uint8_t timer, uint8_t channel, gpio_stm32f4 &gpio, enum mode mode = mode::noninverted);
     ~pwm_stm32f4();
     
     void frequency(uint32_t frequency) final;
     
-    uint32_t frequency() const final { return _frequency; }
+    uint32_t frequency() const final { return freq; }
     
     void duty_cycle(uint8_t duty_cycle) final;
     
-    uint8_t duty_cycle() const final;
+    uint8_t duty_cycle() const final { return _duty_cycle; }
     
     void start() final;
     void stop() final;
@@ -53,7 +53,7 @@ public:
 private:
     uint8_t tim;
     uint8_t ch;
-    uint32_t _frequency;
+    uint32_t freq;
     uint8_t _duty_cycle;
     mode mode;
     gpio_stm32f4 &gpio;

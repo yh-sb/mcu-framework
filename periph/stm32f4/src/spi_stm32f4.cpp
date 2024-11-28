@@ -7,7 +7,7 @@
 
 using namespace periph;
 
-static constexpr auto spis = 6; // Total number of SPI periph in STM32F4
+static constexpr auto spis = 6; // Total number of SPI interfaces
 
 static spi_stm32f4 *obj_list[spis];
 
@@ -333,8 +333,8 @@ spi_stm32f4::spi_stm32f4(uint8_t spi, uint32_t baudrate, enum cpol cpol, enum cp
     spi_reg->CR1 |= SPI_CR1_SPE;
     
     write_dma.destination((uint8_t *)&spi_reg->DR);
-    read_dma.source((uint8_t *)&spi_reg->DR);
     write_dma.set_callback([this](dma_stm32f4::event event) { on_dma_write(event); });
+    read_dma.source((uint8_t *)&spi_reg->DR);
     read_dma.set_callback([this](dma_stm32f4::event event) { on_dma_read(event); });
     
     NVIC_ClearPendingIRQ(irqn[this->spi]);
@@ -359,7 +359,7 @@ void spi_stm32f4::baudrate(uint32_t baudrate)
     xSemaphoreTake(api_lock, portMAX_DELAY);
     
     baud = baudrate;
-    uint8_t presc = calc_presc(spi, baudrate);
+    uint8_t presc = calc_presc(spi, baud);
     
     SPI_TypeDef *spi_reg = spi_regs[spi];
     
@@ -456,7 +456,7 @@ spi::res spi_stm32f4::write(const void *buff, uint16_t size, gpio *cs)
     write_dma.source((uint8_t*)write_buff);
     write_dma.size(size);
     write_dma.start();
-    spi_regs[this->spi]->CR2 |= SPI_CR2_TXDMAEN;
+    spi_regs[spi]->CR2 |= SPI_CR2_TXDMAEN;
     
     // Task will be unlocked later from isr
     ulTaskNotifyTake(true, portMAX_DELAY);

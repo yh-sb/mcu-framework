@@ -13,14 +13,14 @@ using namespace drv;
 
 enum cmd_t
 {
-    CLEAR_DISPLAY                  = 1 << 0,
-    RETURN_HOME                    = 1 << 1,
-    ENTRY_MODE_SET                 = 1 << 2,
-    DISPLAY_ON_OFF_CONTROL         = 1 << 3,
-    CURSOR_OR_DISPLAY_SHIFT        = 1 << 4,
-    FUNCTION_SET                   = 1 << 5,
-    SET_CGRAM_ADDRESS              = 1 << 6,
-    SET_DDRAM_ADDRESS              = 1 << 7
+    CLEAR_DISPLAY           = 1 << 0,
+    RETURN_HOME             = 1 << 1,
+    ENTRY_MODE_SET          = 1 << 2,
+    DISPLAY_ON_OFF_CONTROL  = 1 << 3,
+    CURSOR_OR_DISPLAY_SHIFT = 1 << 4,
+    FUNCTION_SET            = 1 << 5,
+    SET_CGRAM_ADDRESS       = 1 << 6,
+    SET_DDRAM_ADDRESS       = 1 << 7
 };
 
 // Bits for ENTRY_MODE_SET command

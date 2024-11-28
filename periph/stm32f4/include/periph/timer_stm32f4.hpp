@@ -14,7 +14,7 @@ public:
     static constexpr uint8_t timers = 14; // The total number of timers
     
     /**
-     * @brief  Construct a new timer stm32f4 object
+     * @brief  Construct timer object
      * 
      * @param  timer The timer instance to be used:
      *               - 1:  Advanced-control timer TIM1
@@ -53,4 +53,4 @@ private:
     static void calc_clk(uint8_t tim, uint32_t usec, uint16_t &psc, uint16_t &arr);
     friend void ::tim_irq_hndlr(timer_stm32f4 *obj);
 };
-}
+} // namespace periph

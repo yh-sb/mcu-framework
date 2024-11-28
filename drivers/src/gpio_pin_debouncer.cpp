@@ -2,7 +2,6 @@
 #include "drivers/gpio_pin_debouncer.hpp"
 
 using namespace drv;
-using namespace periph;
 
 gpio_pin_debouncer::gpio_pin_debouncer(periph::gpio &gpio, std::chrono::milliseconds debounce_timeout,
     bool default_state):
@@ -11,7 +10,7 @@ gpio_pin_debouncer::gpio_pin_debouncer(periph::gpio &gpio, std::chrono::millisec
     state(default_state),
     cnt(0)
 {
-    assert(gpio.mode() == gpio::mode::digital_input);
+    assert(gpio.mode() == periph::gpio::mode::digital_input);
 }
 
 gpio_pin_debouncer::~gpio_pin_debouncer()

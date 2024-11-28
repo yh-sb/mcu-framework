@@ -31,7 +31,7 @@ public:
     
     static void bckp_read(uint8_t addr, void *buff, size_t size);
     
-    static void set_alarm_callback(std::function<void(const std::tm &)> on_alarm);
+    static void set_alarm_callback(std::function<void(const std::tm &tm)> on_alarm);
     static void set_alarm(const std::tm &tm);
     
     static bool is_valid(const std::tm &tm);

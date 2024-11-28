@@ -27,11 +27,11 @@ public:
     };
     
     /**
-     * @brief  Construct a new dma stm32f1 object
+     * @brief  Construct dma (direct memory access) object
      * 
-     * @param  dma Number of DMA controller. Can be 1 or 2
-     * @param  channel Number of DMA channel. Can be 1 to 7
-     * @param  direction Direction of data transfer
+     * @param  dma            Number of DMA controller. Can be 1 or 2
+     * @param  channel        Number of DMA channel. Can be 1 to 7
+     * @param  direction      Direction of data transfer
      * @param  increment_size Increment size of the source and destination addresses in bits. Can be 8, 16 or 32
      */
     dma_stm32f1(uint8_t dma, uint8_t channel, enum direction direction, uint8_t increment_size);

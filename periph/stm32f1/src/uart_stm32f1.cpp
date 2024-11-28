@@ -8,7 +8,7 @@
 
 using namespace periph;
 
-static constexpr auto uarts = 5; // Total number of UART periph in STM32F1
+static constexpr auto uarts = 5; // Total number of UART interfaces
 
 static uart_stm32f1 *obj_list[uarts];
 

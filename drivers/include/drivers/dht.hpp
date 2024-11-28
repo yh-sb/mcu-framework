@@ -46,4 +46,4 @@ private:
     static bool is_crc_valid(const uint8_t *buff);
     static value_t parce_data(const uint8_t *buff);
 };
-}
+} // namespace drv

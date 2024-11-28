@@ -12,7 +12,7 @@ static timer_stm32f0 *obj_list[timer_stm32f0::timers];
 
 timer_stm32f0::timer_stm32f0(uint8_t timer)
 {
-    assert(timer >= 1 && timer < timers && timer_hw_mapping::timer[timer - 1]);
+    assert(timer >= 1 && timer <= timers && timer_hw_mapping::timer[timer - 1]);
     tim = timer - 1; // We count timers from 0 in timer_hw_mapping::
     
     *timer_hw_mapping::rcc_en_reg[tim] |= timer_hw_mapping::rcc_en[tim];
@@ -62,7 +62,7 @@ void timer_stm32f0::timeout(std::chrono::microseconds timeout)
 void timer_stm32f0::start(bool is_cyclic)
 {
     assert(_timeout.count() > 0);
-    assert(on_timeout != nullptr);
+    assert(on_timeout);
     
     TIM_TypeDef *tim_reg = timer_hw_mapping::timer[tim];
     // This action allowed only when TIM is disabled

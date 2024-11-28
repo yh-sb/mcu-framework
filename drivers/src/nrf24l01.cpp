@@ -186,7 +186,7 @@ nrf24l01::~nrf24l01()
     
     cs.set(1);
     ce.set(0);
-    exti.off();
+    exti.disable();
     timer.stop();
     xSemaphoreGive(api_lock);
     vSemaphoreDelete(api_lock);
@@ -670,9 +670,9 @@ enum nrf24l01::res nrf24l01::read(packet_t &packet, packet_t *ack)
         // Wait for data
         task = xTaskGetCurrentTaskHandle();
         ce.set(1);
-        exti.on();
+        exti.enable();
         ulTaskNotifyTake(true, portMAX_DELAY);
-        exti.off();
+        exti.disable();
     }
     
     // Read received data
@@ -764,7 +764,7 @@ enum nrf24l01::res nrf24l01::write(void *buff, size_t size, packet_t *ack, bool 
     }
     
     task = xTaskGetCurrentTaskHandle();
-    exti.on();
+    exti.enable();
     
     ce.set(1);
     /* is_continuous_tx 0: go to standby-1 mode after transmitting one packet
@@ -783,10 +783,10 @@ enum nrf24l01::res nrf24l01::write(void *buff, size_t size, packet_t *ack, bool 
         {
             ce.set(0);
         }
-        exti.off();
+        exti.disable();
         return res::no_response;
     }
-    exti.off();
+    exti.disable();
     
     status_reg_t status;
     res = read_reg(reg::STATUS, &status);

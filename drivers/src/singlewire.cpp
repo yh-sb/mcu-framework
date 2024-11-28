@@ -17,7 +17,7 @@ singlewire::singlewire(periph::gpio &gpio, periph::timer &timer, periph::exti &e
 singlewire::~singlewire()
 {
     timer.stop();
-    exti.off();
+    exti.disable();
 }
 
 enum singlewire::res singlewire::read(uint8_t *buff, uint16_t size)
@@ -58,7 +58,7 @@ void singlewire::fsm_run(bool is_timer_expired)
             fsm.state = state::wait_response_start;
             gpio.set(1);
             exti.trigger(periph::exti::trigger::falling);
-            exti.on();
+            exti.enable();
             timer.timeout(std::chrono::microseconds(timeouts[state::wait_response_start]));
             timer.start();
             break;
@@ -66,7 +66,7 @@ void singlewire::fsm_run(bool is_timer_expired)
         case state::wait_response_start:
             if(is_timer_expired)
             {
-                exti.off();
+                exti.disable();
                 res = res::no_device;
                 goto Exit;
             }
@@ -81,7 +81,7 @@ void singlewire::fsm_run(bool is_timer_expired)
         case state::wait_response_end:
             if(is_timer_expired)
             {
-                exti.off();
+                exti.disable();
                 res = res::device_error;
                 goto Exit;
             }
@@ -96,7 +96,7 @@ void singlewire::fsm_run(bool is_timer_expired)
         case state::wait_bit_start_low:
             if(is_timer_expired)
             {
-                exti.off();
+                exti.disable();
                 res = res::read_error;
                 goto Exit;
             }
@@ -111,7 +111,7 @@ void singlewire::fsm_run(bool is_timer_expired)
         case state::wait_bit_start_high:
             if(is_timer_expired)
             {
-                exti.off();
+                exti.disable();
                 res = res::read_error;
                 goto Exit;
             }
@@ -128,7 +128,7 @@ void singlewire::fsm_run(bool is_timer_expired)
             {
                 fsm.buff[fsm.byte] |= 1 << fsm.bit;
                 
-                fsm.state =  state::wait_bit_start_low;
+                fsm.state = state::wait_bit_start_low;
                 exti.trigger(periph::exti::trigger::falling);
                 timer.timeout(std::chrono::microseconds(timeouts[state::wait_bit_check]));
                 timer.start();
@@ -158,7 +158,7 @@ void singlewire::fsm_run(bool is_timer_expired)
                 if(fsm.byte == fsm.size)
                 {
                     timer.stop();
-                    exti.off();
+                    exti.disable();
                     res = res::ok;
                     goto Exit;
                 }

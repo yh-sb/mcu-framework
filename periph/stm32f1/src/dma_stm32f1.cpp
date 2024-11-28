@@ -5,7 +5,7 @@
 
 using namespace periph;
 
-static constexpr auto dmas = 2; // Total number of DMA periph in STM32F1
+static constexpr auto dmas = 2; // Total number of DMA controllers
 static constexpr auto channels = 7; // Total number of DMA channels
 
 static dma_stm32f1 *obj_list[dmas][channels];
@@ -75,6 +75,7 @@ dma_stm32f1::dma_stm32f1(uint8_t dma, uint8_t channel, enum direction direction,
 {
     assert(dma >= 1 && dma <= dmas);
     assert(channel >= 1 && channel <= channels);
+    assert(dma_channel[dma - 1][channel - 1]);
     // Only DMA2 is able to perform memory-to-memory transfers
     assert(_direction != direction::memory_to_memory || dma != 1);
     assert(inc_size == 8 || inc_size == 16 || inc_size == 32);
@@ -263,7 +264,7 @@ uint16_t dma_stm32f1::remains() const
 
 void dma_stm32f1::set_callback(std::function<void(event event)> on_event)
 {
-    this->on_event = on_event;
+    this->on_event = std::move(on_event);
 }
 
 void dma_stm32f1::start(bool is_cyclic)
@@ -279,7 +280,7 @@ void dma_stm32f1::start(bool is_cyclic)
     // Disable circular mode
     channel_reg->CCR &= ~DMA_CCR_CIRC;
     
-    if(this->dma == 0)
+    if(dma == 0)
     {
         // Clear interrupt flag to prevent transfer complete interrupt
         DMA1->IFCR = DMA_IFCR_CTCIF1 << (_channel * DMA_IFCR_CGIF2_Pos);
@@ -299,8 +300,6 @@ void dma_stm32f1::start(bool is_cyclic)
 
 void dma_stm32f1::stop()
 {
-    on_event = nullptr;
-    
     NVIC_DisableIRQ(irqn_num[dma][_channel]);
     
     DMA_Channel_TypeDef *channel_reg = dma_channel[dma][_channel];
@@ -440,9 +439,13 @@ extern "C" void DMA2_Channel4_5_IRQHandler(void)
     uint32_t isr = DMA2->ISR;
     
     if(isr & DMA_ISR_GIF4)
+    {
         dma_irq_hndlr(obj_list[1][3]);
+    }
     else if(isr & DMA_ISR_GIF5)
+    {
         dma_irq_hndlr(obj_list[1][4]);
+    }
 }
 #elif defined(STM32F105xC) || defined(STM32F107xC)
 extern "C" void DMA2_Channel4_IRQHandler(void)

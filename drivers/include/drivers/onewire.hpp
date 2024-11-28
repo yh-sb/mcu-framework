@@ -39,4 +39,4 @@ private:
     periph::uart &uart;
     SemaphoreHandle_t api_lock;
 };
-}
+} // namespace drv

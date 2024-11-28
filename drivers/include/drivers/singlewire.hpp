@@ -66,4 +66,4 @@ private:
     void fsm_start(uint8_t *buff, uint16_t size);
     void fsm_run(bool is_timer_expired);
 };
-}
+} // namespace drv
