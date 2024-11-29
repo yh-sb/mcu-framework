@@ -28,10 +28,14 @@ add_compile_options(
     $<$<COMPILE_LANGUAGE:CXX>:-fno-use-cxa-atexit>
 )
 
+# Set definition for STM32F407VG target
 add_compile_definitions(STM32F407xx)
 
 add_subdirectory(periph)
 add_subdirectory(periph/stm32f4)
+# Set startup file for STM32F407VG target
+target_sources(cmsis PRIVATE periph/stm32f4/CMSIS/Device/ST/STM32F4xx/Source/startup_stm32f407xx.s)
+
 add_subdirectory(drivers)
 
 set(FREERTOS_PORT GCC_ARM_CM4F CACHE STRING "")

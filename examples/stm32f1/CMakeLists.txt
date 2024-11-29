@@ -26,10 +26,14 @@ add_compile_options(
     $<$<COMPILE_LANGUAGE:CXX>:-fno-use-cxa-atexit>
 )
 
+# Set definition for STM32F100RB target
 add_compile_definitions(STM32F100xB)
 
 add_subdirectory(periph)
 add_subdirectory(periph/stm32f1)
+# Set startup file for STM32F100RB target
+target_sources(cmsis PRIVATE periph/stm32f1/CMSIS/Device/ST/STM32F1xx/Source/startup_stm32f100xb.s)
+
 add_subdirectory(drivers)
 
 set(FREERTOS_PORT GCC_ARM_CM3 CACHE STRING "")

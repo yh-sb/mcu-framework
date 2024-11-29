@@ -1,5 +1,5 @@
 add_library(cmsis STATIC
-    Device/ST/STM32F0xx/Source/startup_stm32f072xb.s
+    # sturtup .s file is set in the main CMakeLists.txt
     Device/ST/STM32F0xx/Source/system_stm32f0xx.c
 )
 
