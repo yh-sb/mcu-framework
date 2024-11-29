@@ -44,6 +44,9 @@ add_library(freertos_config INTERFACE)
 target_include_directories(freertos_config SYSTEM INTERFACE periph/stm32f4/include)
 add_subdirectory(third_party/FreeRTOS-Kernel)
 
+add_subdirectory(third_party/FatFs)
+add_subdirectory(fatfs_diskio)
+
 add_subdirectory(third_party/printf)
 
 add_executable(${CMAKE_PROJECT_NAME}
@@ -67,6 +70,7 @@ target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE
     periph_stm32f4
     drivers
     freertos_kernel
+    fatfs_diskio
 )
 
 set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES SUFFIX ".elf")

@@ -42,6 +42,9 @@ add_library(freertos_config INTERFACE)
 target_include_directories(freertos_config SYSTEM INTERFACE periph/stm32f1/include)
 add_subdirectory(third_party/FreeRTOS-Kernel)
 
+#add_subdirectory(third_party/FatFs)
+#add_subdirectory(fatfs_diskio)
+
 add_subdirectory(third_party/printf)
 
 add_executable(${CMAKE_PROJECT_NAME}
