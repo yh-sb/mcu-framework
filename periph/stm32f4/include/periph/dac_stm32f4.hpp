@@ -29,6 +29,14 @@ public:
     void set(float voltage) final;
     uint16_t get() const final;
     
+    // Delete copy constructor and copy assignment operator
+    dac_stm32f4(const dac_stm32f4&) = delete;
+    dac_stm32f4& operator=(const dac_stm32f4&) = delete;
+    
+    // Delete move constructor and move assignment operator
+    dac_stm32f4(dac_stm32f4&&) = delete;
+    dac_stm32f4& operator=(dac_stm32f4&&) = delete;
+    
 private:
     uint8_t dac;
     align align;

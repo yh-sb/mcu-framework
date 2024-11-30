@@ -35,6 +35,14 @@ public:
     
     enum res read(value_t &value);
     
+    // Delete copy constructor and copy assignment operator
+    dht(const dht&) = delete;
+    dht& operator=(const dht&) = delete;
+    
+    // Delete move constructor and move assignment operator
+    dht(dht&&) = delete;
+    dht& operator=(dht&&) = delete;
+    
 private:
     drv::singlewire &singlewire;
     enum device dht_device;

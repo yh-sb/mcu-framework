@@ -28,7 +28,15 @@ public:
         void *read_buff, uint16_t read_size);
     enum res read_rom(uint64_t &rom);
     //enum res search(uint64_t *rom_list, size_t *rom_list_size);
-
+    
+    // Delete copy constructor and copy assignment operator
+    onewire(const onewire&) = delete;
+    onewire& operator=(const onewire&) = delete;
+    
+    // Delete move constructor and move assignment operator
+    onewire(onewire&&) = delete;
+    onewire& operator=(onewire&&) = delete;
+    
 private:
     enum res do_reset();
     enum res write_buff(void *buff, uint8_t size);

@@ -41,6 +41,14 @@ public:
     res write_read(uint16_t address, const void *write_buff, uint16_t write_size,
         void *read_buff, uint16_t read_size) final;
     
+    // Delete copy constructor and copy assignment operator
+    i2c_stm32f4(const i2c_stm32f4&) = delete;
+    i2c_stm32f4& operator=(const i2c_stm32f4&) = delete;
+    
+    // Delete move constructor and move assignment operator
+    i2c_stm32f4(i2c_stm32f4&&) = delete;
+    i2c_stm32f4& operator=(i2c_stm32f4&&) = delete;
+    
 private:
     uint8_t i2c;
     uint32_t baud;

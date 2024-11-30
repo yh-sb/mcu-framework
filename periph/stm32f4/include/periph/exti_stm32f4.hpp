@@ -23,6 +23,14 @@ public:
     void trigger(enum trigger trigger) final;
     enum trigger trigger() final { return _trigger; }
     
+    // Delete copy constructor and copy assignment operator
+    exti_stm32f4(const exti_stm32f4&) = delete;
+    exti_stm32f4& operator=(const exti_stm32f4&) = delete;
+    
+    // Delete move constructor and move assignment operator
+    exti_stm32f4(exti_stm32f4&&) = delete;
+    exti_stm32f4& operator=(exti_stm32f4&&) = delete;
+    
 private:
     enum trigger _trigger;
     gpio_stm32f4 &gpio;

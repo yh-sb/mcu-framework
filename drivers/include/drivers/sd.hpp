@@ -51,6 +51,14 @@ public:
     enum res read_cid(drv::sd_regs::cid_t *cid);
     enum res read_csd(drv::sd_regs::csd_t *csd);
     
+    // Delete copy constructor and copy assignment operator
+    sd(const sd&) = delete;
+    sd& operator=(const sd&) = delete;
+    
+    // Delete move constructor and move assignment operator
+    sd(sd&&) = delete;
+    sd& operator=(sd&&) = delete;
+    
 protected:
     enum cmd_t
     {

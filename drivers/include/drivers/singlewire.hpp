@@ -25,6 +25,14 @@ public:
     
     enum res read(uint8_t *buff, uint16_t size);
     
+    // Delete copy constructor and copy assignment operator
+    singlewire(const singlewire&) = delete;
+    singlewire& operator=(const singlewire&) = delete;
+    
+    // Delete move constructor and move assignment operator
+    singlewire(singlewire&&) = delete;
+    singlewire& operator=(singlewire&&) = delete;
+    
 private:
     periph::gpio &gpio;
     periph::timer &timer;

@@ -70,6 +70,14 @@ public:
     
     uint8_t channel() const { return _channel; }
     
+    // Delete copy constructor and copy assignment operator
+    dma_stm32f1(const dma_stm32f1&) = delete;
+    dma_stm32f1& operator=(const dma_stm32f1&) = delete;
+    
+    // Delete move constructor and move assignment operator
+    dma_stm32f1(dma_stm32f1&&) = delete;
+    dma_stm32f1& operator=(dma_stm32f1&&) = delete;
+    
 private:
     uint8_t dma;
     uint8_t _channel;

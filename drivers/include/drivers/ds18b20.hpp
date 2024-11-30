@@ -42,6 +42,14 @@ public:
     enum res write_eeprom(uint64_t rom);   // 1  ms
     enum res restore_eeprom(uint64_t rom); // 1  ms
     
+    // Delete copy constructor and copy assignment operator
+    ds18b20(const ds18b20&) = delete;
+    ds18b20& operator=(const ds18b20&) = delete;
+    
+    // Delete move constructor and move assignment operator
+    ds18b20(ds18b20&&) = delete;
+    ds18b20& operator=(ds18b20&&) = delete;
+    
 private:
     #pragma pack(push, 1)
     struct scratchpad_t

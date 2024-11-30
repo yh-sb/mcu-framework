@@ -69,6 +69,14 @@ public:
     
     bool is_busy() const;
     
+    // Delete copy constructor and copy assignment operator
+    dma_stm32f4(const dma_stm32f4&) = delete;
+    dma_stm32f4& operator=(const dma_stm32f4&) = delete;
+    
+    // Delete move constructor and move assignment operator
+    dma_stm32f4(dma_stm32f4&&) = delete;
+    dma_stm32f4& operator=(dma_stm32f4&&) = delete;
+    
 private:
     uint8_t dma;
     uint8_t stream;

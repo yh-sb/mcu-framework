@@ -47,6 +47,14 @@ public:
     
     void clear();
     
+    // Delete copy constructor and copy assignment operator
+    hd44780(const hd44780&) = delete;
+    hd44780& operator=(const hd44780&) = delete;
+    
+    // Delete move constructor and move assignment operator
+    hd44780(hd44780&&) = delete;
+    hd44780& operator=(hd44780&&) = delete;
+    
 private:
     periph::gpio &rs, &rw, &e;
     periph::gpio *db[4];

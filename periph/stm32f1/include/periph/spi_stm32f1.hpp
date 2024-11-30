@@ -59,6 +59,14 @@ public:
     
     res write_read(const void *write_buff, void *read_buff, uint16_t size, gpio *cs = nullptr) final;
     
+    // Delete copy constructor and copy assignment operator
+    spi_stm32f1(const spi_stm32f1&) = delete;
+    spi_stm32f1& operator=(const spi_stm32f1&) = delete;
+    
+    // Delete move constructor and move assignment operator
+    spi_stm32f1(spi_stm32f1&&) = delete;
+    spi_stm32f1& operator=(spi_stm32f1&&) = delete;
+    
 private:
     uint8_t spi;
     uint32_t baud;

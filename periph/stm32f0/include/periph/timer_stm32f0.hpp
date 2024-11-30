@@ -43,6 +43,14 @@ public:
     
     bool is_expired() const final;
     
+    // Delete copy constructor and copy assignment operator
+    timer_stm32f0(const timer_stm32f0&) = delete;
+    timer_stm32f0& operator=(const timer_stm32f0&) = delete;
+    
+    // Delete move constructor and move assignment operator
+    timer_stm32f0(timer_stm32f0&&) = delete;
+    timer_stm32f0& operator=(timer_stm32f0&&) = delete;
+    
 private:
     uint8_t tim;
     std::chrono::microseconds _timeout;

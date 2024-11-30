@@ -22,7 +22,15 @@ public:
     }
     
     bool is_taken;
-
+    
+    // Delete copy constructor and copy assignment operator
+    semaphore_take(const semaphore_take&) = delete;
+    semaphore_take& operator=(const semaphore_take&) = delete;
+    
+    // Delete move constructor and move assignment operator
+    semaphore_take(semaphore_take&&) = delete;
+    semaphore_take& operator=(semaphore_take&&) = delete;
+    
 private:
     const SemaphoreHandle_t &_semaphore;
 };

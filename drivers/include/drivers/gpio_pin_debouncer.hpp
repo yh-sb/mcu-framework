@@ -24,6 +24,14 @@ public:
     std::chrono::milliseconds debounce_timeout() const { return _debounce_timeout; }
     void debounce_timeout(std::chrono::milliseconds debounce_timeout) { _debounce_timeout = debounce_timeout; }
     
+    // Delete copy constructor and copy assignment operator
+    gpio_pin_debouncer(const gpio_pin_debouncer&) = delete;
+    gpio_pin_debouncer& operator=(const gpio_pin_debouncer&) = delete;
+    
+    // Delete move constructor and move assignment operator
+    gpio_pin_debouncer(gpio_pin_debouncer&&) = delete;
+    gpio_pin_debouncer& operator=(gpio_pin_debouncer&&) = delete;
+    
 private:
     bool get_filtered_state();
     

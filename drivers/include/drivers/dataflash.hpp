@@ -94,6 +94,14 @@ public:
     
     enum res jedec(jedec_t &jedec);
     
+    // Delete copy constructor and copy assignment operator
+    dataflash(const dataflash&) = delete;
+    dataflash& operator=(const dataflash&) = delete;
+    
+    // Delete move constructor and move assignment operator
+    dataflash(dataflash&&) = delete;
+    dataflash& operator=(dataflash&&) = delete;
+    
 private:
     /* 0   bit allways equal to 0
         3:1 bits are significant

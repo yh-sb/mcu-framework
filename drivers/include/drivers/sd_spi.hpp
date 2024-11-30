@@ -14,6 +14,14 @@ public:
     sd_spi(periph::spi &spi, periph::gpio &cs, periph::gpio *cd = nullptr);
     ~sd_spi();
     
+    // Delete copy constructor and copy assignment operator
+    sd_spi(const sd_spi&) = delete;
+    sd_spi& operator=(const sd_spi&) = delete;
+    
+    // Delete move constructor and move assignment operator
+    sd_spi(sd_spi&&) = delete;
+    sd_spi& operator=(sd_spi&&) = delete;
+    
 private:
     void select(bool is_selected) final;
     enum res init_sd() final;

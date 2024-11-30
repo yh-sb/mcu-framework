@@ -58,6 +58,14 @@ public:
     res write_read(const void *write_buff, uint16_t write_size, void *read_buff,
         uint16_t *read_size, std::chrono::milliseconds timeout = std::chrono::milliseconds::max()) final;
     
+    // Delete copy constructor and copy assignment operator
+    uart_stm32f1(const uart_stm32f1&) = delete;
+    uart_stm32f1& operator=(const uart_stm32f1&) = delete;
+    
+    // Delete move constructor and move assignment operator
+    uart_stm32f1(uart_stm32f1&&) = delete;
+    uart_stm32f1& operator=(uart_stm32f1&&) = delete;
+    
 private:
     uint8_t uart;
     uint32_t baud;

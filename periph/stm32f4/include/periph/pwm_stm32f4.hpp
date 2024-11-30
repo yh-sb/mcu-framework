@@ -50,6 +50,14 @@ public:
     void start() final;
     void stop() final;
     
+    // Delete copy constructor and copy assignment operator
+    pwm_stm32f4(const pwm_stm32f4&) = delete;
+    pwm_stm32f4& operator=(const pwm_stm32f4&) = delete;
+    
+    // Delete move constructor and move assignment operator
+    pwm_stm32f4(pwm_stm32f4&&) = delete;
+    pwm_stm32f4& operator=(pwm_stm32f4&&) = delete;
+    
 private:
     uint8_t tim;
     uint8_t ch;

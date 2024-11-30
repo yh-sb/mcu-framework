@@ -128,6 +128,14 @@ public:
      */
     enum res power_down();
     
+    // Delete copy constructor and copy assignment operator
+    nrf24l01(const nrf24l01&) = delete;
+    nrf24l01& operator=(const nrf24l01&) = delete;
+    
+    // Delete move constructor and move assignment operator
+    nrf24l01(nrf24l01&&) = delete;
+    nrf24l01& operator=(nrf24l01&&) = delete;
+    
 private:
     enum class reg : uint8_t
     {

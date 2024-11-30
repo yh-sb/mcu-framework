@@ -32,6 +32,14 @@ public:
     enum port port() const { return _port; }
     uint8_t pin() const final { return _pin; }
     
+    // Delete copy constructor and copy assignment operator
+    gpio_stm32f0(const gpio_stm32f0&) = delete;
+    gpio_stm32f0& operator=(const gpio_stm32f0&) = delete;
+    
+    // Delete move constructor and move assignment operator
+    gpio_stm32f0(gpio_stm32f0&&) = delete;
+    gpio_stm32f0& operator=(gpio_stm32f0&&) = delete;
+    
 private:
     enum port _port;
     uint8_t _pin;

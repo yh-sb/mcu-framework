@@ -33,6 +33,14 @@ public:
      */
     double read() final;
     
+    // Delete copy constructor and copy assignment operator
+    adc_onetime_stm32f1(const adc_onetime_stm32f1&) = delete;
+    adc_onetime_stm32f1& operator=(const adc_onetime_stm32f1&) = delete;
+    
+    // Delete move constructor and move assignment operator
+    adc_onetime_stm32f1(adc_onetime_stm32f1&&) = delete;
+    adc_onetime_stm32f1& operator=(adc_onetime_stm32f1&&) = delete;
+    
 private:
     static constexpr uint8_t ch_max_num = 18; // The total number of channels in ADC
     uint8_t adc;
@@ -73,6 +81,14 @@ public:
     
     void start() final;
     void stop() final;
+    
+    // Delete copy constructor and copy assignment operator
+    adc_cyclic_stm32f1(const adc_cyclic_stm32f1&) = delete;
+    adc_cyclic_stm32f1& operator=(const adc_cyclic_stm32f1&) = delete;
+    
+    // Delete move constructor and move assignment operator
+    adc_cyclic_stm32f1(adc_cyclic_stm32f1&&) = delete;
+    adc_cyclic_stm32f1& operator=(adc_cyclic_stm32f1&&) = delete;
     
 private:
     static constexpr uint8_t ch_max_num = 18; // The total number of channels in ADC
